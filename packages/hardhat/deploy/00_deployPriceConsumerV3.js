@@ -1,13 +1,14 @@
 const hre = require("hardhat");
 const { ethers } = require("hardhat");
 const dotenv = require("dotenv");
-const { PriceFeedAddressList } = require("../Price-Feed-Address-List.js");
 
 dotenv.config();
 
 const VERIFICATION_BLOCK_CONFIRMATIONS = 6;
 
-let priceFeedAddress;
+let priceFeedAddressEthUsd = "0x694AA1769357215DE4FAC081bf1f309aDC325306";
+let priceFeedAddressBtcUsd = "0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43";
+let priceFeedAddressDaiUsd = "0x14866185B1962B63C3Ea9E03Bc1da838bab34C19";
 
 async function main() {
   const provider = new ethers.providers.InfuraProvider(
@@ -30,27 +31,27 @@ async function main() {
   await run("compile");
 
   const priceConsumerV3Factory = await ethers.getContractFactory(
-    "PriceConsumerV3"
+    "PriceConsumerFeedV3"
   );
 
-  for (const key in PriceFeedAddressList) {
-    priceFeedAddress = PriceFeedAddressList[key].address;
+  const priceConsumerV3 = await priceConsumerV3Factory.deploy(
+    priceFeedAddressEthUsd,
+    priceFeedAddressBtcUsd,
+    priceFeedAddressDaiUsd
+  );
+  const waitBlockConfirmations = VERIFICATION_BLOCK_CONFIRMATIONS;
+  await priceConsumerV3.deployTransaction.wait(waitBlockConfirmations);
 
-    const priceConsumerV3 = await priceConsumerV3Factory.deploy(
-      priceFeedAddress
-    );
-    const waitBlockConfirmations = VERIFICATION_BLOCK_CONFIRMATIONS;
-    await priceConsumerV3.deployTransaction.wait(waitBlockConfirmations);
+  await run("verify:verify", {
+    address: priceConsumerV3.address,
+    constructorArguments: [
+      priceFeedAddressEthUsd,
+      priceFeedAddressBtcUsd,
+      priceFeedAddressDaiUsd,
+    ],
+  });
 
-    await run("verify:verify", {
-      address: priceConsumerV3.address,
-      constructorArguments: [priceFeedAddress],
-    });
-
-    console.log(
-      `${PriceFeedAddressList[key].name} Price Consumer deployed to ${priceConsumerV3.address}`
-    );
-  }
+  console.log(`Price Consumer deployed to ${priceConsumerV3.address}`);
 }
 
 main().catch((error) => {
