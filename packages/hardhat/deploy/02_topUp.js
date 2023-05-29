@@ -5,10 +5,12 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const VERIFICATION_BLOCK_CONFIRMATIONS = 6;
-const LinkBalanceMonitoraddress = "0xddF8303568877Fa073b3013D25030E152d23B4fb";
-const watchAdress = "0x2467A6BbB2053C036e33D278348241bB99CF8861";
-const minBalancesWei = "900000000000000000";
-const topUpAmountsWei = "100000000000000000";
+const LinkBalanceMonitoraddress = "0xb463868d287E0C8051D023E0F73F13BcB960D811";
+const watchAdress = "0x4EAE8D64c1eD295ffDE9F367807bA1270341024e";
+const minBalancesWei = "10000000000000000000";
+const topUpAmountsWei = "30000000000000000";
+// const to = "0x4EAE8D64c1eD295ffDE9F367807bA1270341024e";
+// const amount = "20000000000000000";
 
 async function TopUp() {
   const provider = new ethers.providers.InfuraProvider(
@@ -38,6 +40,10 @@ async function TopUp() {
     LinkBalanceMonitoraddress
   );
 
+  // const transferLink = await linkBalanceMonitor.transfer(to, amount);
+  // console.log("I'm here");
+  // console.log("The transfer is", transferLink);
+
   const watchList = await linkBalanceMonitor.setWatchList(
     [watchAdress],
     [minBalancesWei],
@@ -49,7 +55,7 @@ async function TopUp() {
   const topUp = await linkBalanceMonitor.topUp([watchAdress]);
   await topUp;
 
-  console.log("The watch list is", topUp.toString());
+  // console.log("The watch list is", topUp.toString());
 }
 
 TopUp().catch((error) => {
