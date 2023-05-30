@@ -1,7 +1,48 @@
+import { useEffect, useState } from "react";
 import Head from "next/head";
 import type { NextPage } from "next";
+import { ActiveSubscriptions, TSubscriptionItemProps } from "~~/components/subscription";
 
-const ExampleUI: NextPage = () => {
+("react");
+
+const Subscriptions: NextPage = () => {
+  const defaultActions: TSubscriptionItemProps[] = [
+    {
+      description: "Buy BTC is the price reduces by 5%",
+      subscriptionDate: "27th May, 2023",
+      expirationDate: "1st July, 2023",
+    },
+    {
+      description: "Buy BTC is the price reduces by 5%",
+      subscriptionDate: "27th May, 2023",
+      expirationDate: "1st July, 2023",
+    },
+    {
+      description: "Buy BTC is the price reduces by 5%",
+      subscriptionDate: "27th May, 2023",
+      expirationDate: "1st July, 2023",
+    },
+  ];
+
+  const [subscriptions, setSubscriptions] = useState<TSubscriptionItemProps[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    const loadingTimer = setTimeout(() => {
+      setLoading(true);
+    }, 1000);
+
+    const subTimer = setTimeout(() => {
+      setSubscriptions(defaultActions);
+      setLoading(false);
+    }, 3000);
+
+    return () => {
+      clearTimeout(loadingTimer); // Clean up the timer on component unmount
+      clearTimeout(subTimer);
+    };
+  }, []);
+
   return (
     <>
       <Head>
@@ -11,8 +52,9 @@ const ExampleUI: NextPage = () => {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree&display=swap" rel="stylesheet" />
       </Head>
+      <ActiveSubscriptions subscriptions={subscriptions} loading={loading} />
     </>
   );
 };
 
-export default ExampleUI;
+export default Subscriptions;

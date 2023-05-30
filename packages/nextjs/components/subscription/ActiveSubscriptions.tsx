@@ -1,5 +1,10 @@
 import React from "react";
-import { SubscriptionItem, SubscriptionItemEmptyState, TSubscriptionItemProps } from "./index";
+import {
+  SubscriptionItem,
+  SubscriptionItemEmptyState,
+  SubscriptionItemLoadingState,
+  TSubscriptionItemProps,
+} from "./index";
 
 export function ActiveSubscriptions({
   subscriptions,
@@ -25,17 +30,20 @@ function ActiveSubscriptionsContent({
   subscriptions: TSubscriptionItemProps[];
   loading: boolean;
 }) {
-  const emptyStateItems = new Array(4);
-
   if (loading) {
-    return <div> </div>;
-  }
-  if (subscriptions.length == 0) {
     return (
       <>
-        {emptyStateItems.map((data, i) => (
-          <SubscriptionItemEmptyState key={i} />
-        ))}
+        <SubscriptionItemLoadingState />
+        <SubscriptionItemLoadingState />
+        <SubscriptionItemLoadingState />
+      </>
+    );
+  }
+
+  if (subscriptions.length === 0) {
+    return (
+      <>
+        <SubscriptionItemEmptyState />
       </>
     );
   }
