@@ -35,25 +35,12 @@ async function APIConsumer() {
   const waitBlockConfirmations = VERIFICATION_BLOCK_CONFIRMATIONS;
   await APIConsumer.deployTransaction.wait(waitBlockConfirmations);
 
-  await run("verify:verify", {
-    address: APIConsumer.address,
-    //constructorArguments: [priceFeedAddress],
-  });
+  // await run("verify:verify", {
+  //   address: APIConsumer.address,
+  //   //constructorArguments: [priceFeedAddress],
+  // });
 
   console.log(`API Consumer deployed to ${APIConsumer.address}`);
-
-  // const volumeBefore = await APIConsumer.volume();
-  // console.log("The volume before the request is", volumeBefore.toString());
-
-  // const requestVolume = APIConsumer.requestVolumeData();
-  // await requestVolume;
-
-  // tx = await APIConsumer.waitBlockConfirmations(
-  //   VERIFICATION_BLOCK_CONFIRMATIONS
-  // );
-
-  // const volumeAfter = await APIConsumer.volume();
-  // console.log("The volume after the request is", volumeAfter.toString());
 }
 
 APIConsumer().catch((error) => {

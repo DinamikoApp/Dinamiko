@@ -5,8 +5,9 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const VERIFICATION_BLOCK_CONFIRMATIONS = 6;
-const APIConsumeraddress = "0x998199aFf10736C33D44aca75C847A44501EEC7e";
+const APIConsumeraddress = "0x421D71DfeDC7f00F714766747edD222ed765D446";
 const AMOUNT = 1;
+const symbol = "BNB";
 
 async function APIConsumer() {
   const provider = new ethers.providers.InfuraProvider(
@@ -32,22 +33,17 @@ async function APIConsumer() {
 
   const APIConsumer = await APIConsumerFactory.attach(APIConsumeraddress);
 
-  //   fundContract = await APIConsumer.fundContract(AMOUNT);
-  //   await fundContract.wait();
-  //   console.log("Contract funded with, fundContract.toString()");
+  //Necessary to fund the contract with LINK
 
-  const volumeBefore = await APIConsumer.volume();
-  console.log("The volume before the request is", volumeBefore.toString());
-
-  const requestVolume = APIConsumer.requestVolumeData();
+  const requestVolume = APIConsumer.requestVolumeData(symbol);
   await requestVolume;
 
-  tx = await APIConsumer.waitBlockConfirmations(
-    VERIFICATION_BLOCK_CONFIRMATIONS
-  );
+  const volume = await APIConsumer.volume();
+  console.log("The 24h volume after the request is", volume.toString());
 
-  const volumeAfter = await APIConsumer.volume();
-  console.log("The volume after the request is", volumeAfter.toString());
+  // const withdrawLink = APIConsumer.withdrawLink();
+  // await withdrawLink;
+  // console.log("Withdrawn LINK from contract");
 }
 
 APIConsumer().catch((error) => {
