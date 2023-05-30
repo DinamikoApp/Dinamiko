@@ -2,16 +2,17 @@
 
 pragma solidity ^0.8.7;
 
-import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
-import "@chainlink/contracts/src/v0.8/interfaces/AutomationCompatibleInterface.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
+import "../node_modules/@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
+import "../node_modules/@chainlink/contracts/src/v0.8/interfaces/AutomationCompatibleInterface.sol";
+import "../node_modules/@openzeppelin/contracts/security/Pausable.sol";
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "../node_modules/@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
+import "../node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 
 /**
- * @title The LinkBalanceMonitor contract
- * @notice A contract compatible with Chainlink Automation Network that monitors and funds eth addresses with token link
+ * @title The EthBalanceMonitor contract
+ * @notice A contract compatible with Chainlink Automation Network that monitors and funds eth addresses
  */
 
 contract LinkBalanceMonitor is
@@ -19,9 +20,12 @@ contract LinkBalanceMonitor is
     Pausable,
     AutomationCompatibleInterface
 {
+    //Link Token smart contract address - Sepolia
+    LinkTokenInterface public tokenLink = LinkTokenInterface(0x779877A7B0D9E8603169DdbD7836e478b4624789);
+    //Link Token smart contract address - Mumbai
+    //LinkTokenInterface public tokenLink = LinkTokenInterface(0x326C977E6efc84E512bB9C30f76E30c160eD06FB);
 
     uint256 private constant MIN_GAS_FOR_TRANSFER = 55_000;
-     IERC20 link = IERC20(0x326C977E6efc84E512bB9C30f76E30c160eD06FB);
 
     event FundsAdded(uint256 amountAdded, uint256 newBalance, address sender);
     event FundsWithdrawn(uint256 amountWithdrawn, address payee);
@@ -41,7 +45,7 @@ contract LinkBalanceMonitor is
         bool isActive;
         uint96 minBalanceWei;
         uint96 topUpAmountWei;
-        uint56 lastTopUpTimestamp;
+        uint56 lastTopUpTimestamp; 
     }
 
     address private s_keeperRegistryAddress;
@@ -111,14 +115,17 @@ contract LinkBalanceMonitor is
         address[] memory needsFunding = new address[](watchList.length);
         uint256 count = 0;
         uint256 minWaitPeriod = s_minWaitPeriodSeconds;
-        uint256 balance = address(this).balance;
+        //uint256 balance = address(this).balance;
+        uint256 balance = tokenLink.balanceOf(address(this));
         Target memory target;
+        
         for (uint256 idx = 0; idx < watchList.length; idx++) {
             target = s_targets[watchList[idx]];
             if (
                 target.lastTopUpTimestamp + minWaitPeriod <= block.timestamp &&
                 balance >= target.topUpAmountWei &&
-                watchList[idx].balance < target.minBalanceWei
+                //watchList[idx].balance < target.minBalanceWei
+                tokenLink.balanceOf(watchList[idx]) < target.minBalanceWei
             ) {
                 needsFunding[count] = watchList[idx];
                 count++;
@@ -146,9 +153,13 @@ contract LinkBalanceMonitor is
                 target.isActive &&
                 target.lastTopUpTimestamp + minWaitPeriodSeconds <=
                 block.timestamp &&
-                link.balanceOf(needsFunding[idx]) < target.minBalanceWei
+                //needsFunding[idx].balance < target.minBalanceWei
+                tokenLink.balanceOf(needsFunding[idx]) < target.minBalanceWei
             ) {
-                bool success = link.transfer(needsFunding[idx], target.topUpAmountWei);
+                //bool success = payable(needsFunding[idx]).send(
+                  //  target.topUpAmountWei
+                //);
+                bool success = tokenLink.transfer(needsFunding[idx], target.topUpAmountWei);
                 if (success) {
                     s_targets[needsFunding[idx]].lastTopUpTimestamp = uint56(
                         block.timestamp
@@ -163,6 +174,15 @@ contract LinkBalanceMonitor is
             }
         }
     }
+
+    function transfer(address to, uint256 value) external returns (bool success) {
+
+    // Perform the transfer using the tokenLink instance
+    require (tokenLink.transfer(to, value), "unable to transfer");
+
+    // Return true to indicate success
+    return true;
+}
 
     /**
      * @notice Get list of addresses that are underfunded and return payload compatible with Chainlink Automation Network
