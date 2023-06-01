@@ -76,8 +76,12 @@ const Home: NextPage = () => {
 
       <section className="py-8 mb-32">
         <div className="container mx-auto px-4 font-bold">
-          <h2 className="text-3xl text-center mb-8">Use Cases</h2>
-          <div className="flex flex-wrap justify-center text-center">
+          <h2 className="text-3xl text-center">Use Cases</h2>
+          <div className="flex flex-wrap justify-center text-center relative pt-32">
+            <div className="absolute inset-0 flex justify-center items-center ml-12 -mt-4">
+              <Image src="/assets/line.svg" alt="Background Image" layout="fill" objectFit="cover" />
+            </div>
+
             <div className="w-1/2 md:w-auto md:flex-1 -mx-12 relative text-2xl">
               <div className="border border-accent rounded-lg p-1">
                 <div className="border border-accent rounded-lg p-1">
