@@ -1,6 +1,7 @@
 import Head from "next/head";
 import Image from "next/image";
 import type { NextPage } from "next";
+import Newsletter from "~~/components/Newsletter";
 
 const Home: NextPage = () => {
   return (
@@ -55,10 +56,12 @@ const Home: NextPage = () => {
       <section className="py-12 ">
         <div className="container mx-auto flex flex-col md:flex-row items-center">
           <div className="md:w-1/2 px-6">
-            <h1 className="text-4xl font-bold mb-6 leading-[1.5]">
+            <h1 className="text-5xl font-bold mb-6 leading-[1.3]">
               Helping you <span className="text-gradient">Invest dynamically </span> in crypto hands-free with our help
             </h1>
-            <p className="mb-6 text-xl">Using both on-chain and off-chain data to perform transactions</p>
+            <p className="mb-6 text-2xl leading-[1.5]">
+              Using both on-chain and off-chain data to perform transactions
+            </p>
             <div className="flex space-x-4 mb-8 text-sm">
               <button className="bg-gradient text-white py-2 px-4 rounded ">Get started</button>
               <button className=" text-white py-2 px-4 rounded border-2 border-white">Connect Wallet</button>
@@ -66,35 +69,49 @@ const Home: NextPage = () => {
           </div>
 
           <div className="md:w-1/2 px-6">
-            <Image src="/public/assets/hero-image.png" alt="Hero Image" width={300} height={300} />
+            <Image src="/assets/hero-image.png" alt="Hero Image" layout="responsive" width={640} height={570} />
           </div>
         </div>
       </section>
 
       <section className="py-8 mb-32">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 font-bold">
           <h2 className="text-3xl text-center mb-8">Use Cases</h2>
-          <div className="flex flex-wrap justify-center gap-4 text-center">
-            <div className="w-1/2 md:w-auto md:flex-1 relative">
-              <div className="bg-gradient-1 px-10 py-16 rounded-lg shadow-md text-2xl">
-                Buy or Sell a Token if the price crosses a price mark.
+          <div className="flex flex-wrap justify-center text-center">
+            <div className="w-1/2 md:w-auto md:flex-1 -mx-12 relative text-2xl">
+              <div className="border border-accent rounded-lg p-1">
+                <div className="border border-accent rounded-lg p-1">
+                  <div className=" rounded-lg bg-gradient-1 px-10 py-16 shadow-md">
+                    Buy or Sell a Token if the price crosses a price mark.
+                  </div>
+                </div>
               </div>
             </div>
 
             <div className="w-1/2 md:w-auto md:flex-1 relative translate-y-0 md:translate-y-1/2 text-2xl">
-              <div className="bg-gradient-2 px-10 py-16  rounded-lg shadow-md">
-                Buy an token if the inflation rate goes above a mark.
+              <div className="border border-accent rounded-lg p-1">
+                <div className="border border-accent rounded-lg p-1">
+                  <div className=" rounded-lg bg-gradient-2 px-10 py-16 shadow-md">
+                    Buy a token if the inflation rate goes above a mark.
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="w-1/2 md:w-auto md:flex-1 relative text-2xl">
-              <div className="bg-gradient-3 px-10 py-16  rounded-lg shadow-md">
-                Add liquidity to a pool if the trading volume crosses a mark
+            <div className="w-1/2 md:w-auto md:flex-1 -mx-12 relative text-2xl">
+              <div className="border border-accent rounded-lg p-1">
+                <div className="border border-accent rounded-lg p-1">
+                  <div className=" rounded-lg bg-gradient-3 px-10 py-16 shadow-md">
+                    Add liquidity to a pool if the trading volume crosses a mark
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
+
+      <Newsletter />
     </>
   );
 };
