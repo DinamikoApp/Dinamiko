@@ -47,7 +47,7 @@ export const FaucetButton = () => {
       data-tip="Grab funds from faucet"
     >
       <button
-        className={`btn btn-secondary btn-sm px-2 rounded-full ${
+        className={`btn btn-secondary btn-sm px-2 rounded-full capitalize ${
           loading ? "loading before:!w-4 before:!h-4 before:!mx-0" : ""
         }`}
         onClick={sendETH}

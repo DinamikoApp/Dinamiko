@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Exo:wght@400;500;600;700;800&display=swap");
+
 @import "tailwindcss/base";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
@@ -9,6 +11,9 @@
 
 body {
   min-height: 100vh;
+  line-height: 1.5rem;
+  font-family: "Exo", sans-serif;
+  overflow-x: hidden;
 }
 
 h1,
@@ -16,7 +21,7 @@ h2,
 h3,
 h4 {
   margin-bottom: 0.5rem;
-  line-height: 1;
+  line-height: 1.5;
 }
 
 p {
@@ -29,4 +34,31 @@ p {
 
 .btn.btn-ghost {
   @apply shadow-none;
+}
+
+.text-gradient {
+  background: linear-gradient(261.51deg, #ff00b8 19.74%, #26ffe5 92.62%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+}
+
+.bg-gradient {
+  background: linear-gradient(261.51deg, #ff00b8 19.74%, #26ffe5 92.62%);
+}
+
+.bg-gradient-1 {
+  background: linear-gradient(196.57deg, #171717 11.47%, #ff00b8 233.89%);
+  box-shadow: -5.71913px 12.5821px 4.57531px rgba(0, 0, 0, 0.25);
+}
+
+.bg-gradient-2 {
+  background: linear-gradient(130.44deg, rgba(23, 23, 23, 0.5) 26.99%, rgba(38, 255, 73, 0.5) 138.81%);
+  backdrop-filter: blur(7.5px);
+}
+
+.bg-gradient-3 {
+  background: linear-gradient(149.4deg, rgba(23, 23, 23, 0.5) 18.58%, rgba(38, 255, 229, 0.5) 129.49%);
+  backdrop-filter: blur(7.5px);
 }
