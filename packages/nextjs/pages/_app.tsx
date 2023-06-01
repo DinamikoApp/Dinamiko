@@ -15,7 +15,7 @@ import { wagmiClient } from "~~/services/web3/wagmiClient";
 import { appChains } from "~~/services/web3/wagmiConnectors";
 import "~~/styles/globals.css";
 
-const ScaffoldEthApp = ({ Component, pageProps }: AppProps) => {
+const DinamikoApp = ({ Component, pageProps }: AppProps) => {
   const price = useNativeCurrencyPrice();
   const setNativeCurrencyPrice = useGlobalState(state => state.setNativeCurrencyPrice);
   // This variable is required for initial client side rendering of correct theme for RainbowKit
@@ -40,7 +40,7 @@ const ScaffoldEthApp = ({ Component, pageProps }: AppProps) => {
         avatar={BlockieAvatar}
         theme={isDarkTheme ? darkTheme() : lightTheme()}
       >
-        <div className="flex flex-col min-h-screen">
+        <div className="flex flex-col min-h-screen bg-primary">
           <Header />
           <main className="relative flex flex-col flex-1">
             <Component {...pageProps} />
@@ -53,4 +53,4 @@ const ScaffoldEthApp = ({ Component, pageProps }: AppProps) => {
   );
 };
 
-export default ScaffoldEthApp;
+export default DinamikoApp;

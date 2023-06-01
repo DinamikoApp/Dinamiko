@@ -2,12 +2,12 @@
 module.exports = {
   content: ["./pages/**/*.{js,ts,jsx,tsx}", "./components/**/*.{js,ts,jsx,tsx}", "./utils/**/*.{js,ts,jsx,tsx}"],
   plugins: [require("daisyui")],
-  darkTheme: "scaffoldEthDark",
+  darkTheme: "DinamikoDark",
   // DaisyUI theme colors
   daisyui: {
     themes: [
       {
-        scaffoldEth: {
+        Dinamiko: {
           primary: "#93BBFB",
           "primary-content": "#212638",
           secondary: "#DAE8FF",
@@ -33,10 +33,10 @@ module.exports = {
         },
       },
       {
-        scaffoldEthDark: {
-          primary: "#212638",
-          "primary-content": "#F9FBFF",
-          secondary: "#2A3655",
+        DinamikoDark: {
+          primary: "#000116",
+          "primary-content": "#FFFFFF",
+          secondary: "#000116",
           "secondary-content": "#F9FBFF",
           accent: "#4969A6",
           "accent-content": "#F9FBFF",
@@ -91,7 +91,7 @@ module.exports = {
     // Extend Tailwind classes (e.g. font-bai-jamjuree, animate-grow)
     extend: {
       fontFamily: {
-        "bai-jamjuree": ["Bai Jamjuree", "sans-serif"],
+        custom: ["Exo", "sans-serif"],
       },
       keyframes: {
         grow: {
@@ -111,6 +111,9 @@ module.exports = {
         grow: "grow 5s linear infinite",
         "pulse-fast": "pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         zoom: "zoom 1s ease infinite",
+      },
+      linearGradientColors: {
+        gradient1: ["from-[#FF00B8]", "to-[#26FFE5]"],
       },
     },
   },
