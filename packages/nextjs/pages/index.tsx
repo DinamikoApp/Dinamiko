@@ -56,7 +56,7 @@ const Home: NextPage = () => {
         <div className="container mx-auto flex flex-col md:flex-row items-center">
           <div className="md:w-1/2 px-6">
             <h1 className="text-4xl font-bold mb-6 leading-[1.5]">
-              Helping you <span className="bg-gradient">Invest dynamically </span> in crypto hands-free with our help
+              Helping you <span className="text-gradient">Invest dynamically </span> in crypto hands-free with our help
             </h1>
             <p className="mb-6 text-xl">Using both on-chain and off-chain data to perform transactions</p>
             <div className="flex space-x-4 mb-8 text-sm">

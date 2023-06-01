@@ -35,6 +35,18 @@ p {
   @apply shadow-none;
 }
 
+.text-gradient {
+  background: linear-gradient(261.51deg, #ff00b8 19.74%, #26ffe5 92.62%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+}
+
+.bg-gradient {
+  background: linear-gradient(261.51deg, #ff00b8 19.74%, #26ffe5 92.62%);
+}
+
 .bg-gradient-1 {
   background: linear-gradient(196.57deg, #171717 11.47%, #ff00b8 233.89%);
   box-shadow: -5.71913px 12.5821px 4.57531px rgba(0, 0, 0, 0.25);
