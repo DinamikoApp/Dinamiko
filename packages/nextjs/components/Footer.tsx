@@ -77,9 +77,16 @@ export const Footer = () => {
       <div className="container mx-auto px-4 flex justify-between">
         <div className="flex items-center">
           <ul className="flex space-x-8">
-            <li>FAQ</li>
-            <li>about </li>
-            <li>settings</li>
+            <li>
+              <Link href="/">FAQ</Link>
+            </li>
+            <li>
+              <Link href="/"> About </Link>{" "}
+            </li>
+            <li>
+              {" "}
+              <Link href="/"> Settings </Link>
+            </li>
             <SwitchTheme className="pointer-events-auto" />
           </ul>
         </div>
