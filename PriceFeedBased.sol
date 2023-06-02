@@ -1,13 +1,17 @@
 // // SPDX-License-Identifier: MIT
 // pragma solidity ^0.8.0;
 
+// /// importing necessary contracts
 // import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 // import "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
+// import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 // import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
 // import "@openzeppelin/contracts/security/Pausable.sol";
 
+// /// struct for registration of contract with chainlink
+// /// might have to move it off-chain and register contract manually
 // struct RegistrationParams {
-//     string name;
+//     string name; 
 //     bytes encryptedEmail;
 //     address upkeepContract;
 //     uint32 gasLimit;
@@ -17,12 +21,15 @@
 //     uint96 amount;
 // }
 
+// /// interface for the transactions contract
 // interface Transactions {
+//     /// function to buy tokens
 //     function buyToken(address assetToken, uint amount, address receiver) external returns(uint);
+//     /// function to sell contracts
 //     function sellToken(address assetToken, uint amount, address receiver) external returns(uint);
-//     function mintNewPosition(address token0, address token1, uint _amount0, uint _amount1, address receiver) external returns(uint256, uint128, uint256, uint256);
 // }
 
+// ///  ERC20 token interface
 // interface IERC20 {
 //     function transfer(address recipient, uint256 amount) external returns (bool);
 //     function approve(address spender, uint256 amount) external returns (bool);
@@ -35,17 +42,21 @@
 //     ) external returns (uint256);
 // }
 
-// contract TimeBasedSubscriptions is ConfirmedOwner, Pausable, AutomationCompatibleInterface {
+// contract priceBasedSubscriptions is ConfirmedOwner, Pausable, AutomationCompatibleInterface  {
 
+//     LinkTokenInterface public immutable i_link;
+//     KeeperRegistrarInterface public immutable i_registrar;
+
+//     /// subscription struct
 //     struct Subscription {
 //         address owner;
-//         uint transactionInterval;
-//         uint lastTimeStampTX;
 //         uint32 transactionType;
 //         address tokenIn;
 //         address tokenOut;
 //         uint256 amountIn;
 //         uint256 amountOut;
+//         int priceTarget;
+//         address aggregatorAddress; // the aggregator for the pair chosen, preferably token/usdt
 //         bool active;
 //     }
 
@@ -56,14 +67,13 @@
 
 //     address public constant usdtAddress = 0x1F98431c8aD98523631AE4a59f267346ea31F984; // (look for usdt on mumbai)
 
-//     LinkTokenInterface public immutable i_link;
-//     KeeperRegistrarInterface public immutable i_registrar;
-
+//     /**
+//      * Use an interval in seconds and a timestamp to slow execution of Upkeep
+//      */
 //     uint public immutable interval;
 //     uint public lastTimeStamp;
 
 //     Transactions transactions;
-
 //     address transactionsAdd;
 
 //     constructor(LinkTokenInterface link, KeeperRegistrarInterface registrar, uint updateInterval, address transactionsAddress) ConfirmedOwner(msg.sender) {
@@ -75,12 +85,11 @@
 
 //         subCounter = 0;
 
-//         transactionsAdd = transactionsAddress;
-
 //         transactions = Transactions(transactionsAddress);
+//         transactionsAdd = transactionsAddress;
 //     }
 
-//         function checkUpkeep(
+//     function checkUpkeep(
 //         bytes calldata checkData
 //     )
 //         external
@@ -94,10 +103,11 @@
 //         performData = checkData;
 //     }
 
-//     function performUpkeep(bytes calldata /* performData */) external override whenNotPaused {
-//         if ((block.timestamp - lastTimeStamp) > interval) {
+//     function performUpkeep(bytes calldata /* performData */) external override {
+//             if ((block.timestamp - lastTimeStamp) > interval) {
 //             // perform swap/transaction here
 //             executeSubscriptions();
+//             lastTimeStamp = block.timestamp;
 //         }
 //     }
 
@@ -115,39 +125,45 @@
 //         }
 //     }
 
+//     /**
+//      * Returns the latest price.
+//      * takes the aggregator address as input
+//      */
+//     function getLatestPrice(address aggregatorAddress) public view returns (int) {
+//         AggregatorV3Interface priceFeed = AggregatorV3Interface(aggregatorAddress);
 
-//     function pause() public onlyOwner {
-//         _pause();
+//         (
+//             /* uint80 roundID */,
+//             int price,
+//             /*uint startedAt*/,
+//             /*uint timeStamp*/,
+//             /*uint80 answeredInRound*/
+//         ) = priceFeed.latestRoundData();
+
+//         return price;
 //     }
-
-// // functions
 
 // // create Subscription
 // // user inputs conditions to the smart contract
-// // conditions and swap params are stored in a struct / mapping
-// function createBuySubscription(uint _interval, address tokenOut, uint amount) public {
-//     Subscription memory newSub = Subscription(msg.sender, _interval, block.timestamp, 1, usdtAddress, tokenOut, amount, 0, true);
+// // conditions and swap params are stored in a mapping
+// // aggregator address is gotten from the frontend based on the token selected
+// function createBuySubscription(int priceTarget, address tokenOut, uint amount, address aggregatorAddress) public {
+//     Subscription memory newSub = Subscription(msg.sender, 1, usdtAddress, tokenOut, amount, 0, priceTarget, aggregatorAddress, true);
 //     subscriptions[subCounter] = newSub;
 //     userSubscriptions[msg.sender].push(newSub);
-//     subCounter = subCounter + 1;
 //     // approve the contract to spend the given amount of tokens specified on the frontend
+//     subCounter = subCounter + 1;
 // }
 
-// function createSellSubscription(uint _interval, address tokenIn, uint amount) public {
-//     Subscription memory newSub = Subscription(msg.sender, _interval, block.timestamp, 2, tokenIn, usdtAddress, amount, 0, true);
+// // user inputs conditions to the smart contract
+// // conditions and swap params are stored in a mapping
+// // aggregator address is gotten from the frontend based on the token selected
+// function createSellSubscription(int priceTarget, address tokenIn, uint amount, address aggregatorAddress) public {
+//     Subscription memory newSub = Subscription(msg.sender, 2, tokenIn, usdtAddress, amount, 0, priceTarget, aggregatorAddress, true);
 //     subscriptions[subCounter] = newSub;
 //     userSubscriptions[msg.sender].push(newSub);
-//     subCounter = subCounter + 1;
 //     // approve the contract to spend the given amount of tokens specified on the frontend
-// }
-
-// function createAddLiqSubscription(uint _interval, address token0, address token1, uint amount0, uint amount1) public {
-//     Subscription memory newSub = Subscription(msg.sender, _interval, block.timestamp, 3, token0, token1, amount0, amount1, true);
-//     subscriptions[subCounter] = newSub;
-//     userSubscriptions[msg.sender].push(newSub);
 //     subCounter = subCounter + 1;
-//     // approve the contract to spend the given amount of tokens specified on the frontend
-//     // for both tokens
 // }
 
 // /// function needs to be ran in a loop on the frontend
@@ -163,51 +179,34 @@
 // // execute transactions
 // // checks if the conditions are met and fires the function
 // function executeSubscriptions() public {
-//     uint _subCounter = subCounter + 1;
+//     uint256 _subCounter = subCounter + 1;
+
 //     for (uint i = 0; i < _subCounter; i++) {
-//         uint transactionInterval = subscriptions[i].transactionInterval;
-//         uint lastTimeStampTX = subscriptions[i].lastTimeStampTX;
+//         address aggregatorAddress = subscriptions[i].aggregatorAddress;
+//         int currentPrice = getLatestPrice(aggregatorAddress);
+//         int priceTarget = subscriptions[i].priceTarget;
 //         uint32 transactionType = subscriptions[i].transactionType;
 //         bool status = subscriptions[i].active;
-//         if ((block.timestamp - lastTimeStampTX) > transactionInterval && transactionType == 1 && status == true) {
+//         if (priceTarget <= currentPrice && transactionType == 1 && status == true) {
 //             address owner_ = subscriptions[i].owner;
 //             address token = subscriptions[i].tokenOut;
 //             uint256 amount = subscriptions[i].amountIn;
-//             subscriptions[i].lastTimeStampTX = block.timestamp;
-//             // transfer from the user to the smarrt contract
+//             // transfer from the user to the smart contract
 //             IERC20 _token = IERC20(token);
 //             _token.transferFrom(owner_, transactionsAdd, amount);
 //             transactions.buyToken(token, amount, owner_);
 //         }
-//         else if ((block.timestamp - lastTimeStampTX) > transactionInterval && transactionType == 2 && status == true) {
+//         else if (priceTarget <= currentPrice && transactionType == 2 && status == true) {
 //             address owner_ = subscriptions[i].owner;
 //             address token = subscriptions[i].tokenIn;
 //             uint256 amount = subscriptions[i].amountIn;
-//             subscriptions[i].lastTimeStampTX = block.timestamp;
-//             // transfer from the user to the smarrt contract
+//             // transfer from the user to the smart contract
 //             IERC20 _token = IERC20(token);
 //             _token.transferFrom(owner_, transactionsAdd, amount);
 //             transactions.sellToken(token, amount, owner_);
 //         }
-//         else if ((block.timestamp - lastTimeStampTX) > transactionInterval && transactionType == 3 && status == true) {
-//             address owner_ = subscriptions[i].owner;
-//             address token0 = subscriptions[i].tokenIn;
-//             uint256 amount0 = subscriptions[i].amountIn;
-//             address token1 = subscriptions[i].tokenOut;
-//             uint256 amount1 = subscriptions[i].amountOut;
-
-//             subscriptions[i].lastTimeStampTX = block.timestamp;
-
-//             IERC20 _token0 = IERC20(token0);
-//             _token0.transferFrom(owner_, transactionsAdd, amount0);
-
-//             IERC20 _token1 = IERC20(token0);
-//             _token1.transferFrom(owner_, transactionsAdd, amount1);
-
-//             transactions.mintNewPosition(token0, token1, amount0, amount1, owner_);
-//         }
 //     }
 
 // }
-// }
 
+// }

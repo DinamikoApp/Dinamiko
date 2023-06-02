@@ -22,6 +22,9 @@ contract Transactions is IERC721Receiver, PeripheryImmutableState {
     address public constant usdtAddress = 0x1F98431c8aD98523631AE4a59f267346ea31F984; // (look for usdt on mumbai)
 
     address public constant _WETH9 = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+
+    event Transaction(address sender, string transactionType, uint amount, address tokenAddress, uint timestamp);
+    event TransactionLiq(address sender, string transactionType, uint amount0, address token0, uint amount1, address token1, uint timestamp);
     
     ISwapRouter public constant swapRouter = ISwapRouter(Router);
     INonfungiblePositionManager public constant nonfungiblePositionManager = INonfungiblePositionManager(0xC36442b4a4522E871399CD717aBDD847Ab11FE88);
@@ -106,7 +109,7 @@ contract Transactions is IERC721Receiver, PeripheryImmutableState {
                 deadline: block.timestamp
             });
 
-        // Note that the pool defined by DAI/USDC and fee tier 0.3% must already be created and initialized in order to mint
+        // Note that the pool defined by token0/token1 and fee tier 0.3% must already be created and initialized in order to mint
         (tokenId, liquidity, amount0, amount1) = nonfungiblePositionManager.mint(params);
 
         // Create a deposit
@@ -114,16 +117,18 @@ contract Transactions is IERC721Receiver, PeripheryImmutableState {
 
         // Remove allowance and refund in both assets.
         if (amount0 < amount0ToMint) {
-            TransferHelper.safeApprove(DAI, address(nonfungiblePositionManager), 0);
+            TransferHelper.safeApprove(token0, address(nonfungiblePositionManager), 0);
             uint256 refund0 = amount0ToMint - amount0;
-            TransferHelper.safeTransfer(DAI, msg.sender, refund0);
+            TransferHelper.safeTransfer(token0, msg.sender, refund0);
         }
 
         if (amount1 < amount1ToMint) {
-            TransferHelper.safeApprove(USDC, address(nonfungiblePositionManager), 0);
+            TransferHelper.safeApprove(token1, address(nonfungiblePositionManager), 0);
             uint256 refund1 = amount1ToMint - amount1;
-            TransferHelper.safeTransfer(USDC, msg.sender, refund1);
+            TransferHelper.safeTransfer(token1, msg.sender, refund1);
         }
+
+        emit TransactionLiq(receiver, "Liquidity provision", amount0ToMint, token0, amount1ToMint, token1, block.timestamp);
     }
 
     // function to buy tokens using uniswap
@@ -136,7 +141,6 @@ contract Transactions is IERC721Receiver, PeripheryImmutableState {
         address receiver
         ) public returns(uint amountOut) {
         
-        TransferHelper.safeTransferFrom(usdtAddress, msg.sender, address(this), amount);
         TransferHelper.safeApprove(usdtAddress, address(swapRouter), amount);
 
         ISwapRouter.ExactInputSingleParams memory params =
@@ -152,7 +156,8 @@ contract Transactions is IERC721Receiver, PeripheryImmutableState {
             });
 
         // The call to `exactInputSingle` executes the swap and gets the amount paid to the receiver.
-        amountOut = swapRouter.exactInputSingle(params);      
+        amountOut = swapRouter.exactInputSingle(params);
+        emit Transaction(receiver, "Token Purchase", amountOut, assetToken, block.timestamp);
     }
 
     function sellToken (
@@ -163,8 +168,7 @@ contract Transactions is IERC721Receiver, PeripheryImmutableState {
         // the receivers address i.e the users' address
         address receiver
         ) public returns(uint amountOut) {
-        
-        TransferHelper.safeTransferFrom(assetToken, msg.sender, address(this), amount);
+
         TransferHelper.safeApprove(assetToken, address(swapRouter), amount);
 
         ISwapRouter.ExactInputSingleParams memory params =
@@ -180,6 +184,7 @@ contract Transactions is IERC721Receiver, PeripheryImmutableState {
             });
 
         // The call to `exactInputSingle` executes the swap and gets the amount paid to the receiver.
-        amountOut = swapRouter.exactInputSingle(params);     
+        amountOut = swapRouter.exactInputSingle(params);
+        emit Transaction(receiver, "Token Purchase", amountOut, assetToken, block.timestamp);  
     }
 }
