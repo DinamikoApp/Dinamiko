@@ -1,83 +1,67 @@
-// // SPDX-License-Identifier: MIT
-// pragma solidity ^0.7.0;
-// pragma abicoder v2;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+pragma abicoder v2;
 
-// import '@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol';
-// import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
-// import '@uniswap/v3-periphery/contracts/libraries/OracleLibrary.sol';
-// import '@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol';
+import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
+import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 
-// contract Transactions {
+// Import Uniswap's Oracle Library
+import "@uniswap/v3-periphery/contracts/libraries/OracleLibrary.sol";
 
-//     ISwapRouter public constant swapRouter = ISwapRouter(Router);
+// Import Uniswap's V3 Factory Interface
+import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
 
-//     address deployer;
+contract Transactions {
+  // Immutable variable for the Uniswap Swap Router
+  ISwapRouter internal immutable swapRouter;
 
-//     address public constant Router = 0xE592427A0AEce92De3Edee1F18E0157C05861564; // the router contract address
-//     address public constant factoryAdd = 0x1F98431c8aD98523631AE4a59f267346ea31F984;
-//     //We will set the pool fee to 0.3%.
-//     uint24 public constant poolFee = 3000;
+  // Factory address for the Uniswap V3 Core contract
+  address public constant factoryAddress = 0x1F98431c8aD98523631AE4a59f267346ea31F984;
 
-//     uint256 nonce;
+  // Pool fee set to 0.3%
+  uint24 public constant POOL_FEE = 3000;
 
-//     constructor () {
-//         nonce = 1;
-//     }
+  // Events declaration
+  event Transaction(address indexed from, address indexed to, uint amountOut, uint timestamp);
 
-//     // the buyAsset function follows the swapexactinput example from uniswap documentation 
-//     function buyAsset (
-//         // the token the user is buying
-//         address _assetToken,
-//         // the amount the user intends to buy
-//         uint _amount,
-//         // the receivers address i.e the smart contract address
-//         address _receiver
-//         ) public returns(uint amountOut) {
-           
-//         TransferHelper.safeApprove(purchaseToken, address(swapRouter), _amount);
+  constructor(address _routerAddress) {
+    // Initialize the swapRouter with the Uniswap Router address
+    swapRouter = ISwapRouter(_routerAddress);
+  }
 
-//         ISwapRouter.ExactInputSingleParams memory params =
-//             ISwapRouter.ExactInputSingleParams({
-//                 tokenIn: purchaseToken,
-//                 tokenOut: _assetToken,
-//                 fee: poolFee,
-//                 recipient: _receiver,
-//                 deadline: block.timestamp + 10,
-//                 amountIn: _amount,
-//                 amountOutMinimum: 0,
-//                 sqrtPriceLimitX96: 0
-//             });
+  function executeSwap(
+    address tokenIn,
+    address tokenOut,
+    uint amount,
+    address receiver
+  ) private returns (uint amountOut) {
+    TransferHelper.safeApprove(tokenIn, address(swapRouter), amount);
 
-//         // The call to `exactInputSingle` executes the swap and gets the amount paid to the receiver.
-//         amountOut = swapRouter.exactInputSingle(params);
-//         emit transaction(msg.sender, _receiver, amountOut, block.timestamp);       
-//     }
+    ISwapRouter.ExactInputSingleParams memory params = ISwapRouter.ExactInputSingleParams({
+      tokenIn: tokenIn,
+      tokenOut: tokenOut,
+      fee: POOL_FEE,
+      recipient: receiver,
+      deadline: block.timestamp + 10, // 10 second deadline
+      amountIn: amount,
+      amountOutMinimum: 0,
+      sqrtPriceLimitX96: 0
+    });
 
-//     function sellToken (
-//         // the token the user is buying
-//         address _assetToken,
-//         // the amount the user intends to buy
-//         uint _amount,
-//         // the receivers address i.e the smart contract address
-//         address _receiver
-//         ) public returns(uint amountOut) {
-           
-//         TransferHelper.safeApprove(_assetToken, address(swapRouter), _amount);
+    amountOut = swapRouter.exactInputSingle(params);
 
-//         ISwapRouter.ExactInputSingleParams memory params =
-//             ISwapRouter.ExactInputSingleParams({
-//                 tokenIn: _assetToken,
-//                 tokenOut: purchaseToken,
-//                 fee: poolFee,
-//                 recipient: _receiver,
-//                 deadline: block.timestamp + 10,
-//                 amountIn: _amount,
-//                 amountOutMinimum: 0,
-//                 sqrtPriceLimitX96: 0
-//             });
+    emit Transaction(msg.sender, receiver, amountOut, block.timestamp);
 
-//         // The call to `exactInputSingle` executes the swap and gets the amount paid to the receiver.
-//         amountOut = swapRouter.exactInputSingle(params);
-//         emit transaction(msg.sender, _receiver, amountOut, block.timestamp);       
-//     }
-// }
+    return amountOut;
+  }
+
+  // Function to buy asset
+  function buyAsset(address purchaseToken, uint amount, address receiver) public returns (uint) {
+    return executeSwap(purchaseToken, factoryAddress, amount, receiver);
+  }
+
+  // Function to sell token
+  function sellToken(address sellToken, uint amount, address receiver) public returns (uint) {
+    return executeSwap(sellToken, factoryAddress, amount, receiver);
+  }
+}
