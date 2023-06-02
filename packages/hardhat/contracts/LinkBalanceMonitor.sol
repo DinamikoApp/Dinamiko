@@ -2,328 +2,285 @@
 
 pragma solidity ^0.8.7;
 
-import "../node_modules/@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
-import "../node_modules/@chainlink/contracts/src/v0.8/interfaces/AutomationCompatibleInterface.sol";
-import "../node_modules/@openzeppelin/contracts/security/Pausable.sol";
+import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AutomationCompatibleInterface.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
 
-import "../node_modules/@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
-import "../node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol";
-
+import "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 /**
- * @title The EthBalanceMonitor contract
- * @notice A contract compatible with Chainlink Automation Network that monitors and funds eth addresses
+ * @title The LinkToken balance Monitor contract
+ * @notice A contract compatible with Chainlink Automation Network that monitors and funds  smart contracts with link tokens
  */
 
-contract LinkBalanceMonitor is
-    ConfirmedOwner,
-    Pausable,
-    AutomationCompatibleInterface
-{
-    //Link Token smart contract address - Sepolia
-    LinkTokenInterface public tokenLink = LinkTokenInterface(0x779877A7B0D9E8603169DdbD7836e478b4624789);
-    //Link Token smart contract address - Mumbai
-    //LinkTokenInterface public tokenLink = LinkTokenInterface(0x326C977E6efc84E512bB9C30f76E30c160eD06FB);
+contract LinkBalanceMonitor is ConfirmedOwner, Pausable, AutomationCompatibleInterface {
+  LinkTokenInterface private immutable tokenLink;
+  uint256 private constant MIN_GAS_FOR_TRANSFER = 55_000;
 
-    uint256 private constant MIN_GAS_FOR_TRANSFER = 55_000;
+  event FundsAdded(uint256 amountAdded, uint256 newBalance, address sender);
+  event FundsWithdrawn(uint256 amountWithdrawn, address payee);
+  event TopUpSucceeded(address indexed recipient);
+  event TopUpFailed(address indexed recipient);
+  event KeeperRegistryAddressUpdated(address oldAddress, address newAddress);
+  event MinWaitPeriodUpdated(uint256 oldMinWaitPeriod, uint256 newMinWaitPeriod);
 
-    event FundsAdded(uint256 amountAdded, uint256 newBalance, address sender);
-    event FundsWithdrawn(uint256 amountWithdrawn, address payee);
-    event TopUpSucceeded(address indexed recipient);
-    event TopUpFailed(address indexed recipient);
-    event KeeperRegistryAddressUpdated(address oldAddress, address newAddress);
-    event MinWaitPeriodUpdated(
-        uint256 oldMinWaitPeriod,
-        uint256 newMinWaitPeriod
-    );
+  error InvalidWatchList();
+  error OnlyKeeperRegistry();
+  error DuplicateAddress(address duplicate);
 
-    error InvalidWatchList();
-    error OnlyKeeperRegistry();
-    error DuplicateAddress(address duplicate);
+  struct Target {
+    bool isActive;
+    uint96 minBalanceWei;
+    uint96 topUpAmountWei;
+    uint56 lastTopUpTimestamp;
+  }
 
-    struct Target {
-        bool isActive;
-        uint96 minBalanceWei;
-        uint96 topUpAmountWei;
-        uint56 lastTopUpTimestamp; 
+  address private s_keeperRegistryAddress;
+  uint256 private s_minWaitPeriodSeconds;
+  address[] private s_watchList;
+  mapping(address => Target) internal s_targets;
+
+  /**
+   * @param _keeperRegistryAddress The address of the Chainlink Automation registry contract
+   * @param _minWaitPeriodSeconds The minimum wait period for addresses between funding
+   * @param _linkTokenAddress the address of the link token contract on this particular chain
+   *
+   *
+   * Network: Sepolia
+   * Keeper Registry Address:
+   * Min Wait Period :
+   * Address: 0x779877A7B0D9E8603169DdbD7836e478b4624789
+   */
+
+  constructor(
+    address _keeperRegistryAddress,
+    uint256 _minWaitPeriodSeconds,
+    address _linkTokenAddress
+  ) ConfirmedOwner(msg.sender) {
+    setKeeperRegistryAddress(_keeperRegistryAddress);
+    setMinWaitPeriodSeconds(_minWaitPeriodSeconds);
+    tokenLink = LinkTokenInterface(_linkTokenAddress);
+  }
+
+  /**
+   * @notice Sets the list of addresses to watch and their funding parameters
+   * @param addresses the list of addresses to watch
+   * @param minBalancesWei the minimum balances for each address
+   * @param topUpAmountsWei the amount to top up each address
+   */
+  function setWatchList(
+    address[] calldata addresses,
+    uint96[] calldata minBalancesWei,
+    uint96[] calldata topUpAmountsWei
+  ) external onlyOwner {
+    if (addresses.length != minBalancesWei.length || addresses.length != topUpAmountsWei.length) {
+      revert InvalidWatchList();
     }
-
-    address private s_keeperRegistryAddress;
-    uint256 private s_minWaitPeriodSeconds;
-    address[] private s_watchList;
-    mapping(address => Target) internal s_targets;
-
-    /**
-     * @param keeperRegistryAddress The address of the Chainlink Automation registry contract
-     * @param minWaitPeriodSeconds The minimum wait period for addresses between funding
-     */
-    constructor(
-        address keeperRegistryAddress,
-        uint256 minWaitPeriodSeconds
-    ) ConfirmedOwner(msg.sender) {
-        setKeeperRegistryAddress(keeperRegistryAddress);
-        setMinWaitPeriodSeconds(minWaitPeriodSeconds);
+    address[] memory oldWatchList = s_watchList;
+    for (uint256 idx = 0; idx < oldWatchList.length; idx++) {
+      s_targets[oldWatchList[idx]].isActive = false;
     }
-
-    /**
-     * @notice Sets the list of addresses to watch and their funding parameters
-     * @param addresses the list of addresses to watch
-     * @param minBalancesWei the minimum balances for each address
-     * @param topUpAmountsWei the amount to top up each address
-     */
-    function setWatchList(
-        address[] calldata addresses,
-        uint96[] calldata minBalancesWei,
-        uint96[] calldata topUpAmountsWei
-    ) external onlyOwner {
-        if (
-            addresses.length != minBalancesWei.length ||
-            addresses.length != topUpAmountsWei.length
-        ) {
-            revert InvalidWatchList();
-        }
-        address[] memory oldWatchList = s_watchList;
-        for (uint256 idx = 0; idx < oldWatchList.length; idx++) {
-            s_targets[oldWatchList[idx]].isActive = false;
-        }
-        for (uint256 idx = 0; idx < addresses.length; idx++) {
-            if (s_targets[addresses[idx]].isActive) {
-                revert DuplicateAddress(addresses[idx]);
-            }
-            if (addresses[idx] == address(0)) {
-                revert InvalidWatchList();
-            }
-            if (topUpAmountsWei[idx] == 0) {
-                revert InvalidWatchList();
-            }
-            s_targets[addresses[idx]] = Target({
-                isActive: true,
-                minBalanceWei: minBalancesWei[idx],
-                topUpAmountWei: topUpAmountsWei[idx],
-                lastTopUpTimestamp: 0
-            });
-        }
-        s_watchList = addresses;
+    for (uint256 idx = 0; idx < addresses.length; idx++) {
+      if (s_targets[addresses[idx]].isActive) {
+        revert DuplicateAddress(addresses[idx]);
+      }
+      if (addresses[idx] == address(0)) {
+        revert InvalidWatchList();
+      }
+      if (topUpAmountsWei[idx] == 0) {
+        revert InvalidWatchList();
+      }
+      s_targets[addresses[idx]] = Target({
+        isActive: true,
+        minBalanceWei: minBalancesWei[idx],
+        topUpAmountWei: topUpAmountsWei[idx],
+        lastTopUpTimestamp: 0
+      });
     }
+    s_watchList = addresses;
+  }
 
-    /**
-     * @notice Gets a list of addresses that are under funded
-     * @return list of addresses that are underfunded
-     */
-    function getUnderfundedAddresses() public view returns (address[] memory) {
-        address[] memory watchList = s_watchList;
-        address[] memory needsFunding = new address[](watchList.length);
-        uint256 count = 0;
-        uint256 minWaitPeriod = s_minWaitPeriodSeconds;
-        //uint256 balance = address(this).balance;
-        uint256 balance = tokenLink.balanceOf(address(this));
-        Target memory target;
-        
-        for (uint256 idx = 0; idx < watchList.length; idx++) {
-            target = s_targets[watchList[idx]];
-            if (
-                target.lastTopUpTimestamp + minWaitPeriod <= block.timestamp &&
-                balance >= target.topUpAmountWei &&
-                //watchList[idx].balance < target.minBalanceWei
-                tokenLink.balanceOf(watchList[idx]) < target.minBalanceWei
-            ) {
-                needsFunding[count] = watchList[idx];
-                count++;
-                balance -= target.topUpAmountWei;
-            }
-        }
-        if (count != watchList.length) {
-            assembly {
-                mstore(needsFunding, count)
-            }
-        }
-        return needsFunding;
+  /**
+   * @notice Gets a list of addresses that are under funded
+   * @return list of addresses that are underfunded
+   */
+  function getUnderfundedAddresses() public view returns (address[] memory) {
+    address[] memory watchList = s_watchList;
+    address[] memory needsFunding = new address[](watchList.length);
+    uint256 count = 0;
+    uint256 minWaitPeriod = s_minWaitPeriodSeconds;
+    //uint256 balance = address(this).balance;
+    uint256 balance = tokenLink.balanceOf(address(this));
+    Target memory target;
+
+    for (uint256 idx = 0; idx < watchList.length; idx++) {
+      target = s_targets[watchList[idx]];
+      if (
+        target.lastTopUpTimestamp + minWaitPeriod <= block.timestamp &&
+        balance >= target.topUpAmountWei &&
+        //watchList[idx].balance < target.minBalanceWei
+        tokenLink.balanceOf(watchList[idx]) < target.minBalanceWei
+      ) {
+        needsFunding[count] = watchList[idx];
+        count++;
+        balance -= target.topUpAmountWei;
+      }
     }
-
-    /**
-     * @notice Send funds to the addresses provided
-     * @param needsFunding the list of addresses to fund (addresses must be pre-approved)
-     */
-    function topUp(address[] memory needsFunding) public whenNotPaused {
-        uint256 minWaitPeriodSeconds = s_minWaitPeriodSeconds;
-        Target memory target;
-        for (uint256 idx = 0; idx < needsFunding.length; idx++) {
-            target = s_targets[needsFunding[idx]];
-            if (
-                target.isActive &&
-                target.lastTopUpTimestamp + minWaitPeriodSeconds <=
-                block.timestamp &&
-                //needsFunding[idx].balance < target.minBalanceWei
-                tokenLink.balanceOf(needsFunding[idx]) < target.minBalanceWei
-            ) {
-                //bool success = payable(needsFunding[idx]).send(
-                  //  target.topUpAmountWei
-                //);
-                bool success = tokenLink.transfer(needsFunding[idx], target.topUpAmountWei);
-                if (success) {
-                    s_targets[needsFunding[idx]].lastTopUpTimestamp = uint56(
-                        block.timestamp
-                    );
-                    emit TopUpSucceeded(needsFunding[idx]);
-                } else {
-                    emit TopUpFailed(needsFunding[idx]);
-                }
-            }
-            if (gasleft() < MIN_GAS_FOR_TRANSFER) {
-                return;
-            }
-        }
+    if (count != watchList.length) {
+      assembly {
+        mstore(needsFunding, count)
+      }
     }
+    return needsFunding;
+  }
 
-    function transfer(address to, uint256 value) external returns (bool success) {
+  /**
+   * @notice Send funds to the addresses provided
+   * @param needsFunding the list of addresses to fund (addresses must be pre-approved)
+   */
+  function topUp(address[] memory needsFunding) public whenNotPaused {
+    uint256 minWaitPeriodSeconds = s_minWaitPeriodSeconds;
+    Target memory target;
+    for (uint256 idx = 0; idx < needsFunding.length; idx++) {
+      target = s_targets[needsFunding[idx]];
+      if (
+        target.isActive &&
+        target.lastTopUpTimestamp + minWaitPeriodSeconds <= block.timestamp &&
+        //needsFunding[idx].balance < target.minBalanceWei
+        tokenLink.balanceOf(needsFunding[idx]) < target.minBalanceWei
+      ) {
+        //bool success = payable(needsFunding[idx]).send(
+        //  target.topUpAmountWei
+        //);
+        bool success = tokenLink.transfer(needsFunding[idx], target.topUpAmountWei);
+        if (success) {
+          s_targets[needsFunding[idx]].lastTopUpTimestamp = uint56(block.timestamp);
+          emit TopUpSucceeded(needsFunding[idx]);
+        } else {
+          emit TopUpFailed(needsFunding[idx]);
+        }
+      }
+      if (gasleft() < MIN_GAS_FOR_TRANSFER) {
+        return;
+      }
+    }
+  }
 
+  function transfer(address to, uint256 value) external returns (bool success) {
     // Perform the transfer using the tokenLink instance
-    require (tokenLink.transfer(to, value), "unable to transfer");
+    require(tokenLink.transfer(to, value), "unable to transfer");
 
     // Return true to indicate success
     return true;
-}
+  }
 
-    /**
-     * @notice Get list of addresses that are underfunded and return payload compatible with Chainlink Automation Network
-     * @return upkeepNeeded signals if upkeep is needed, performData is an abi encoded list of addresses that need funds
-     */
-    function checkUpkeep(
-        bytes calldata
-    )
-        external
-        view
-        override
-        whenNotPaused
-        returns (bool upkeepNeeded, bytes memory performData)
-    {
-        address[] memory needsFunding = getUnderfundedAddresses();
-        upkeepNeeded = needsFunding.length > 0;
-        performData = abi.encode(needsFunding);
-        return (upkeepNeeded, performData);
-    }
+  /**
+   * @notice Get list of addresses that are underfunded and return payload compatible with Chainlink Automation Network
+   * @return upkeepNeeded signals if upkeep is needed, performData is an abi encoded list of addresses that need funds
+   */
+  function checkUpkeep(
+    bytes calldata
+  ) external view override whenNotPaused returns (bool upkeepNeeded, bytes memory performData) {
+    address[] memory needsFunding = getUnderfundedAddresses();
+    upkeepNeeded = needsFunding.length > 0;
+    performData = abi.encode(needsFunding);
+    return (upkeepNeeded, performData);
+  }
 
-    /**
-     * @notice Called by Chainlink Automation Node to send funds to underfunded addresses
-     * @param performData The abi encoded list of addresses to fund
-     */
-    function performUpkeep(
-        bytes calldata performData
-    ) external override onlyKeeperRegistry whenNotPaused {
-        address[] memory needsFunding = abi.decode(performData, (address[]));
-        topUp(needsFunding);
-    }
+  /**
+   * @notice Called by Chainlink Automation Node to send funds to underfunded addresses
+   * @param performData The abi encoded list of addresses to fund
+   */
+  function performUpkeep(bytes calldata performData) external override onlyKeeperRegistry whenNotPaused {
+    address[] memory needsFunding = abi.decode(performData, (address[]));
+    topUp(needsFunding);
+  }
 
-    /**
-     * @notice Withdraws the contract balance
-     * @param amount The amount of eth (in wei) to withdraw
-     * @param payee The address to pay
-     */
-    function withdraw(
-        uint256 amount,
-        address payable payee
-    ) external onlyOwner {
-        require(payee != address(0));
-        emit FundsWithdrawn(amount, payee);
-        payee.transfer(amount);
-    }
+  /**
+   * @notice Withdraws the contract balance
+   * @param amount The amount of eth (in wei) to withdraw
+   * @param payee The address to pay
+   */
+  function withdraw(uint256 amount, address payable payee) external onlyOwner {
+    require(payee != address(0));
+    emit FundsWithdrawn(amount, payee);
+    payee.transfer(amount);
+  }
 
-    /**
-     * @notice Receive funds
-     */
-    receive() external payable {
-        emit FundsAdded(msg.value, address(this).balance, msg.sender);
-    }
+  /**
+   * @notice Receive funds
+   */
+  receive() external payable {
+    emit FundsAdded(msg.value, address(this).balance, msg.sender);
+  }
 
-    /**
-     * @notice Sets the Chainlink Automation registry address
-     */
-    function setKeeperRegistryAddress(
-        address keeperRegistryAddress
-    ) public onlyOwner {
-        require(keeperRegistryAddress != address(0));
-        emit KeeperRegistryAddressUpdated(
-            s_keeperRegistryAddress,
-            keeperRegistryAddress
-        );
-        s_keeperRegistryAddress = keeperRegistryAddress;
-    }
+  /**
+   * @notice Sets the Chainlink Automation registry address
+   */
+  function setKeeperRegistryAddress(address keeperRegistryAddress) public onlyOwner {
+    require(keeperRegistryAddress != address(0));
+    emit KeeperRegistryAddressUpdated(s_keeperRegistryAddress, keeperRegistryAddress);
+    s_keeperRegistryAddress = keeperRegistryAddress;
+  }
 
-    /**
-     * @notice Sets the minimum wait period (in seconds) for addresses between funding
-     */
-    function setMinWaitPeriodSeconds(uint256 period) public onlyOwner {
-        emit MinWaitPeriodUpdated(s_minWaitPeriodSeconds, period);
-        s_minWaitPeriodSeconds = period;
-    }
+  /**
+   * @notice Sets the minimum wait period (in seconds) for addresses between funding
+   */
+  function setMinWaitPeriodSeconds(uint256 period) public onlyOwner {
+    emit MinWaitPeriodUpdated(s_minWaitPeriodSeconds, period);
+    s_minWaitPeriodSeconds = period;
+  }
 
-    /**
-     * @notice Gets the Chainlink Automation registry address
-     */
-    function getKeeperRegistryAddress()
-        external
-        view
-        returns (address keeperRegistryAddress)
-    {
-        return s_keeperRegistryAddress;
-    }
+  /**
+   * @notice Gets the Chainlink Automation registry address
+   */
+  function getKeeperRegistryAddress() external view returns (address keeperRegistryAddress) {
+    return s_keeperRegistryAddress;
+  }
 
-    /**
-     * @notice Gets the minimum wait period
-     */
-    function getMinWaitPeriodSeconds() external view returns (uint256) {
-        return s_minWaitPeriodSeconds;
-    }
+  /**
+   * @notice Gets the minimum wait period
+   */
+  function getMinWaitPeriodSeconds() external view returns (uint256) {
+    return s_minWaitPeriodSeconds;
+  }
 
-    /**
-     * @notice Gets the list of addresses being watched
-     */
-    function getWatchList() external view returns (address[] memory) {
-        return s_watchList;
-    }
+  /**
+   * @notice Gets the list of addresses being watched
+   */
+  function getWatchList() external view returns (address[] memory) {
+    return s_watchList;
+  }
 
-    /**
-     * @notice Gets configuration information for an address on the watchlist
-     */
-    function getAccountInfo(
-        address targetAddress
-    )
-        external
-        view
-        returns (
-            bool isActive,
-            uint96 minBalanceWei,
-            uint96 topUpAmountWei,
-            uint56 lastTopUpTimestamp
-        )
-    {
-        Target memory target = s_targets[targetAddress];
-        return (
-            target.isActive,
-            target.minBalanceWei,
-            target.topUpAmountWei,
-            target.lastTopUpTimestamp
-        );
-    }
+  /**
+   * @notice Gets configuration information for an address on the watchlist
+   */
+  function getAccountInfo(
+    address targetAddress
+  ) external view returns (bool isActive, uint96 minBalanceWei, uint96 topUpAmountWei, uint56 lastTopUpTimestamp) {
+    Target memory target = s_targets[targetAddress];
+    return (target.isActive, target.minBalanceWei, target.topUpAmountWei, target.lastTopUpTimestamp);
+  }
 
-    /**
-     * @notice Pauses the contract, which prevents executing performUpkeep
-     */
-    function pause() external onlyOwner {
-        _pause();
-    }
+  /**
+   * @notice Pauses the contract, which prevents executing performUpkeep
+   */
+  function pause() external onlyOwner {
+    _pause();
+  }
 
-    /**
-     * @notice Unpauses the contract
-     */
-    function unpause() external onlyOwner {
-        _unpause();
-    }
+  /**
+   * @notice Unpauses the contract
+   */
+  function unpause() external onlyOwner {
+    _unpause();
+  }
 
-    modifier onlyKeeperRegistry() {
-        if (msg.sender != s_keeperRegistryAddress) {
-            revert OnlyKeeperRegistry();
-        }
-        _;
+  modifier onlyKeeperRegistry() {
+    if (msg.sender != s_keeperRegistryAddress) {
+      revert OnlyKeeperRegistry();
     }
+    _;
+  }
 }
