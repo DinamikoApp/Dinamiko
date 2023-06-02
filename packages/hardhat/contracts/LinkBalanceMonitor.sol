@@ -31,8 +31,8 @@ contract LinkBalanceMonitor is ConfirmedOwner, Pausable, AutomationCompatibleInt
 
   struct Target {
     bool isActive;
-    uint96 minBalanceWei;
-    uint96 topUpAmountWei;
+    uint96 minBalanceLink;
+    uint96 topUpAmountLink;
     uint56 lastTopUpTimestamp;
   }
 
@@ -50,7 +50,7 @@ contract LinkBalanceMonitor is ConfirmedOwner, Pausable, AutomationCompatibleInt
    * Network: Sepolia
    * Keeper Registry Address:
    * Min Wait Period :
-   * Address: 0x779877A7B0D9E8603169DdbD7836e478b4624789
+   * Link Token Address: 0x779877A7B0D9E8603169DdbD7836e478b4624789
    */
 
   constructor(
@@ -66,15 +66,15 @@ contract LinkBalanceMonitor is ConfirmedOwner, Pausable, AutomationCompatibleInt
   /**
    * @notice Sets the list of addresses to watch and their funding parameters
    * @param addresses the list of addresses to watch
-   * @param minBalancesWei the minimum balances for each address
-   * @param topUpAmountsWei the amount to top up each address
+   * @param minBalancesLink the minimum balances for each address
+   * @param topUpAmountsLink the amount to top up each address
    */
   function setWatchList(
     address[] calldata addresses,
-    uint96[] calldata minBalancesWei,
-    uint96[] calldata topUpAmountsWei
+    uint96[] calldata minBalancesLink,
+    uint96[] calldata topUpAmountsLink
   ) external onlyOwner {
-    if (addresses.length != minBalancesWei.length || addresses.length != topUpAmountsWei.length) {
+    if (addresses.length != minBalancesLink.length || addresses.length != topUpAmountsLink.length) {
       revert InvalidWatchList();
     }
     address[] memory oldWatchList = s_watchList;
@@ -88,13 +88,13 @@ contract LinkBalanceMonitor is ConfirmedOwner, Pausable, AutomationCompatibleInt
       if (addresses[idx] == address(0)) {
         revert InvalidWatchList();
       }
-      if (topUpAmountsWei[idx] == 0) {
+      if (topUpAmountsLink[idx] == 0) {
         revert InvalidWatchList();
       }
       s_targets[addresses[idx]] = Target({
         isActive: true,
-        minBalanceWei: minBalancesWei[idx],
-        topUpAmountWei: topUpAmountsWei[idx],
+        minBalanceLink: minBalancesLink[idx],
+        topUpAmountLink: topUpAmountsLink[idx],
         lastTopUpTimestamp: 0
       });
     }
@@ -118,13 +118,13 @@ contract LinkBalanceMonitor is ConfirmedOwner, Pausable, AutomationCompatibleInt
       target = s_targets[watchList[idx]];
       if (
         target.lastTopUpTimestamp + minWaitPeriod <= block.timestamp &&
-        balance >= target.topUpAmountWei &&
-        //watchList[idx].balance < target.minBalanceWei
-        tokenLink.balanceOf(watchList[idx]) < target.minBalanceWei
+        balance >= target.topUpAmountLink &&
+        //watchList[idx].balance < target.minBalanceLink
+        tokenLink.balanceOf(watchList[idx]) < target.minBalanceLink
       ) {
         needsFunding[count] = watchList[idx];
         count++;
-        balance -= target.topUpAmountWei;
+        balance -= target.topUpAmountLink;
       }
     }
     if (count != watchList.length) {
@@ -147,13 +147,13 @@ contract LinkBalanceMonitor is ConfirmedOwner, Pausable, AutomationCompatibleInt
       if (
         target.isActive &&
         target.lastTopUpTimestamp + minWaitPeriodSeconds <= block.timestamp &&
-        //needsFunding[idx].balance < target.minBalanceWei
-        tokenLink.balanceOf(needsFunding[idx]) < target.minBalanceWei
+        //needsFunding[idx].balance < target.minBalanceLink
+        tokenLink.balanceOf(needsFunding[idx]) < target.minBalanceLink
       ) {
         //bool success = payable(needsFunding[idx]).send(
-        //  target.topUpAmountWei
+        //  target.topUpAmountLink
         //);
-        bool success = tokenLink.transfer(needsFunding[idx], target.topUpAmountWei);
+        bool success = tokenLink.transfer(needsFunding[idx], target.topUpAmountLink);
         if (success) {
           s_targets[needsFunding[idx]].lastTopUpTimestamp = uint56(block.timestamp);
           emit TopUpSucceeded(needsFunding[idx]);
@@ -199,13 +199,18 @@ contract LinkBalanceMonitor is ConfirmedOwner, Pausable, AutomationCompatibleInt
 
   /**
    * @notice Withdraws the contract balance
-   * @param amount The amount of eth (in wei) to withdraw
+   * @param amount The amount of Link (in wei) to withdraw
    * @param payee The address to pay
    */
-  function withdraw(uint256 amount, address payable payee) external onlyOwner {
+
+  function withdrawLink(uint256 amount, address payee) external onlyOwner {
     require(payee != address(0));
+    require(tokenLink.balanceOf(address(this)) >= amount, "Not enough LINK to withdraw");
+
     emit FundsWithdrawn(amount, payee);
-    payee.transfer(amount);
+
+    bool success = tokenLink.transfer(payee, amount);
+    require(success, "Failed to transfer LINK");
   }
 
   /**
@@ -258,9 +263,9 @@ contract LinkBalanceMonitor is ConfirmedOwner, Pausable, AutomationCompatibleInt
    */
   function getAccountInfo(
     address targetAddress
-  ) external view returns (bool isActive, uint96 minBalanceWei, uint96 topUpAmountWei, uint56 lastTopUpTimestamp) {
+  ) external view returns (bool isActive, uint96 minBalanceLink, uint96 topUpAmountLink, uint56 lastTopUpTimestamp) {
     Target memory target = s_targets[targetAddress];
-    return (target.isActive, target.minBalanceWei, target.topUpAmountWei, target.lastTopUpTimestamp);
+    return (target.isActive, target.minBalanceLink, target.topUpAmountLink, target.lastTopUpTimestamp);
   }
 
   /**
