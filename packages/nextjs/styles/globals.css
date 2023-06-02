@@ -62,3 +62,8 @@ p {
   background: linear-gradient(149.4deg, rgba(23, 23, 23, 0.5) 18.58%, rgba(38, 255, 229, 0.5) 129.49%);
   backdrop-filter: blur(7.5px);
 }
+
+.header-custom {
+  /*  background: rgba(17, 14, 32, 0.7); */
+  backdrop-filter: blur(9px);
+}

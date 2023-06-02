@@ -53,7 +53,7 @@ const Home: NextPage = () => {
         </div>
       </div> */}
 
-      <section className="py-12 ">
+      <section>
         <div className="container mx-auto flex flex-col md:flex-row items-center">
           <div className="md:w-1/2 px-6">
             <h1 className="text-5xl font-bold mb-6 leading-[1.3]">
@@ -62,46 +62,50 @@ const Home: NextPage = () => {
             <p className="mb-6 text-2xl leading-[1.5]">
               Using both on-chain and off-chain data to perform transactions
             </p>
-            <div className="flex space-x-4 mb-8 text-sm">
+            <div className="flex space-x-4 mb-8 text">
               <button className="bg-gradient text-white py-2 px-4 rounded ">Get started</button>
               <button className=" text-white py-2 px-4 rounded border-2 border-white">Connect Wallet</button>
             </div>
           </div>
 
-          <div className="md:w-1/2 px-6">
-            <Image src="/assets/hero-image.png" alt="Hero Image" layout="responsive" width={640} height={570} />
+          <div className="md:w-1/2 px-6 scale-125">
+            <Image src="/assets/hero-image.png" alt="Hero Image" layout="responsive" width={1000} height={900} />
           </div>
         </div>
       </section>
 
-      <section className="py-8 mb-32">
-        <div className="container mx-auto px-4 font-bold">
-          <h2 className="text-3xl text-center mb-8">Use Cases</h2>
-          <div className="flex flex-wrap justify-center text-center">
-            <div className="w-1/2 md:w-auto md:flex-1 -mx-12 relative text-2xl">
+      <section className="py-2 mb-32">
+        <div className="container mx-auto px-4 font-600">
+          <h2 className="text-3xl text-center">Use Cases</h2>
+          <div className="flex flex-wrap justify-center text-center relative pt-32 ">
+            <div className="absolute inset-0 flex justify-center items-center ml-12 -mt-4">
+              <Image src="/assets/line.svg" alt="Background Image" layout="fill" objectFit="cover" />
+            </div>
+
+            <div className="w-1/2 md:w-auto md:flex-1 -mx-12 relative text-3xl leading-[1.5]">
               <div className="border border-accent rounded-lg p-1">
                 <div className="border border-accent rounded-lg p-1">
-                  <div className=" rounded-lg bg-gradient-1 px-10 py-16 shadow-md">
+                  <div className=" rounded-lg bg-gradient-1 px-16 py-10 shadow-md">
                     Buy or Sell a Token if the price crosses a price mark.
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="w-1/2 md:w-auto md:flex-1 relative translate-y-0 md:translate-y-1/2 text-2xl">
+            <div className="w-1/2 md:w-auto md:flex-1 relative translate-y-0 md:translate-y-1/2 text-3xl leading-[1.5]">
               <div className="border border-accent rounded-lg p-1">
                 <div className="border border-accent rounded-lg p-1">
-                  <div className=" rounded-lg bg-gradient-2 px-10 py-16 shadow-md">
+                  <div className=" rounded-lg bg-gradient-2 px-16 py-10 shadow-md">
                     Buy a token if the inflation rate goes above a mark.
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="w-1/2 md:w-auto md:flex-1 -mx-12 relative text-2xl">
+            <div className="w-1/2 md:w-auto md:flex-1 -mx-12 relative text-3xl leading-[1.5]">
               <div className="border border-accent rounded-lg p-1">
                 <div className="border border-accent rounded-lg p-1">
-                  <div className=" rounded-lg bg-gradient-3 px-10 py-16 shadow-md">
+                  <div className=" rounded-lg bg-gradient-3 px-16 py-10 shadow-md">
                     Add liquidity to a pool if the trading volume crosses a mark
                   </div>
                 </div>
