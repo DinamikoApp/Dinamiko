@@ -14,7 +14,19 @@ const deployerPrivateKey =
 const etherscanApiKey = process.env.ETHERSCAN_API_KEY || "DNXJA8RX2Q3VZ4URQIWP7Z68CJXQZSC6AW";
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.17",
+  solidity: {
+    compilers: [
+      {
+        version: "0.8.7",
+      },
+      {
+        version: "0.6.6",
+      },
+      {
+        version: "0.4.24",
+      },
+    ],
+  },
   defaultNetwork: "localhost",
   namedAccounts: {
     deployer: {
