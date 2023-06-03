@@ -4,7 +4,6 @@ pragma abicoder v2;
 
 import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
-import "@uniswap/v3-periphery/contracts/libraries/OracleLibrary.sol";
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
 
 contract Transactions {
@@ -53,12 +52,12 @@ contract Transactions {
   }
 
   // Function to buy asset
-  function buyAsset(address purchaseToken, uint amount, address receiver) public returns (uint) {
-    return executeSwap(purchaseToken, factoryAddress, amount, receiver);
+  function buyAsset(address _purchaseToken, uint _amount, address _receiver) public returns (uint) {
+    return executeSwap(_purchaseToken, factoryAddress, _amount, _receiver);
   }
 
   // Function to sell token
-  function sellToken(address sellToken, uint amount, address receiver) public returns (uint) {
-    return executeSwap(sellToken, factoryAddress, amount, receiver);
+  function sellToken(address _sellToken, uint _amount, address _receiver) public returns (uint) {
+    return executeSwap(_sellToken, factoryAddress, _amount, _receiver);
   }
 }
