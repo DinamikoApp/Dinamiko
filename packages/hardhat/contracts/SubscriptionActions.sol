@@ -1,23 +1,18 @@
-//  https://github.com/Ifechukwudaniel  Updates Contract 
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+
+pragma solidity 0.8.6;
 pragma abicoder v2;
 
 import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
-
-// Import Uniswap's Oracle Library
-import "@uniswap/v3-periphery/contracts/libraries/OracleLibrary.sol";
-
-// Import Uniswap's V3 Factory Interface
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
 
-contract Transactions {
+contract SubscriptionAction {
   // Immutable variable for the Uniswap Swap Router
   ISwapRouter internal immutable swapRouter;
 
   // Factory address for the Uniswap V3 Core contract
-  address public constant factoryAddress = 0x1F98431c8aD98523631AE4a59f267346ea31F984;
+  address public factoryAddress;
 
   // Pool fee set to 0.3%
   uint24 public constant POOL_FEE = 3000;
@@ -25,9 +20,10 @@ contract Transactions {
   // Events declaration
   event Transaction(address indexed from, address indexed to, uint amountOut, uint timestamp);
 
-  constructor(address _routerAddress) {
+  constructor(address _routerAddress, address _factoryAddress) {
     // Initialize the swapRouter with the Uniswap Router address
     swapRouter = ISwapRouter(_routerAddress);
+    factoryAddress = _factoryAddress;
   }
 
   function executeSwap(
@@ -57,21 +53,15 @@ contract Transactions {
   }
 
   // Function to buy asset
-  function buyAsset(address purchaseToken, uint amount, address receiver) public returns (uint) {
-    return executeSwap(purchaseToken, factoryAddress, amount, receiver);
+  function buyAsset(address _purchaseToken, uint _amount, address _receiver) public returns (uint) {
+    return executeSwap(_purchaseToken, factoryAddress, _amount, _receiver);
   }
 
   // Function to sell token
-  function sellToken(address sellToken, uint amount, address receiver) public returns (uint) {
-    return executeSwap(sellToken, factoryAddress, amount, receiver);
+  function sellToken(address _sellToken, uint _amount, address _receiver) public returns (uint) {
+    return executeSwap(_sellToken, factoryAddress, _amount, _receiver);
   }
 }
-
-
-//  https://github.com/NatX223  Lattest Contract 
-// // SPDX-License-Identifier: MIT
-// pragma solidity ^0.7.6;
-// pragma abicoder v2;
 
 // import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 // import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
@@ -93,7 +83,7 @@ contract Transactions {
 //     address public constant usdtAddress = 0x1F98431c8aD98523631AE4a59f267346ea31F984; // (look for usdt on mumbai)
 
 //     address public constant _WETH9 = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
-    
+
 //     ISwapRouter public constant swapRouter = ISwapRouter(Router);
 //     INonfungiblePositionManager public constant nonfungiblePositionManager = INonfungiblePositionManager(0xC36442b4a4522E871399CD717aBDD847Ab11FE88);
 
@@ -206,7 +196,7 @@ contract Transactions {
 //         // the receivers address i.e the users' address
 //         address receiver
 //         ) public returns(uint amountOut) {
-        
+
 //         TransferHelper.safeApprove(usdtAddress, address(swapRouter), amount);
 
 //         ISwapRouter.ExactInputSingleParams memory params =
@@ -222,7 +212,7 @@ contract Transactions {
 //             });
 
 //         // The call to `exactInputSingle` executes the swap and gets the amount paid to the receiver.
-//         amountOut = swapRouter.exactInputSingle(params);      
+//         amountOut = swapRouter.exactInputSingle(params);
 //     }
 
 //     function sellToken (
@@ -233,7 +223,7 @@ contract Transactions {
 //         // the receivers address i.e the users' address
 //         address receiver
 //         ) public returns(uint amountOut) {
-        
+
 //         TransferHelper.safeApprove(assetToken, address(swapRouter), amount);
 
 //         ISwapRouter.ExactInputSingleParams memory params =
@@ -249,7 +239,6 @@ contract Transactions {
 //             });
 
 //         // The call to `exactInputSingle` executes the swap and gets the amount paid to the receiver.
-//         amountOut = swapRouter.exactInputSingle(params);     
+//         amountOut = swapRouter.exactInputSingle(params);
 //     }
 // }
-
