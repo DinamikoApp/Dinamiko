@@ -80,6 +80,7 @@ export const deployContract = async <ContractType extends Contract>(
       args,
       from,
       libraries,
+      log: true,
     },
   );
   return hre.ethers.getContractAt(artifact.abi, artifact.address) as any as ContractType;
