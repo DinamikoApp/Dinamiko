@@ -4,11 +4,7 @@ pragma abicoder v2;
 
 import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
-
-// Import Uniswap's Oracle Library
 import "@uniswap/v3-periphery/contracts/libraries/OracleLibrary.sol";
-
-// Import Uniswap's V3 Factory Interface
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
 
 contract Transactions {
@@ -16,7 +12,7 @@ contract Transactions {
   ISwapRouter internal immutable swapRouter;
 
   // Factory address for the Uniswap V3 Core contract
-  address public constant factoryAddress = 0x1F98431c8aD98523631AE4a59f267346ea31F984;
+  address public factoryAddress;
 
   // Pool fee set to 0.3%
   uint24 public constant POOL_FEE = 3000;
@@ -24,9 +20,10 @@ contract Transactions {
   // Events declaration
   event Transaction(address indexed from, address indexed to, uint amountOut, uint timestamp);
 
-  constructor(address _routerAddress) {
+  constructor(address _routerAddress, address _factoryAddress) {
     // Initialize the swapRouter with the Uniswap Router address
     swapRouter = ISwapRouter(_routerAddress);
+    factoryAddress = _factoryAddress;
   }
 
   function executeSwap(
