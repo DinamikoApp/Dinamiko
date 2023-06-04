@@ -7,4 +7,4 @@ export const isValidAddress = (value: tEthereumAddress): boolean =>
 
 export const isEqualAddress = (a: tEthereumAddress, b: tEthereumAddress) => getAddress(a) === getAddress(b);
 
-export const isLocalDevelopmentNetwork = (chainId: number | undefined) => chainId == 31337;
+export const isLocalDevelopmentNetwork = (chainId: number | undefined) => chainId == 31337 || chainId == undefined;

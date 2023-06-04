@@ -28,7 +28,7 @@ const config: HardhatUserConfig = {
       },
     ],
   },
-  defaultNetwork: "hardhat",
+  defaultNetwork: "localhost",
   namedAccounts: {
     ...DEFAULT_NAMED_ACCOUNTS,
   },

@@ -6,7 +6,7 @@ export const deployMockV3Aggregator = async (symbol: string, value: string, usdP
     "MockV3Aggregator",
     ["18", value],
     undefined,
-    usdPriceFeed ? `${symbol}/USD-PriceFeedAggregator` : id,
+    usdPriceFeed ? `${symbol}USDPriceFeedAggregator` : id,
   );
 
 export const deployMockToken = async (symbol: string, name: string) =>
