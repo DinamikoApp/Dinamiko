@@ -212,38 +212,38 @@ contract TimeBasedSubscriptions is ConfirmedOwner, Pausable, AutomationCompatibl
         subscriptions[i].active = false;
     }
 
-// execute transactions
-// checks if the conditions are met and fires the function
-function executeSubscriptions() public {
-    uint _subCounter = subCounter + 1;
-    for (uint i = 0; i < _subCounter; i++) {
-        if ((block.timestamp - subscriptions[i].lastTimeStampTX) > subscriptions[i].transactionInterval && subscriptions[i].transactionType == 1 && subscriptions[i].active == true) {
-            // transfer from the user to the smarrt contract
-            IERC20 _token = IERC20(usdtAddress);
-            _token.transferFrom(subscriptions[i].owner, transactionsAdd, subscriptions[i].amountIn);
-            transactions.buyToken(subscriptions[i].tokenOut, subscriptions[i].amountIn, subscriptions[i].owner);
-            subscriptions[i].lastTimeStampTX = block.timestamp;
-        }
-        else if ((block.timestamp - subscriptions[i].lastTimeStampTX) > subscriptions[i].transactionInterval && subscriptions[i].transactionType == 2 && subscriptions[i].active == true) {
-            // transfer from the user to the smarrt contract
-            IERC20 _token = IERC20(usdtAddress);
-            _token.transferFrom(subscriptions[i].owner, transactionsAdd, subscriptions[i].amountIn);
-            transactions.sellToken(subscriptions[i].tokenIn, subscriptions[i].amountIn, subscriptions[i].owner);
-            subscriptions[i].lastTimeStampTX = block.timestamp;
-        }
-        else if ((block.timestamp - subscriptions[i].lastTimeStampTX) > subscriptions[i].transactionInterval && subscriptions[i].transactionType == 3 && subscriptions[i].active == true) {
+    /// @notice execute transactions
+    /// @dev checks if the conditions are met and fires the function
+    function executeSubscriptions() public {
+        uint _subCounter = subCounter + 1;
+        for (uint i = 0; i < _subCounter; i++) {
+            if ((block.timestamp - subscriptions[i].lastTimeStampTX) > subscriptions[i].transactionInterval && subscriptions[i].transactionType == 1 && subscriptions[i].active == true) {
+                // transfer from the user to the smarrt contract
+                IERC20 _token = IERC20(usdtAddress);
+                _token.transferFrom(subscriptions[i].owner, transactionsAdd, subscriptions[i].amountIn);
+                transactions.buyToken(subscriptions[i].tokenOut, subscriptions[i].amountIn, subscriptions[i].owner);
+                subscriptions[i].lastTimeStampTX = block.timestamp;
+            }
+            else if ((block.timestamp - subscriptions[i].lastTimeStampTX) > subscriptions[i].transactionInterval && subscriptions[i].transactionType == 2 && subscriptions[i].active == true) {
+                // transfer from the user to the smarrt contract
+                IERC20 _token = IERC20(usdtAddress);
+                _token.transferFrom(subscriptions[i].owner, transactionsAdd, subscriptions[i].amountIn);
+                transactions.sellToken(subscriptions[i].tokenIn, subscriptions[i].amountIn, subscriptions[i].owner);
+                subscriptions[i].lastTimeStampTX = block.timestamp;
+            }
+            else if ((block.timestamp - subscriptions[i].lastTimeStampTX) > subscriptions[i].transactionInterval && subscriptions[i].transactionType == 3 && subscriptions[i].active == true) {
 
-            IERC20 _token0 = IERC20(subscriptions[i].tokenIn);
-            _token0.transferFrom(subscriptions[i].owner, transactionsAdd, subscriptions[i].amountIn);
+                IERC20 _token0 = IERC20(subscriptions[i].tokenIn);
+                _token0.transferFrom(subscriptions[i].owner, transactionsAdd, subscriptions[i].amountIn);
 
-            IERC20 _token1 = IERC20(subscriptions[i].tokenOut);
-            _token1.transferFrom(subscriptions[i].owner, transactionsAdd, subscriptions[i].amountOut);
+                IERC20 _token1 = IERC20(subscriptions[i].tokenOut);
+                _token1.transferFrom(subscriptions[i].owner, transactionsAdd, subscriptions[i].amountOut);
 
-            transactions.mintNewPosition(subscriptions[i].tokenIn, subscriptions[i].tokenOut, subscriptions[i].amountIn, subscriptions[i].amountOut, subscriptions[i].owner);
-            subscriptions[i].lastTimeStampTX = block.timestamp;
+                transactions.mintNewPosition(subscriptions[i].tokenIn, subscriptions[i].tokenOut, subscriptions[i].amountIn, subscriptions[i].amountOut, subscriptions[i].owner);
+                subscriptions[i].lastTimeStampTX = block.timestamp;
+            }
         }
+
     }
-
-}
 }
 

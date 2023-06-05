@@ -9,20 +9,10 @@ import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 
-/// struct for registration of contract with chainlink
-/// might have to move it off-chain and register contract manually
-struct RegistrationParams {
-    string name; 
-    bytes encryptedEmail;
-    address upkeepContract;
-    uint32 gasLimit;
-    address adminAddress;
-    bytes checkData;
-    bytes offchainConfig;
-    uint96 amount;
-}
-
-/// interface for the transactions contract
+/// @title Transactions
+/// @author NatX
+/// @notice Transactions contract interface
+/// @dev Interface for transactions contract that performs transactions with Uniswap V3 integration
 interface Transactions {
     /// function to buy tokens
     function buyToken(address assetToken, uint amount, address receiver) external returns(uint);
@@ -32,20 +22,43 @@ interface Transactions {
     function mintNewPosition(address token0, address token1, uint _amount0, uint _amount1, address receiver) external returns(uint256, uint128, uint256, uint256);
 }
 
-///  ERC20 token interface
+/// @title IERC20
+/// @author NatX
+/// @notice ERC20 token interface
+/// @dev Interface for ERC20 token functions
 interface IERC20 {
     function transfer(address recipient, uint256 amount) external returns (bool);
     function approve(address spender, uint256 amount) external returns (bool);
     function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
 }
 
+/// @title KeeperRegistrarInterface
+/// @author NatX
+/// @notice upkeep registration interface
 interface KeeperRegistrarInterface {
     function registerUpkeep(
         RegistrationParams calldata requestParams
     ) external returns (uint256);
 }
 
-contract TradingVolumeBased is ChainlinkClient, ConfirmedOwner, Pausable, AutomationCompatibleInterface {
+/// @notice registration params struct for upkeep registration
+/// @dev params are passed into the registerandpredict ID function
+struct RegistrationParams {
+    string name;
+    bytes encryptedEmail;
+    address upkeepContract;
+    uint32 gasLimit;
+    address adminAddress;
+    bytes checkData;
+    bytes offchainConfig;
+    uint96 amount;
+}
+
+/// @title InflationRateBased
+/// @author NatX
+/// @notice The contract handles the creation of inflation rate based subscriptions and executing of these type of subscriptions
+/// @dev The contract utilizes the Uniswap V3 contracts to buy tokens, sell tokens and add liquidity
+contract InflationRateBased is ChainlinkClient, ConfirmedOwner, Pausable, AutomationCompatibleInterface {
     using Chainlink for Chainlink.Request;
 
     int256 public inflationWei;
@@ -58,37 +71,46 @@ contract TradingVolumeBased is ChainlinkClient, ConfirmedOwner, Pausable, Automa
     LinkTokenInterface public immutable i_link;
     KeeperRegistrarInterface public immutable i_registrar;
 
-    /// subscription struct
+    /// @notice subscription struct that holds the neccesary subscription data for a subscription
     struct Subscription {
-        address owner;
-        uint32 transactionType;
-        address tokenIn;
-        address tokenOut;
-        uint256 amountIn;
-        uint256 amountOut;
-        int256 inflationTarget;
+        address owner; // the address of the user setting up the subscription
+        uint32 transactionType; // the type of transaction to be carried out (buy token, sell token, add liquidity)
+        address tokenIn; // the token that is used to purchase tokens (default is usdt) when buying tokens OR token1 when adding liquidity OR token to be sold when selling a token
+        address tokenOut; // the token that is to be bought when buying tokens OR token2 when adding liquidity OR token to be paid to the user when selling tokens (default usdt)
+        uint256 amountIn; // the amount of usdt that is used to purchase tokens when buying tokens OR amount token1 to be added as liquidity when adding liquidity OR amount of tokens to be sold when selling a token
+        uint256 amountOut; // the amount of token2 to be added as liquidity
+        int256 inflationTarget; // the inflation rate target for the subscription
+        bool active; // the status of the subscription, true for active and false for deleted
     }
-
+    // subscription counter, keeps track of the number of subscriptions recorded
     uint subCounter;
 
+    // subscriptions mapping that maps a uint to subscription
     mapping (uint256 => Subscription) subscriptions;
+    // mapping that maps users address to their subscriptions
+    mapping (address => Subscription[]) public userSubscriptions;
 
-    address public constant usdtAddress = 0x1F98431c8aD98523631AE4a59f267346ea31F984; // (look for usdt on mumbai)
+    // the USDT address
+    address public immutable usdtAddress;
 
-    /**
-     * Use an interval in seconds and a timestamp to slow execution of Upkeep
-     */
+    // the interval between performing upkeeps default one hour
     uint public immutable interval;
+    // the last timestamp when an upkeep was performed
     uint public lastTimeStamp;
 
+    // transactions contract interface
     Transactions transactions;
+    // transactions contract address
     address transactionsAdd;
 
-    /**
-     * @notice Initialize the link token and target oracle
-     *
-     */
-    constructor(LinkTokenInterface link, KeeperRegistrarInterface registrar, uint updateInterval, address transactionsAddress) ConfirmedOwner(msg.sender) {
+    /// @notice the constructor function
+    /// @dev initilizes the needed parameters
+    /// @param link the link token address
+    /// @param registrar the upkeep registrar address
+    /// @param updateInterval time interval for checking upkeep
+    /// @param transactionsAddress address of transactions contract
+    /// @param _usdtAddress the usdt token address
+    constructor(LinkTokenInterface link, KeeperRegistrarInterface registrar, uint updateInterval, address transactionsAddress, address _usdtAddress) ConfirmedOwner(msg.sender) {
         setChainlinkToken(0x326C977E6efc84E512bB9C30f76E30c160eD06FB);
         oracleId = 0x6D141Cf6C43f7eABF94E288f5aa3f23357278499;
         jobId = "d220e5e687884462909a03021385b7ae";
@@ -102,8 +124,27 @@ contract TradingVolumeBased is ChainlinkClient, ConfirmedOwner, Pausable, Automa
 
         transactions = Transactions(transactionsAddress);
         transactionsAdd = transactionsAddress;
+
+        usdtAddress = _usdtAddress;
     }
 
+    /// @notice function to register the contract for chainlink upkeeps
+    /// @dev this function has to be called before upkeeps can work, should be the first function to be called 
+    /// @param params the registration params
+    function registerAndPredictID(RegistrationParams memory params) public returns(uint256) {
+        i_link.approve(address(i_registrar), params.amount);
+        uint256 upkeepID = i_registrar.registerUpkeep(params);
+        if (upkeepID != 0) {
+            return upkeepID;
+        } else {
+            revert("auto-approve disabled");
+        }
+    }
+
+    /// @notice function to check if an upkeep needs to be performed
+    /// @dev if the check is completed and 
+    /// @param checkData passed in by the chainlink node/operator
+    /// @return upkeepNeeded returns if the upkeep is needed or not
     function checkUpkeep(
         bytes calldata checkData
     )
@@ -118,62 +159,58 @@ contract TradingVolumeBased is ChainlinkClient, ConfirmedOwner, Pausable, Automa
         performData = checkData;
     }
 
+    /// @notice handles the automatic execution of subscriptions
+    /// @dev additional checks are performed before the upkeep is performed
     function performUpkeep(bytes calldata /* performData */) external override {
             if ((block.timestamp - lastTimeStamp) > interval) {
             // perform swap/transaction here
+            requestInflationWei();
             executeSubscriptions();
+            lastTimeStamp = block.timestamp;
         }
 
     }
 
-    function registerAndPredictID(bytes calldata offchainConfig, bytes calldata checkData, bytes calldata encryptedEmail) public returns(uint256 upkeepID) {
-        // LINK must be approved for transfer - this can be done every time or once
-        // with an infinite approval
-        RegistrationParams memory params = RegistrationParams("new Upkeep", encryptedEmail, address(this), 100000, 0x242dEb52CD278e2a724D4e597c5cCA028f3F9989, checkData, offchainConfig, 500000000000000000);
+    /// @notice This functions gets the current inflation rate
+    /// @dev The function needs to be fired first before the inflation rate can be updated (a few seconds have to pass first the inflation rate is set)
+    function requestInflationWei() public returns (bytes32 requestId) {
+        Chainlink.Request memory req = buildChainlinkRequest(
+        bytes32(bytes(jobId)),
+        address(this),
+        this.fulfillInflationWei.selector
+        );
+        req.add("service", "truflation/current");
+        req.add("keypath", "yearOverYearInflation");
+        req.add("abi", "int256");
+        req.add("multiplier", "1000000000000000000");
+        req.add("refundTo",
+        Strings.toHexString(uint160(msg.sender), 20));
 
-        i_link.approve(address(i_registrar), params.amount);
-        upkeepID = i_registrar.registerUpkeep(params);
-        if (upkeepID != 0) {
-            return upkeepID;
-        } else {
-            revert("auto-approve disabled");
+        return sendChainlinkRequestTo(oracleId, req, fee);
+    }
+
+    /// @notice this function sets the inflation rate value
+    /// @dev This function is called inside the requestInflationWei function
+    function fulfillInflationWei(
+        bytes32 _requestId,
+        bytes memory _inflation
+        ) public recordChainlinkFulfillment(_requestId) {
+        inflationWei = toInt256(_inflation);
+    }
+
+    /// @notice converts bytes type to int256
+    /// @param _bytes the bytes input to be converted
+    /// @return value the converted int value to be returned
+    function toInt256(bytes memory _bytes) internal pure
+        returns (int256 value) {
+        assembly {
+        value := mload(add(_bytes, 0x20))
         }
     }
 
-
-  function requestInflationWei() public returns (bytes32 requestId) {
-    Chainlink.Request memory req = buildChainlinkRequest(
-      bytes32(bytes(jobId)),
-      address(this),
-      this.fulfillInflationWei.selector
-    );
-    req.add("service", "truflation/current");
-    req.add("keypath", "yearOverYearInflation");
-    req.add("abi", "int256");
-    req.add("multiplier", "1000000000000000000");
-    req.add("refundTo",
-    Strings.toHexString(uint160(msg.sender), 20));
-
-    return sendChainlinkRequestTo(oracleId, req, fee);
-  }
-
-  function fulfillInflationWei(
-    bytes32 _requestId,
-    bytes memory _inflation
-  ) public recordChainlinkFulfillment(_requestId) {
-    inflationWei = toInt256(_inflation);
-  }
-
-  function toInt256(bytes memory _bytes) internal pure
-  returns (int256 value) {
-    assembly {
-      value := mload(add(_bytes, 0x20))
-    }
-  }
-
-/**
- * Allow withdraw of Link tokens from the contract
- */
+    /**
+     * Allow withdraw of Link tokens from the contract
+     */
     function withdrawLink() public onlyOwner {
         LinkTokenInterface link = LinkTokenInterface(chainlinkTokenAddress());
         require(
@@ -182,79 +219,98 @@ contract TradingVolumeBased is ChainlinkClient, ConfirmedOwner, Pausable, Automa
         );
     }
 
-// create Subscription
-// user inputs conditions to the smart contract
-// conditions and swap params are stored in a mapping
-// aggregator address is gotten from the frontend based on the token selected
-function createBuySubscription(int256 inflationTarget, address tokenOut, uint amount) public {
-    Subscription memory newSub = Subscription(msg.sender, 1, usdtAddress, tokenOut, amount, 0, inflationTarget);
-    subscriptions[subCounter] = newSub;
-    subCounter = subCounter + 1;
-    // approve the contract to spend the given amount of tokens specified on the frontend
-}
-
-// user inputs conditions to the smart contract
-// conditions and swap params are stored in a mapping
-// aggregator address is gotten from the frontend based on the token selected
-function createSellSubscription(int256 inflationTarget, address tokenIn, uint amount) public {
-    Subscription memory newSub = Subscription(msg.sender, 2, tokenIn, usdtAddress, amount, 0, inflationTarget);
-    subscriptions[subCounter] = newSub;
-    subCounter = subCounter + 1;
-    // approve the contract to spend the given amount of tokens specified on the frontend
-}
-
-function createAddLiqSubscription(int256 inflationTarget, address token0, address token1, uint amount0, uint amount1) public {
-    Subscription memory newSub = Subscription(msg.sender, 3, token0, token1, amount0, amount1, inflationTarget);
-    subscriptions[subCounter] = newSub;
-    subCounter = subCounter + 1;
-    // approve the contract to spend the given amount of tokens specified on the frontend
-    // for both tokens
-}
-
-// execute transactions
-// checks if the conditions are met and fires the function
-function executeSubscriptions() public {
-    requestInflationWei();
-    
-    for (uint256 i = 0; i < subCounter; i++) {
-            int inflationTarget = subscriptions[i].inflationTarget;
-    uint32 transactionType = subscriptions[i].transactionType;
-    if (inflationTarget <= inflationWei && transactionType == 1) {
-        address owner_ = subscriptions[i].owner;
-        address token = subscriptions[i].tokenOut;
-        uint256 amount = subscriptions[i].amountIn;
-        // transfer from the user to the smart contract
-        IERC20 _token = IERC20(token);
-        _token.transferFrom(owner_, transactionsAdd, amount);
-        transactions.buyToken(token, amount, owner_);
-    }
-    else if (inflationTarget <= inflationWei && transactionType == 2) {
-        address owner_ = subscriptions[i].owner;
-        address token = subscriptions[i].tokenIn;
-        uint256 amount = subscriptions[i].amountIn;
-        // transfer from the user to the smarrt contract
-        IERC20 _token = IERC20(token);
-        _token.transferFrom(owner_, transactionsAdd, amount);
-        transactions.sellToken(token, amount, owner_);
+    // function to pause the contract
+    function pause() public onlyOwner {
+        _pause();
     }
 
-    else if (inflationTarget <= inflationWei && transactionType == 3) {
-        address owner_ = subscriptions[i].owner;
-        address token0 = subscriptions[i].tokenIn;
-        uint256 amount0 = subscriptions[i].amountIn;
-        address token1 = subscriptions[i].tokenOut;
-        uint256 amount1 = subscriptions[i].amountOut;
 
-        IERC20 _token0 = IERC20(token0);
-        _token0.transferFrom(owner_, transactionsAdd, amount0);
 
-        IERC20 _token1 = IERC20(token0);
-        _token1.transferFrom(owner_, transactionsAdd, amount1);
-
-        transactions.mintNewPosition(token0, token1, amount0, amount1, owner_);
-    }
+    /// @notice function to create a subscription to buy a token
+    /// @dev sets the neccesary subscription params, the user needs to approve the transactions contract first on the frontend to spend the specified amounts of tokens
+    /// @param inflationTarget the inflation rate that has to be satisfied for subscription execution
+    /// @param tokenOut the token that the user wants to buy
+    /// @param amount the amount worth of tokens the user wants to buy in USDT
+    function createBuySubscription(int256 inflationTarget, address tokenOut, uint amount) public {
+        Subscription memory newSub = Subscription(msg.sender, 1, usdtAddress, tokenOut, amount, 0, inflationTarget, true);
+        subscriptions[subCounter] = newSub;
+        userSubscriptions[msg.sender].push(newSub);
+        subCounter = subCounter + 1;
+        // approve the contract to spend the given amount of tokens specified on the frontend
     }
 
-}
+    /// @notice function to create a subscription to sell a token
+    /// @dev sets the neccesary subscription params, the user needs to approve the transactions contract first on the frontend to spend the specified amounts of tokens
+    /// @param inflationTarget the inflation rate that has to be satisfied for subscription execution
+    /// @param tokenIn the token that the user wants to sell
+    /// @param amount the amount worth of tokens the user wants to sell
+    function createSellSubscription(int256 inflationTarget, address tokenIn, uint amount) public {
+        Subscription memory newSub = Subscription(msg.sender, 2, tokenIn, usdtAddress, amount, 0, inflationTarget, true);
+        subscriptions[subCounter] = newSub;
+        userSubscriptions[msg.sender].push(newSub);
+        subCounter = subCounter + 1;
+        // approve the contract to spend the given amount of tokens specified on the frontend
+    }
+
+    /// @notice function to create a subscription for adding liquidity
+    /// @dev sets the neccesary subscription params, the user needs to approve the transactions contract first on the frontend to spend the specified amount of tokens
+    /// @param inflationTarget the inflation rate that has to be satisfied for subscription execution
+    /// @param token0 the token that the user wants to add liquidity for
+    /// @param amount0 the amount worth of tokens the user wants to add as liquidity
+    /// @param token1 the token that the user wants to add liquidity for
+    /// @param amount1 the amount worth of tokens the user wants to add as liquidity
+    function createAddLiqSubscription(int256 inflationTarget, address token0, address token1, uint amount0, uint amount1) public {
+        Subscription memory newSub = Subscription(msg.sender, 3, token0, token1, amount0, amount1, inflationTarget, true);
+        subscriptions[subCounter] = newSub;
+        userSubscriptions[msg.sender].push(newSub);
+        subCounter = subCounter + 1;
+        // approve the contract to spend the given amount of tokens specified on the frontend
+        // for both tokens
+    }
+
+    /// @notice function to get the subscriptions of a user
+    /// @param user the users' address
+    /// @return userSubscriptions all subscriptions of the user
+    function getTransactions(address user) public view returns(Subscription[] memory) {
+        return userSubscriptions[user];
+    }
+
+    /// @notice function to delete a subscription
+    /// @param i the index of the subscription to be deleted
+    function deleteSubscription(uint i) public {
+        require(subscriptions[i].owner == msg.sender);
+        subscriptions[i].active = false;
+    }
+
+    /// @notice execute transactions
+    /// @dev checks if the conditions are met and fires the function
+    function executeSubscriptions() public {
+        
+        for (uint256 i = 0; i < subCounter; i++) {
+
+        if (subscriptions[i].inflationTarget <= inflationWei && subscriptions[i].transactionType == 1 && subscriptions[i].active == true) {
+            // transfer from the user to the smart contract
+            IERC20 _token = IERC20(usdtAddress);
+            _token.transferFrom(subscriptions[i].owner, transactionsAdd, subscriptions[i].amountIn);
+            transactions.buyToken(subscriptions[i].tokenOut, subscriptions[i].amountIn, subscriptions[i].owner);
+        }
+        else if (subscriptions[i].inflationTarget <= inflationWei && subscriptions[i].transactionType == 2 && subscriptions[i].active == true) {
+            // transfer from the user to the smarrt contract
+            IERC20 _token = IERC20(subscriptions[i].tokenIn);
+            _token.transferFrom(subscriptions[i].owner, transactionsAdd, subscriptions[i].amountIn);
+            transactions.sellToken(subscriptions[i].tokenIn, subscriptions[i].amountIn, subscriptions[i].owner);
+        }
+        else if (subscriptions[i].inflationTarget <= inflationWei && subscriptions[i].transactionType == 3 && subscriptions[i].active == true) {
+            IERC20 _token0 = IERC20(subscriptions[i].tokenIn);
+            _token0.transferFrom(subscriptions[i].owner, transactionsAdd, subscriptions[i].amountIn);
+
+            IERC20 _token1 = IERC20(subscriptions[i].tokenOut);
+            _token1.transferFrom(subscriptions[i].owner, transactionsAdd, subscriptions[i].amountOut);
+
+            transactions.mintNewPosition(subscriptions[i].tokenIn, subscriptions[i].tokenOut, subscriptions[i].amountIn, subscriptions[i].amountOut, subscriptions[i].owner);
+        }
+        }
+
+    }
 
 }
