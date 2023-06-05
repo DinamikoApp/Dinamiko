@@ -110,11 +110,11 @@ contract InflationRateBased is ChainlinkClient, ConfirmedOwner, Pausable, Automa
     /// @param updateInterval time interval for checking upkeep
     /// @param transactionsAddress address of transactions contract
     /// @param _usdtAddress the usdt token address
-    constructor(LinkTokenInterface link, KeeperRegistrarInterface registrar, uint updateInterval, address transactionsAddress, address _usdtAddress) ConfirmedOwner(msg.sender) {
-        setChainlinkToken(0x326C977E6efc84E512bB9C30f76E30c160eD06FB);
-        oracleId = 0x6D141Cf6C43f7eABF94E288f5aa3f23357278499;
-        jobId = "d220e5e687884462909a03021385b7ae";
-        fee = (5 * LINK_DIVISIBILITY) / 10; // 0,5 * 10**18 (Varies by network and job)
+    constructor(uint _fee, string memory _jobId, address _oracleId, address chainLinkToken, LinkTokenInterface link, KeeperRegistrarInterface registrar, uint updateInterval, address transactionsAddress, address _usdtAddress) ConfirmedOwner(msg.sender) {
+        setChainlinkToken(chainLinkToken);
+        oracleId = _oracleId;
+        jobId =  _jobId;// "d220e5e687884462909a03021385b7ae"
+        fee = (_fee * LINK_DIVISIBILITY) / 10; // 0,5 * 10**18 (Varies by network and job)
 
         i_link = link;
         i_registrar = registrar;
