@@ -5,26 +5,8 @@ import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/interfaces/LinkT
 import "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
-
-/// @title Transactions
-/// @author NatX
-/// @notice Transactions contract interface
-/// @dev Interface for transactions contract that performs transactions with Uniswap V3 integration
-interface Transactions {
-    function buyToken(address assetToken, uint amount, address receiver) external returns(uint);
-    function sellToken(address assetToken, uint amount, address receiver) external returns(uint);
-    function mintNewPosition(address token0, address token1, uint _amount0, uint _amount1, address receiver) external returns(uint256, uint128, uint256, uint256);
-}
-
-/// @title IERC20
-/// @author NatX
-/// @notice ERC20 token interface
-/// @dev Interface for ERC20 token functions
-interface IERC20 {
-    function transfer(address recipient, uint256 amount) external returns (bool);
-    function approve(address spender, uint256 amount) external returns (bool);
-    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
-}
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "../interfaces/ITransactions.sol";
 
 /// @title KeeperRegistrarInterface
 /// @author NatX
