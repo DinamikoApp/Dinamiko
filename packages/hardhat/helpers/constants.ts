@@ -46,3 +46,10 @@ export const DEFAULT_NAMED_ACCOUNTS = {
     default: 0,
   },
 };
+
+export const getDeployIds = (MARKET_NAME: string) => {
+  return {
+    TESTNET_TOKEN_PREFIX: `-TestnetMintableERC20-${MARKET_NAME}`,
+    TESTNET_PRICE_AGGR_PREFIX: `-TestnetPriceAggregator-${MARKET_NAME}`,
+  };
+};
