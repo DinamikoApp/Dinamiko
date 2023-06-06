@@ -1,5 +1,5 @@
 import { ZERO_ADDRESS } from "../constants";
-import { getAddress, isAddress } from "ethers/lib/utils";
+import { getAddress, isAddress, formatBytes32String } from "ethers/lib/utils";
 import { tEthereumAddress } from "../types";
 import hre from "hardhat";
 
@@ -12,4 +12,7 @@ export const isLocalDevelopmentNetwork = (networkName: string) =>
   networkName == "LOCALHOST" || networkName == "HARDHAT";
 
 export const getNetworkName = () => hre.network.name.toUpperCase();
+
 export const getChainId = () => hre.network.config.chainId;
+
+export const convertStringToBytes32 = (text: string) => formatBytes32String(text);
