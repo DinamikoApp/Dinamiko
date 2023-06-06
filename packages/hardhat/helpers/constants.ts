@@ -27,6 +27,13 @@ export const MOCK_CHAINLINK_TOKEN_TO_USD_AGGREGATORS_PRICES: { [key: string]: st
   USD: parseUnits("1", 8).toString(),
 };
 
+export const MOCK_CHAINLINK_DATA_FEEDS_AGGREGATORS: { [key: string]: string } = {
+  "30DayETHAPR": parseUnits("2000", 8).toString(),
+  "90DayETHAPR": parseUnits("581273", 8).toString(),
+  "BTCIRBC1-Day": parseUnits("1900", 8).toString(),
+  "BTCIRBC1-Week": parseUnits("7105", 8).toString(),
+};
+
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 export const ONE_ADDRESS = "0x0000000000000000000000000000000000000001";
 
@@ -51,5 +58,6 @@ export const getDeployIds = (MARKET_NAME: string) => {
   return {
     TESTNET_TOKEN_PREFIX: `-TestnetMintableERC20-${MARKET_NAME}`,
     TESTNET_PRICE_AGGR_PREFIX: `-TestnetPriceAggregator-${MARKET_NAME}`,
+    TESTNET_DATA_AGGR_PREFIX: `-TestnetDataAggregator-${MARKET_NAME}`,
   };
 };

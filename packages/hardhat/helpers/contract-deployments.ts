@@ -1,4 +1,4 @@
-import { MockV3Aggregator, Token, LinkToken, DinamikoPriceOracle } from "../typechain-types";
+import { MockV3Aggregator, Token, LinkToken, DinamikoPriceOracle, DinamikoFeedOracle } from "../typechain-types";
 import { ZERO_ADDRESS, getDeployIds } from "./constants";
 import { deployContract } from "./utilities/tx";
 import { getNetworkName } from "./utilities/utils";
@@ -10,6 +10,16 @@ export const deployMockV3Aggregator = async (symbol: string, value: string, test
     ["18", value],
     undefined,
     testnet ? `${TESTNET_PRICE_AGGR_PREFIX}${symbol}USD` : id,
+  );
+};
+
+export const deployDataFeedAggregator = async (key: string, value: string, testnet = true, id = "") => {
+  const { TESTNET_DATA_AGGR_PREFIX } = getDeployIds(getNetworkName());
+  await deployContract<MockV3Aggregator>(
+    "MockV3Aggregator",
+    ["8", value],
+    undefined,
+    testnet ? `${TESTNET_DATA_AGGR_PREFIX}-${key}` : id,
   );
 };
 
@@ -25,4 +35,8 @@ export const deployLinkToken = async () => {
 
 export const deployDinamikoPriceOracle = async (assets: string[], sources: string[]) => {
   await deployContract<DinamikoPriceOracle>("DinamikoPriceOracle", [assets, sources, ZERO_ADDRESS, ZERO_ADDRESS, "8"]);
+};
+
+export const deployDinamikoFeedsOracle = async (ids: string[], sources: string[]) => {
+  await deployContract<DinamikoFeedOracle>("DinamikoFeedOracle", [ids, sources, ZERO_ADDRESS]);
 };

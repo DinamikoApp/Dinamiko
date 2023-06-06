@@ -8,29 +8,9 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "../interfaces/ITransactions.sol";
 
-/// @title Transactions
-/// @author NatX
-/// @notice Transactions contract interface
-/// @dev Interface for transactions contract that performs transactions with Uniswap V3 integration
-interface Transactions {
-    /// function to buy tokens
-    function buyToken(address assetToken, uint amount, address receiver) external returns(uint);
-    /// function to sell contracts
-    function sellToken(address assetToken, uint amount, address receiver) external returns(uint);
-    /// function to add liquidity
-    function mintNewPosition(address token0, address token1, uint _amount0, uint _amount1, address receiver) external returns(uint256, uint128, uint256, uint256);
-}
-
-/// @title IERC20
-/// @author NatX
-/// @notice ERC20 token interface
-/// @dev Interface for ERC20 token functions
-interface IERC20 {
-    function transfer(address recipient, uint256 amount) external returns (bool);
-    function approve(address spender, uint256 amount) external returns (bool);
-    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
-}
 
 /// @title KeeperRegistrarInterface
 /// @author NatX
@@ -110,11 +90,11 @@ contract InflationRateBased is ChainlinkClient, ConfirmedOwner, Pausable, Automa
     /// @param updateInterval time interval for checking upkeep
     /// @param transactionsAddress address of transactions contract
     /// @param _usdtAddress the usdt token address
-    constructor(LinkTokenInterface link, KeeperRegistrarInterface registrar, uint updateInterval, address transactionsAddress, address _usdtAddress) ConfirmedOwner(msg.sender) {
-        setChainlinkToken(0x326C977E6efc84E512bB9C30f76E30c160eD06FB);
-        oracleId = 0x6D141Cf6C43f7eABF94E288f5aa3f23357278499;
-        jobId = "d220e5e687884462909a03021385b7ae";
-        fee = (5 * LINK_DIVISIBILITY) / 10; // 0,5 * 10**18 (Varies by network and job)
+    constructor(uint _fee, string memory _jobId, address _oracleId, LinkTokenInterface link, KeeperRegistrarInterface registrar, uint updateInterval, address transactionsAddress, address _usdtAddress) ConfirmedOwner(msg.sender) {
+        setChainlinkToken(link);
+        oracleId = _oracleId;
+        jobId =  _jobId;// "d220e5e687884462909a03021385b7ae"
+        fee = (_fee * LINK_DIVISIBILITY) / 10; // 0,5 * 10**18 (Varies by network and job)
 
         i_link = link;
         i_registrar = registrar;
