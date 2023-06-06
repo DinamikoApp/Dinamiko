@@ -16,3 +16,5 @@ export const getNetworkName = () => hre.network.name.toUpperCase();
 export const getChainId = () => hre.network.config.chainId;
 
 export const convertStringToBytes32 = (text: string) => formatBytes32String(text);
+
+export const isForkedNetwork = async () => (await hre.ethers.provider.getBlock("latest")).number > 100000;
