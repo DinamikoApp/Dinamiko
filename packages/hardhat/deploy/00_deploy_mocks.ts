@@ -1,8 +1,17 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { getNetworkName, isLocalDevelopmentNetwork } from "../helpers/utilities/utils";
-import { MOCK_CHAINLINK_TOKEN_TO_USD_AGGREGATORS_PRICES, MOCK_TOKEN_LIST } from "../helpers/constants";
-import { deployLinkToken, deployMockToken, deployMockV3Aggregator } from "../helpers/contract-deployments";
+import {
+  MOCK_CHAINLINK_TOKEN_TO_USD_AGGREGATORS_PRICES,
+  MOCK_TOKEN_LIST,
+  MOCK_CHAINLINK_DATA_FEEDS_AGGREGATORS,
+} from "../helpers/constants";
+import {
+  deployLinkToken,
+  deployMockToken,
+  deployMockV3Aggregator,
+  deployDataFeedAggregator,
+} from "../helpers/contract-deployments";
 
 /**
  * Deploys a contract named "YourContract" using the deployer account and
@@ -28,6 +37,12 @@ const deployMocks: DeployFunction = async function ({ deployments }: HardhatRunt
 
     for (const key in MOCK_CHAINLINK_TOKEN_TO_USD_AGGREGATORS_PRICES) {
       await deployMockV3Aggregator(key, MOCK_CHAINLINK_TOKEN_TO_USD_AGGREGATORS_PRICES[key]);
+    }
+
+    log("Done \n \n");
+    log("Deploying Mock Data Feed Aggregators ...");
+    for (const key in MOCK_CHAINLINK_DATA_FEEDS_AGGREGATORS) {
+      await deployDataFeedAggregator(key, MOCK_CHAINLINK_DATA_FEEDS_AGGREGATORS[key]);
     }
   }
 };

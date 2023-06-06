@@ -2,7 +2,11 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { getNetworkName } from "../helpers/utilities/utils";
 import { deployDinamikoPriceOracle } from "../helpers/contract-deployments";
-import { getChainlinkOracles, getSupportedTokens, mapTokenAddressToPriceFeeds } from "../helpers/deploy-config-helper";
+import {
+  getChainlinkPriceOracles,
+  getSupportedTokens,
+  mapTokenAddressToPriceFeeds,
+} from "../helpers/deploy-config-helper";
 
 /**
  * Deploys a contract named "YourContract" using the deployer account and
@@ -14,7 +18,7 @@ const deployDinamikoPriceOracleContract: DeployFunction = async function ({ depl
   const { log } = deployments;
   const networkName = getNetworkName();
   const supportedTokens = await getSupportedTokens(networkName);
-  const supportedTokensPriceFeeds = await getChainlinkOracles(networkName);
+  const supportedTokensPriceFeeds = await getChainlinkPriceOracles(networkName);
   const { assets, sources } = mapTokenAddressToPriceFeeds(supportedTokens, supportedTokensPriceFeeds, networkName);
 
   log("Deploying Oracle Tokens...");
