@@ -10,7 +10,7 @@ import {
   eFantomNetwork,
   eOptimismNetwork,
 } from "./types";
-import { HardhatNetworkForkingUserConfig } from "hardhat/types";
+import { HardhatNetworkForkingUserConfig, HardhatNetworkUserConfig, HttpNetworkUserConfig } from "hardhat/types";
 
 export const ALCHEMY_KEY = process.env.ALCHEMY_KEY || "";
 export const FORK = (process.env.FORK || "") as eNetwork;
@@ -18,10 +18,6 @@ export const FORK_BLOCK_NUMBER = process.env.FORK_BLOCK_NUMBER ? parseInt(proces
 export const DEFAULT_BLOCK_GAS_LIMIT = 12450000;
 const DEPLOYER =
   process.env.DEPLOYER_PRIVATE_KEY ?? "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
-
-const GAS_PRICE_PER_NET: iParamsPerNetwork<string | number> = {
-  [eArbitrumNetwork.goerliNitro]: 100000001,
-};
 
 export const getAlchemyKey = (net: eNetwork) => {
   switch (net) {
@@ -82,14 +78,13 @@ export const LIVE_NETWORKS: iParamsPerNetwork<boolean> = {
   [eOptimismNetwork.main]: true,
 };
 
-export const getCommonNetworkConfig = (networkName: eNetwork, chainId?: number) => {
-  console.log(process.env.OTHER_PRIVATE_KEYS);
+export const getCommonNetworkConfig = (networkName: eNetwork, chainId?: number): HttpNetworkUserConfig => {
+  const OTHER_PRIVATE_KEYS = JSON.parse(process.env.OTHER_PRIVATE_KEYS || "[]");
   return {
     url: NETWORKS_RPC_URL[networkName] || "",
-    blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
     chainId,
-    gasPrice: GAS_PRICE_PER_NET[networkName] || undefined,
-    accounts: [DEPLOYER],
+    gasPrice: "auto",
+    accounts: [DEPLOYER, ...OTHER_PRIVATE_KEYS],
     live: LIVE_NETWORKS[networkName] || false,
   };
 };
@@ -107,9 +102,9 @@ export const buildForkConfig = (): HardhatNetworkForkingUserConfig | undefined =
   return forkMode;
 };
 
-export const hardhatNetworkSettings = {
+export const hardhatNetworkSettings: HardhatNetworkUserConfig = {
   gasPrice: "auto",
-  initialBaseFeePerGas: "0",
+  initialBaseFeePerGas: 0,
   blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
   throwOnTransactionFailures: true,
   throwOnCallFailures: true,
@@ -118,7 +113,6 @@ export const hardhatNetworkSettings = {
   saveDeployments: true,
   allowUnlimitedContractSize: true,
   tags: ["local"],
-  accounts: FORK && [DEPLOYER],
 };
 
 export const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY || "";
