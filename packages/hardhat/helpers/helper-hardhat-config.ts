@@ -1,66 +1,47 @@
-const networkConfig = {
+// Rule number one
+
+export const networkConfig = {
   31337: {
     name: "hardhat",
     subscriptionId: "588",
     callbackGasLimit: 500000,
     keepersUpdateInterval: "30",
-    dataFeeds: {},
-  },
-  5: {
-    name: "goerli",
-    subscriptionId: "1884",
-    keepersUpdateInterval: "30",
-    callbackGasLimit: "500000",
-    dataFeeds: {
-      ethUsd: {
-        name: "ethUsd",
-        address: "0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e",
-        priceConsumerV3Address: "0xa2997F68ADa6E91a54040E98aecc2c612892EaCB",
-      },
-
-      btcUsdPriceFeed: {
-        name: "btcUsd",
-        address: "0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43",
-        priceConsumerV3Address: "0x11bFA1d3020e58Ed0f7Ef93d012831FeFFdac790",
-      },
-
-      daiUsdPriceFeed: {
-        name: "daiUsd",
-        address: "0x14866185B1962B63C3Ea9E03Bc1da838bab34C19",
-        priceConsumerV3Address: "0x74a7f3ecb209d3353E61D24bC6Fa4Ab5B02C0375",
-      },
-    },
   },
   11155111: {
     name: "sepolia",
     subscriptionId: "1884",
     keepersUpdateInterval: "30",
     callbackGasLimit: "500000",
+    supportedToken: {
+      WETH: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      DAI: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+      USDC: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+      USDT: "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+      WBTC: "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
+      SUSHI: "0x0165878A594ca255338adfa4d48449f69242Eb8F",
+      AAVE: "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+      CRV: "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
+    },
+    priceFeeds: {
+      WETHUSD: "0x8A791620dd6260079BF849Dc5567aDC3F2FdC318",
+      ETHUSD: "0x610178dA211FEF7D417bC0e6FeD39F05609AD788",
+      DAIUSD: "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
+      USDCUSD: "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+      USDTUSD: "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82",
+      WBTCUSD: "0x9A676e781A523b5d0C0e43731313A708CB607508",
+      LINKUSD: "0x0B306BF915C4d645ff596e518fAf3F9669b97016",
+      SUSHIUSD: "0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1",
+      AAVEUSD: "0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE",
+      CRVUSD: "0x68B1D87F95878fE05B998F19b66F4baba5De1aed",
+      USDUSD: "0x3Aa5ebB10DC797CAC828524e59A333d0A371443c",
+    },
     dataFeeds: {
-      ethUsd: {
-        name: "ethUsd",
-        address: "0x694AA1769357215DE4FAC081bf1f309aDC325306",
-        priceConsumerV3Address: "0xa2997F68ADa6E91a54040E98aecc2c612892EaCB",
-      },
-
-      btcUsdPriceFeed: {
-        name: "btcUsd",
-        address: "0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43",
-        priceConsumerV3Address: "0x11bFA1d3020e58Ed0f7Ef93d012831FeFFdac790",
-      },
-
-      daiUsdPriceFeed: {
-        name: "daiUsd",
-        address: "0x14866185B1962B63C3Ea9E03Bc1da838bab34C19",
-        priceConsumerV3Address: "0x74a7f3ecb209d3353E61D24bC6Fa4Ab5B02C0375",
-      },
+      "ETHAPR30-Day": "0x59b670e9fA9D0A427751Af201D676719a970857b",
+      "ETHAPR90-Day": "0x4ed7c70F96B99c776995fB64377f0d4aB3B0e1C1",
+      "BTCIRBC1-Day": "0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44",
+      "BTCIRBC1-Week": "0xa85233C63b9Ee964Add6F2cffe00Fd84eb32338f",
     },
   },
 };
 
-const developmentChain = ["hardhat", "localhost"];
-
-module.exports = {
-  networkConfig,
-  developmentChain,
-};
+export const developmentChain = ["hardhat", "localhost"];

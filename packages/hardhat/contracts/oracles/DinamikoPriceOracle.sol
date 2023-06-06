@@ -46,11 +46,6 @@ contract DinamikoPriceOracle is IDinamikoPriceOracle, Ownable {
     emit BaseCurrencySet(baseCurrency, baseCurrencyUnit);
   }
 
-  /// @notice function to get token price
-  /// @dev Takes in a token and returns the correspending price
-  /// @param token The token
-  /// @return int
-
   /// @inheritdoc IDinamikoPriceOracle
   function setAssetSources(address[] calldata assets, address[] calldata sources) external override onlyOwner {
     _setAssetsSources(assets, sources);
