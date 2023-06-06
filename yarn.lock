@@ -1902,6 +1902,7 @@ __metadata:
     "@types/qrcode": ^1
     "@typescript-eslint/eslint-plugin": latest
     "@typescript-eslint/parser": latest
+    "@uniswap/v3-periphery": ^1.4.3
     chai: ^4.3.6
     dotenv: ^16.0.3
     envfile: ^6.18.0
@@ -11953,9 +11954,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "se-2@workspace:."
   dependencies:
-    "@uniswap/v3-periphery": ^1.4.3
     dotenv: ^16.0.3
-    ethers: ^5.7.2
     husky: ^8.0.1
     lint-staged: ^13.0.3
   languageName: unknown
