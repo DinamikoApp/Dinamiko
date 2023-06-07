@@ -94,3 +94,18 @@ export interface LinkReference {
 export interface Libraries {
   [key: string]: string;
 }
+
+export interface PoolData {
+  tickSpacing: number;
+  fee: number;
+  liquidity: number;
+  sqrtPriceX96: any; // replace "any" with the actual type
+  tick: any; // replace "any" with the actual type
+}
+
+export interface PoolContract {
+  tickSpacing(): Promise<number>;
+  fee(): Promise<number>;
+  liquidity(): Promise<number>;
+  slot0(): Promise<any[]>; // replace "any" with the actual type
+}
