@@ -54,13 +54,12 @@ export const appendJsonToFile = async (TARGET_DIR: string, data: any): Promise<v
 
 export const encodePriceSqrt = (reserve1: number | string, reserve0: number | string): BigNumber => {
   bn.config({ EXPONENTIAL_AT: 999999, DECIMAL_PLACES: 40 });
-  const sqrtValue = new bn(reserve1.toString())
-    .div(reserve0.toString())
-    .sqrt()
-    .multipliedBy(new bn(2).pow(96))
-    .integerValue(3)
-    .toNumber()
-    .toString();
-  console.log(sqrtValue);
-  return BigNumber.from(sqrtValue);
+  return BigNumber.from(
+    new bn(reserve1.toString())
+      .div(reserve0.toString())
+      .sqrt()
+      .multipliedBy(new bn(2).pow(96))
+      .integerValue(3)
+      .toString(),
+  );
 };
