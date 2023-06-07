@@ -1,7 +1,7 @@
 import Head from "next/head";
 import Image from "next/image";
+import Link from "next/link";
 import type { NextPage } from "next";
-import Newsletter from "~~/components/Newsletter";
 
 const Home: NextPage = () => {
   return (
@@ -21,8 +21,12 @@ const Home: NextPage = () => {
               Using both on-chain and off-chain data to perform transactions
             </p>
             <div className="flex space-x-4 mb-8 text">
-              <button className="bg-gradient text-white py-2 px-4 rounded ">Get started</button>
-              <button className=" text-white py-2 px-4 rounded border-2 border-white">Connect Wallet</button>
+              <Link href="createSubscription" legacyBehavior>
+                <a className="bg-gradient text-white py-2 px-4 rounded cursor-pointer">Get started</a>
+              </Link>
+              <Link href="/" legacyBehavior>
+                <a className="text-white py-2 px-4 rounded border-2 border-white cursor-pointer">Connect Wallet</a>
+              </Link>
             </div>
           </div>
 
@@ -72,8 +76,6 @@ const Home: NextPage = () => {
           </div>
         </div>
       </section>
-
-      <Newsletter />
     </>
   );
 };
