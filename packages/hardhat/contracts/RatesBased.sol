@@ -9,7 +9,7 @@ import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./interfaces/ITransactions.sol";
-import "./interfaces/IDinamikoPriceOracle.sol";
+import "./interfaces/IDinamikoFeedOracle.sol";
 
 /// @title KeeperRegistrarInterface
 /// @author NatX
@@ -33,11 +33,11 @@ struct RegistrationParams {
     uint96 amount;
 }
 
-/// @title PriceBasedSubscriptions
+/// @title RatesBasedSubscriptions
 /// @author NatX
-/// @notice The contract handles the creation of price based subscriptions and executing of these type of subscriptions
+/// @notice The contract handles the creation of rates based subscriptions (like ETHAPR, BITCOIN interest rates) and executing of these type of subscriptions
 /// @dev The contract utilizes the Uniswap V3 contracts to buy tokens, sell tokens and add liquidity
-contract priceBasedSubscriptions is ConfirmedOwner, Pausable, AutomationCompatibleInterface  {
+contract RateBasedSubscriptions is ConfirmedOwner, Pausable, AutomationCompatibleInterface  {
 
     LinkTokenInterface public immutable i_link;
     KeeperRegistrarInterface public immutable i_registrar;
@@ -50,12 +50,13 @@ contract priceBasedSubscriptions is ConfirmedOwner, Pausable, AutomationCompatib
         address tokenOut; // the token that is to be bought when buying tokens OR token2 when adding liquidity OR token to be paid to the user when selling tokens (default usdt)
         uint256 amountIn; // the amount of usdt that is used to purchase tokens when buying tokens OR amount token1 to be added as liquidity when adding liquidity OR amount of tokens to be sold when selling a token
         uint256 amountOut; // the amount of token2 to be added as liquidity
-        uint priceTarget; // the price of the token that has to be met for the subscription to be executed
+        uint rateTarget; // the value of the rate that has to be met for the subscription to be executed
         bool active; // the status of the subscription, true for active and false for deleted
+        bytes32 feedAddress; // the converted bytes of the aggregator address
     }
 
     // the the price feed oracle
-    IDinamikoPriceOracle priceOracle;
+    IDinamikoFeedOracle feedOracle;
 
     // subscription counter, keeps track of the number of subscriptions recorded
     uint subCounter;
@@ -98,7 +99,7 @@ contract priceBasedSubscriptions is ConfirmedOwner, Pausable, AutomationCompatib
         transactions = Transactions(transactionsAddress);
         transactionsAdd = transactionsAddress;
 
-        priceOracle = IDinamikoPriceOracle(oracleAddress);
+        feedOracle = IDinamikoFeedOracle(oracleAddress);
         usdtAddress = _usdtAddress;
     }
 
@@ -150,11 +151,11 @@ contract priceBasedSubscriptions is ConfirmedOwner, Pausable, AutomationCompatib
 
     /// @notice function to create a subscription to buy a token
     /// @dev sets the neccesary subscription params, the user needs to approve the transactions contract first on the frontend to spend the specified amounts of tokens
-    /// @param priceTarget the price of the token for subscription execution
+    /// @param rateTarget the rate target for subscription execution to be carried out
     /// @param tokenOut the token that the user wants to buy
     /// @param amount the amount worth of tokens the user wants to buy in USDT
-    function createBuySubscription(uint priceTarget, address tokenOut, uint amount) public {
-        Subscription memory newSub = Subscription(msg.sender, 1, usdtAddress, tokenOut, amount, 0, priceTarget, true);
+    function createBuySubscription(uint rateTarget, address tokenOut, uint amount, bytes32 rateAggregator) public {
+        Subscription memory newSub = Subscription(msg.sender, 1, usdtAddress, tokenOut, amount, 0, rateTarget, true);
         subscriptions[subCounter] = newSub;
         userSubscriptions[msg.sender].push(newSub);
         // approve the contract to spend the given amount of tokens specified on the frontend
@@ -163,11 +164,11 @@ contract priceBasedSubscriptions is ConfirmedOwner, Pausable, AutomationCompatib
 
     /// @notice function to create a subscription to buy a token
     /// @dev sets the neccesary subscription params, the user needs to approve the transactions contract first on the frontend to spend the specified amounts of tokens
-    /// @param priceTarget the price of the token for subscription execution
+    /// @param rateTarget the price of the token for subscription execution
     /// @param tokenIn the token that the user wants to sell
     /// @param amount the amount worth of tokens the user wants to buy in USDT
-    function createSellSubscription(int priceTarget, address tokenIn, uint amount, address aggregatorAddress) public {
-        Subscription memory newSub = Subscription(msg.sender, 2, tokenIn, usdtAddress, amount, 0, priceTarget, aggregatorAddress, true);
+    function createSellSubscription(uint rateTarget, address tokenIn, uint amount, bytes32 aggregatorAddress) public {
+        Subscription memory newSub = Subscription(msg.sender, 2, tokenIn, usdtAddress, amount, 0, rateTarget, aggregatorAddress, true);
         subscriptions[subCounter] = newSub;
         userSubscriptions[msg.sender].push(newSub);
         // approve the contract to spend the given amount of tokens specified on the frontend
@@ -194,7 +195,7 @@ function executeSubscriptions() public {
     uint256 _subCounter = subCounter + 1;
 
     for (uint i = 0; i < _subCounter; i++) {
-        uint currentPrice = priceOracle.getAssetPrice(subscriptions[i].tokenOut);
+        uint currentRate = feedOracle.getFeedData(subscriptions[i].feedAddress);
         if (subscriptions[i].priceTarget <= currentPrice && subscriptions[i].transactionType == 1 && subscriptions[i].active == true) {
             // transfer from the user to the smart contract
             IERC20 _token = IERC20(usdtAddress);
@@ -202,16 +203,48 @@ function executeSubscriptions() public {
             transactions.buyToken(subscriptions[i].tokenOut, subscriptions[i].amountIn, subscriptions[i].owner);
         }
         else if (subscriptions[i].priceTarget <= currentPrice && subscriptions[i].transactionType == 2 && subscriptions[i].active == true) {
-            address owner_ = subscriptions[i].owner;
-            address token = subscriptions[i].tokenIn;
-            uint256 amount = subscriptions[i].amountIn;
             // transfer from the user to the smart contract
             IERC20 _token = IERC20(subscriptions[i].tokenIn);
             _token.transferFrom(subscriptions[i].owner, transactionsAdd, subscriptions[i].amountIn);
-            transactions.sellToken(token, subscriptions[i].amountIn, subscriptions[i].owner);
+            transactions.sellToken(subscriptions[i].tokenIn, subscriptions[i].amountIn, subscriptions[i].owner);
         }
     }
 
 }
 
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
