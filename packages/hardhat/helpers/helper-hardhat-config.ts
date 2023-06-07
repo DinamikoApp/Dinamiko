@@ -16,8 +16,9 @@ export const ALCHEMY_KEY = process.env.ALCHEMY_KEY || "";
 export const FORK = (process.env.FORK || "") as eNetwork;
 export const FORK_BLOCK_NUMBER = process.env.FORK_BLOCK_NUMBER ? parseInt(process.env.FORK_BLOCK_NUMBER) : 0;
 export const DEFAULT_BLOCK_GAS_LIMIT = 12450000;
-const DEPLOYER =
-  process.env.DEPLOYER_PRIVATE_KEY ?? "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
+
+const MNEMONIC_PATH = "m/44'/60'/0'/0";
+const MNEMONIC = process.env.MNEMONIC || "";
 
 export const getAlchemyKey = (net: eNetwork) => {
   switch (net) {
@@ -79,12 +80,16 @@ export const LIVE_NETWORKS: iParamsPerNetwork<boolean> = {
 };
 
 export const getCommonNetworkConfig = (networkName: eNetwork, chainId?: number): HttpNetworkUserConfig => {
-  const OTHER_PRIVATE_KEYS = JSON.parse(process.env.OTHER_PRIVATE_KEYS || "[]");
   return {
     url: NETWORKS_RPC_URL[networkName] || "",
     chainId,
     gasPrice: "auto",
-    accounts: [DEPLOYER, ...OTHER_PRIVATE_KEYS],
+    accounts: {
+      mnemonic: MNEMONIC,
+      path: MNEMONIC_PATH,
+      initialIndex: 0,
+      count: 10,
+    },
     live: LIVE_NETWORKS[networkName] || false,
   };
 };
@@ -113,6 +118,15 @@ export const hardhatNetworkSettings: HardhatNetworkUserConfig = {
   saveDeployments: true,
   allowUnlimitedContractSize: true,
   tags: ["local"],
+  accounts:
+    FORK && !!MNEMONIC
+      ? {
+          mnemonic: MNEMONIC,
+          path: MNEMONIC_PATH,
+          initialIndex: 0,
+          count: 10,
+        }
+      : undefined,
 };
 
 export const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY || "";
