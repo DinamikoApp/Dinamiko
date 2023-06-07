@@ -81,3 +81,16 @@ export enum EthereumNetworkNames {
 export type iParamsPerNetwork<T> = {
   [k in eNetwork]?: T;
 };
+
+export interface Artifacts {
+  [key: string]: any;
+}
+
+export interface LinkReference {
+  length: number;
+  start: number;
+}
+
+export interface Libraries {
+  [key: string]: string;
+}
