@@ -1,44 +1,54 @@
-import Head from "next/head";
+import React, { useState } from "react";
 import ActionButtons from "../components/ActionButtons";
 import type { NextPage } from "next";
 
-const assetSelection: NextPage = () => {
+const ConditionSelection: NextPage = () => {
+  const [selectedCondition, setSelectedCondition] = useState<string | null>(null);
+
+  const handleConditionClick = (condition: string) => {
+    setSelectedCondition(condition);
+  };
+
+  const conditions: string[] = ["ETH", "USDT", "BNB", "Matric", "ETH/USDT", "USDT/BUSD", "BNB/BTC", "Matric/USDT"];
+
   return (
-    <>
-      <Head>
-        <title>Asset Selection Create Subscription</title>
-        <meta name="description" content="Dinamiko | create subscription" />
-      </Head>
+    <div className="container mx-auto p-8">
+      <h1 className="text-sm font-medium mb-2">Create a Subscription</h1>
+      <h2 className="text-2xl font-bold mb-4">Selection an Asset</h2>
 
-      <section>
-        <div className="container mx-auto p-4">
-          <h2 className="text-sm font-medium text-gray-500">Create a subscription</h2>
-          <h1 className="text-2xl font-bold mt-4">Select an asset</h1>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-            <div className="border border-gray-300 p-4 text-center">
-              <p className="text-lg font-semibold mb-2">ETH</p>
-              <p className="text-gray-500">ETH/USDT</p>
+      <div className="py-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 w-3/4 py-6 mx-auto">
+          {conditions.slice(0, 4).map((condition, index) => (
+            <div
+              className={`border border-gray-300 p-2 py-1 cursor-pointer ${
+                selectedCondition === condition ? "border-blue-500" : ""
+              }`}
+              key={index}
+              onClick={() => handleConditionClick(condition)}
+            >
+              <p className="font-medium text-center">{condition}</p>
             </div>
-            <div className="border border-gray-300 p-4 text-center">
-              <p className="text-lg font-semibold mb-2">ETH</p>
-              <p className="text-gray-500">ETH/USDT</p>
-            </div>
-            <div className="border border-gray-300 p-4 text-center">
-              <p className="text-lg font-semibold mb-2">ETH</p>
-              <p className="text-gray-500">ETH/USDT</p>
-            </div>
-            <div className="border border-gray-300 p-4 text-center">
-              <p className="text-lg font-semibold mb-2">ETH</p>
-              <p className="text-gray-500">ETH/USDT</p>
-            </div>
-          </div>
-
-          <ActionButtons previousHref="/action" nextHref="/condition" />
+          ))}
         </div>
-      </section>
-    </>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-4/5 mx-auto">
+          {conditions.slice(4, 8).map((condition, index) => (
+            <div
+              className={`border border-gray-300 p-2 py-2 cursor-pointer ${
+                selectedCondition === condition ? "border-blue-500" : ""
+              }`}
+              key={index}
+              onClick={() => handleConditionClick(condition)}
+            >
+              <p className="font-medium text-center">{condition}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <ActionButtons previousHref="/action" nextHref="/condition" />
+    </div>
   );
 };
 
-export default assetSelection;
+export default ConditionSelection;

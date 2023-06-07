@@ -42,14 +42,14 @@ const ConditionSelection: NextPage = () => {
           <p className="mr-2">Custom value:</p>
           <input
             type="text"
-            value={selectedCondition || ""}
+            value={selectedCondition || "0%"}
             onChange={handleInputChange}
             className="border text-black border-gray-300 px-2 py-1 w-20"
           />
         </div>
       </div>
 
-      <ActionButtons previousHref="/assetSelection" nextHref="/next-page" />
+      <ActionButtons previousHref="/assetSelection" nextHref="/timebased" />
     </div>
   );
 };
