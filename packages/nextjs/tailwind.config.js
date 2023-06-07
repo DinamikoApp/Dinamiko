@@ -23,6 +23,7 @@ module.exports = {
           success: "#34EEB6",
           warning: "#FFCF72",
           error: "#FF8863",
+          darkblue: "#00022C",
           "custom-green": "#00C5FF",
 
           "--rounded-btn": "9999rem",
