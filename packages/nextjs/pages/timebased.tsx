@@ -85,7 +85,7 @@ const TimeBasedSubscription = () => {
           </div>
         </div>
 
-        <ActionButtons previousHref="/createSubscription" nextHref="/assetSelection" />
+        <ActionButtons previousHref="/condition" nextHref="/assetSelection" />
 
         {/* ---For development purpose ---- */}
         <div className="mt-4">Selected custom time: {selectedCustomTime}</div>
