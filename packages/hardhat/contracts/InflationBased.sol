@@ -125,6 +125,51 @@ contract InflationRateBased is ChainlinkClient, ConfirmedOwner, Pausable, Automa
     } else {
       revert("auto-approve disabled");
     }
+
+    // subscription counter, keeps track of the number of subscriptions recorded
+    uint subCounter;
+
+    // subscriptions mapping that maps a uint to subscription
+    mapping (uint256 => Subscription) subscriptions;
+    // mapping that maps users address to their subscriptions
+    mapping (address => Subscription[]) public userSubscriptions;
+
+    // the USDT address
+    address public immutable usdtAddress;
+
+    // the interval between performing upkeeps default one hour
+    uint public immutable interval;
+    // the last timestamp when an upkeep was performed
+    uint public lastTimeStamp;
+
+    // transactions contract interface
+    Transactions transactions;
+    // transactions contract address
+    address transactionsAdd;
+
+    /// @notice the constructor function
+    /// @dev initilizes the needed parameters
+    /// @param link the link token address
+    /// @param registrar the upkeep registrar address
+    /// @param updateInterval time interval for checking upkeep
+    /// @param transactionsAddress address of transactions contract
+    /// @param _usdtAddress the usdt token address
+    constructor(uint _fee, string memory _jobId, address _oracleId, LinkTokenInterface link, KeeperRegistrarInterface registrar, uint updateInterval, address transactionsAddress, address _usdtAddress) ConfirmedOwner(msg.sender) {
+        setChainlinkToken(address(link));
+        oracleId = _oracleId;
+        jobId =  _jobId;// "d220e5e687884462909a03021385b7ae"
+        fee = (_fee * LINK_DIVISIBILITY) / 10; // 0,5 * 10**18 (Varies by network and job)
+
+        i_link = link;
+        i_registrar = registrar;
+
+        interval = updateInterval;
+        lastTimeStamp = block.timestamp;
+
+        transactions = Transactions(transactionsAddress);
+        transactionsAdd = transactionsAddress;
+
+        usdtAddress = _usdtAddress;
   }
 
   /// @notice function to check if an upkeep needs to be performed
@@ -147,6 +192,7 @@ contract InflationRateBased is ChainlinkClient, ConfirmedOwner, Pausable, Automa
       requestInflationWei();
       executeSubscriptions();
       lastTimeStamp = block.timestamp;
+
     }
   }
 

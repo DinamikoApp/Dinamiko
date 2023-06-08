@@ -1,8 +1,8 @@
-// SPDX-License-Identifier: AGPL-3.0
+// SPDX-License-Identifier: SEE LICENSE IN LICENSE
 pragma solidity ^0.8.0;
 
 /// @title Transactions
-/// @author NatX
+/// @author Dinamiko
 /// @notice Transactions contract interface
 /// @dev Interface for transactions contract that performs transactions with Uniswap V3 integration
 interface Transactions {

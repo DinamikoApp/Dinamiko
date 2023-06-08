@@ -1,11 +1,13 @@
 // import { DinamikoFeedOracle, MockV3Aggregator } from "../typechain-types";
+import { ethers } from "hardhat";
 import { evmRevert, evmSnapshot } from "../helpers/utilities/tx";
-// import { deployDataFeedAggregator } from "../helpers/contract-deployments";
-// import { MOCK_CHAINLINK_DATA_FEEDS_AGGREGATORS } from "../helpers/constants";
+import { expect } from "chai";
+//import { deployDataFeedAggregator } from "../helpers/contract-deployments";
+//import { MOCK_CHAINLINK_DATA_FEEDS_AGGREGATORS } from "../helpers/constants";
+//import { DinamikoFeedOracle, MockV3Aggregator } from "../typechain-types";
 
 describe("DinamikoFeedOracle Contract ", function () {
   let snap: string;
-  // const key = "MOCKDATAFEED";
 
   beforeEach(async () => {
     snap = await evmSnapshot();
@@ -16,48 +18,152 @@ describe("DinamikoFeedOracle Contract ", function () {
 
   // We define a fixture to reuse the same setup in every test.
 
-  // let dinamikoFeedOracle: DinamikoFeedOracle;
-  // let mockAggregator: MockAggregator;
+  //let dinamikoFeedOracle: DinamikoFeedOracle;
+  let owner: any;
+
+  //let mockAggregator: MockV3Aggregator;
+  //const key = "MOCKDATAFEED";
+
   // let dataFeeds: string[];
   // let aggregatorAddress: string[];
 
   // before(async () => {
-  //   mockAggregator = (await deployDataFeedAggregator(
-  //     key,
-  //     MOCK_CHAINLINK_DATA_FEEDS_AGGREGATORS[key],
-  //   )) as MockV3Aggregator;
+  // mockAggregator = (await deployDataFeedAggregator(
+  //   key,
+  //   MOCK_CHAINLINK_DATA_FEEDS_AGGREGATORS[key],
+  // )) as MockV3Aggregator;
   // });
+
+  const fallbackOracleAddress = "0x0000000000000000000000000000000000000000";
+  const dataFeedIds = ["30DayETHAPR", "90DayETHAPR"].map(ethers.utils.formatBytes32String);
+  const sourceAddresses = ["0x0000000000000000000000000000000000000001", "0x0000000000000000000000000000000000000002"];
+
+  beforeEach(async () => {
+    const instance = await ethers.getContractFactory("DinamikoFeedOracle");
+    const oracle = await instance.deploy(dataFeedIds, sourceAddresses, fallbackOracleAddress);
+    await oracle.deployed();
+    console.log("The oracle contract address is: ", oracle.address);
+  });
 
   describe("constructor", function () {
     it("Should correctly set data sources and fallback oracle", async () => {
-      // const instance = await ethers.getContractFactory("DinamikoFeedOracle");
-      // const oracle = await instance.deploy(dataFeedIds, sourceAddresses, fallbackOracleAddress);
-      // await oracle.deployed();
-      // Check each dataFeedId and sourceAddress
-      // Check fallback oracle address
-    });
+      const instance = await ethers.getContractFactory("DinamikoFeedOracle");
+      const oracle = await instance.deploy(dataFeedIds, sourceAddresses, fallbackOracleAddress);
+      await oracle.deployed();
 
-    it("Should correctly set data sources and fallback oracle", async () => {
-      // const instance = await ethers.getContractFactory("DinamikoFeedOracle");
-      // const oracle = await instance.deploy(dataFeedIds, sourceAddresses, fallbackOracleAddress);
-      // await oracle.deployed();
-      // Check each dataFeedId and sourceAddress
-      // Check fallback oracle address
+      // Check that the contract instance was created correctly
+      expect(oracle).to.not.be.undefined;
+
+      //Check that each data feed ID and source address is set correctly
+      expect(await oracle.getSourceOfData(ethers.utils.formatBytes32String("30DayETHAPR"))).to.equal(
+        "0x0000000000000000000000000000000000000001",
+      );
+      expect(await oracle.getSourceOfData(ethers.utils.formatBytes32String("90DayETHAPR"))).to.equal(
+        "0x0000000000000000000000000000000000000002",
+      );
+
+      console.log(
+        "The 30DayETHAPR data feed sources addresses is: ",
+        await oracle.getSourceOfData(ethers.utils.formatBytes32String("30DayETHAPR")),
+      );
+      console.log(
+        "The 90DayETHAPR data feed sources addresses is: ",
+        await oracle.getSourceOfData(ethers.utils.formatBytes32String("90DayETHAPR")),
+      );
+
+      // Check that the fallback oracle address is set correctly
+      const expectedFallbackOracle = ethers.utils.getAddress("0x0000000000000000000000000000000000000000");
+      expect(await oracle.getFallbackOracle()).to.equal(expectedFallbackOracle);
+      console.log("The fallback oracle address is: ", await oracle.getFallbackOracle());
     });
   });
 
   describe("setDataFeedSources _function", function () {
     it("Should only allow the owner to call setDataFeedSources", async function () {
-      // Function test
+      const instance = await ethers.getContractFactory("DinamikoFeedOracle");
+      const oracle = await instance.deploy(dataFeedIds, sourceAddresses, fallbackOracleAddress);
+      await oracle.deployed();
+      //console.log("The oracle contract address is: ", oracle.address);
+      [owner] = await ethers.getSigners();
+
+      // Call setDataFeedSources as the non-owner account and check that it throws an error
+      const nonOwner = (await ethers.getSigners())[1];
+      const invalidDataFeedIds = ["30DayETHAPR"].map(ethers.utils.formatBytes32String);
+      const invalidSourceAddresses = ["0x0000000000000000000000000000000000000003"];
+      await expect(
+        oracle.connect(nonOwner).setDataFeedSources(invalidDataFeedIds, invalidSourceAddresses),
+      ).to.be.revertedWith("Ownable: caller is not the owner");
+      console.log("Only the owner can call setDataFeedSources");
+
+      //Check that the data feed sources were not updated
+      expect(await oracle.getSourceOfData(ethers.utils.formatBytes32String("30DayETHAPR"))).to.equal(
+        "0x0000000000000000000000000000000000000001",
+      );
+      expect(await oracle.getSourceOfData(ethers.utils.formatBytes32String("90DayETHAPR"))).to.equal(
+        "0x0000000000000000000000000000000000000002",
+      );
+
+      // Call setDataFeedSources as the owner account and check that it updates the data feed sources and emits the event
+      const validDataFeedIds = ["30DayETHAPR"].map(ethers.utils.formatBytes32String);
+      const validSourceAddresses = ["0x0000000000000000000000000000000000000003"];
+      const tx = await oracle.connect(owner).setDataFeedSources(validDataFeedIds, validSourceAddresses);
+      await tx.wait();
+
+      // Check that the data feed sources were updated correctly
+      expect(await oracle.getSourceOfData(ethers.utils.formatBytes32String("30DayETHAPR"))).to.equal(
+        "0x0000000000000000000000000000000000000003",
+      );
+      expect(await oracle.getSourceOfData(ethers.utils.formatBytes32String("90DayETHAPR"))).to.equal(
+        "0x0000000000000000000000000000000000000002",
+      );
+      console.log(
+        "The 30DayETHAPR data feed sources was updated by the owner: ",
+        await oracle.getSourceOfData(ethers.utils.formatBytes32String("30DayETHAPR")),
+      );
     });
 
     it("Should only allow the owner to call setFallbackOracle", async function () {
-      // Function test
+      // Check that the contract instance was created correctly
+      const instance = await ethers.getContractFactory("DinamikoFeedOracle");
+      const oracle = await instance.deploy(dataFeedIds, sourceAddresses, fallbackOracleAddress);
+      await oracle.deployed();
+      expect(oracle).to.not.be.undefined;
+
+      // Check that the initial fallback oracle address is set correctly
+      expect(await oracle.getFallbackOracle()).to.equal("0x0000000000000000000000000000000000000000");
+
+      // Call setFallbackOracle as the non-owner account and check that it throws an error
+      const nonOwner = (await ethers.getSigners())[1];
+      const invalidFallbackOracleAddress = "0x0000000000000000000000000000000000000010";
+      await expect(oracle.connect(nonOwner).setFallbackOracle(invalidFallbackOracleAddress)).to.be.revertedWith(
+        "Ownable: caller is not the owner",
+      );
+      console.log("Only the owner can call setFallbackOracle");
+
+      // Check that the fallback oracle address was not updated
+      expect(await oracle.getFallbackOracle()).to.equal("0x0000000000000000000000000000000000000000");
+
+      // Call setFallbackOracle as the owner account and check that it updates the fallback oracle and emits the event
+      const validFallbackOracleAddress = "0x0000000000000000000000000000000000000010";
+      const tx = await oracle.connect(owner).setFallbackOracle(validFallbackOracleAddress);
+      await tx.wait();
+
+      // Check that the fallback oracle address was updated correctly
+      expect(await oracle.getFallbackOracle()).to.equal(validFallbackOracleAddress);
+      console.log("The fallback oracle address was updated by the owner: ", await oracle.getFallbackOracle());
     });
   });
 
   it("Should return the correct data if the source aggregator returns a positive result", async function () {
-    // Function test
+    //Check that the contract instance was created correctly
+    // const instance = await ethers.getContractFactory("DinamikoFeedOracle");
+    // const oracle = await instance.deploy(dataFeedIds, sourceAddresses, fallbackOracleAddress);
+    // await oracle.deployed();
+    // expect(oracle).to.not.be.undefined;
+    // const existentFeedId = ethers.utils.formatBytes32String("90DayETHAPR");
+    // const result = await oracle.getFeedData(existentFeedId);
+    //expect(result).to.equal(581273);
+    //console.log("The result is: ", result.toNumber());
   });
 
   it("Should return the correct data from the fallback oracle if the source aggregator returns a negative result or zero", async () => {
@@ -65,59 +171,70 @@ describe("DinamikoFeedOracle Contract ", function () {
   });
 
   it("Should return 0 when given a non-existent id", async () => {
-    // const instance = await ethers.getContractFactory("DinamikoFeedOracle");
-    // const oracle = await instance.deploy(dataFeedIds, sourceAddresses, fallbackOracleAddress);
-    // await oracle.deployed();
-    // const result = await oracle.getFeedData(nonExistentFeedId);
-    // expect(result).to.equal(0);
+    // Check that the contract instance was created correctly
+    const instance = await ethers.getContractFactory("DinamikoFeedOracle");
+    const oracle = await instance.deploy(dataFeedIds, sourceAddresses, fallbackOracleAddress);
+    await oracle.deployed();
+
+    expect(oracle).to.not.be.undefined;
+
+    const nonExistentFeedId = ethers.utils.formatBytes32String("nonExistentFeedId/USD");
+    const result = await oracle.getFeedData(nonExistentFeedId);
+    expect(result).to.equal(0);
+    console.log("The id is non-existing. The result is: ", result.toNumber());
   });
 
   it("Should return an array with the correct data for multiple data feed ids", async () => {
-    // // Mock the source aggregators to return specific results for each id
     // const instance = await ethers.getContractFactory("DinamikoFeedOracle");
     // const oracle = await instance.deploy(dataFeedIds, sourceAddresses, fallbackOracleAddress);
     // await oracle.deployed();
-    // const results = await oracle.getFeedsData(multipleFeedIds);
+    // //Call getFeedsData for multiple data feed ids
+    // const results = await oracle.getFeedsData(dataFeedIds);
     // // Verify that results match the expected results for each id
   });
 
   it("Should return the correct address for a given data feed id", async () => {
-    // const instance = await ethers.getContractFactory("DinamikoFeedOracle");
-    // const oracle = await instance.deploy(dataFeedIds, sourceAddresses, fallbackOracleAddress);
-    // await oracle.deployed();
-    // const source = await oracle.getSourceOfData(testFeedId);
-    // Verify that source matches the expected source for the given id
+    const instance = await ethers.getContractFactory("DinamikoFeedOracle");
+    const oracle = await instance.deploy(dataFeedIds, sourceAddresses, fallbackOracleAddress);
+    await oracle.deployed();
+
+    const source = await oracle.getSourceOfData(dataFeedIds[0]);
+    expect(source).to.equal(sourceAddresses[0]);
+    expect(source).not.to.equal(sourceAddresses[1]);
+    console.log("The 30DayETHAPR source address is: ", source);
   });
 
   it("Should correctly return the address of the fallback oracle", async () => {
-    // const instance = await ethers.getContractFactory("DinamikoFeedOracle");
-    // const oracle = await instance.deploy(dataFeedIds, sourceAddresses, fallbackOracleAddress);
-    // await oracle.deployed();
-    // const oracleAddress = await oracle.getFallbackOracle();
-    // expect(oracleAddress).to.equal(fallbackOracleAddress);
+    const instance = await ethers.getContractFactory("DinamikoFeedOracle");
+    const oracle = await instance.deploy(dataFeedIds, sourceAddresses, fallbackOracleAddress);
+    await oracle.deployed();
+
+    const oracleAddress = await oracle.getFallbackOracle();
+    expect(oracleAddress).to.equal(fallbackOracleAddress);
+    console.log("The fallback oracle address is: ", oracleAddress.toString());
   });
 
   it("Should reject non-owner calls to setDataFeedSources and setFallbackOracle", async () => {
-    // const [_, nonOwner] = await ethers.getSigners();
-    // const instance = await ethers.getContractFactory("DinamikoFeedOracle");
-    // const oracle = await instance.deploy(dataFeedIds, sourceAddresses, fallbackOracleAddress);
-    // await oracle.deployed();
-    // await expect(oracle.connect(nonOwner).setDataFeedSources(newDataFeedIds, newSourceAddresses)).to.be.revertedWith("Ownable: caller is not the owner");
-    // await expect(oracle.connect(nonOwner).setFallbackOracle(newFallbackOracleAddress)).to.be.revertedWith("Ownable: caller is not the owner");
+    const newDataFeedIds = ["BTCIRBC1-Day", "BTCIRBC1-Week"].map(ethers.utils.formatBytes32String);
+    const newSourceAddresses = [
+      "0x0000000000000000000000000000000000000101",
+      "0x0000000000000000000000000000000000000102",
+    ];
+    const newFallbackOracleAddress = "0x0000000000000000000000000000000000000100";
+
+    //const [_, nonOwner] = await ethers.getSigners();
+    const nonOwner = (await ethers.getSigners())[1];
+    const instance = await ethers.getContractFactory("DinamikoFeedOracle");
+    const oracle = await instance.deploy(dataFeedIds, sourceAddresses, fallbackOracleAddress);
+    await oracle.deployed();
+
+    await expect(oracle.connect(nonOwner).setDataFeedSources(newDataFeedIds, newSourceAddresses)).to.be.revertedWith(
+      "Ownable: caller is not the owner",
+    );
+    console.log("Only the owner can call setDataFeedSources");
+    await expect(oracle.connect(nonOwner).setFallbackOracle(newFallbackOracleAddress)).to.be.revertedWith(
+      "Ownable: caller is not the owner",
+    );
+    console.log("Only the owner can call setFallbackOracle");
   });
 });
-
-// Sure, here are some possible test cases in words for the DinamikoFeedOracle contract:
-// 1. **Test Constructor:** Check if the constructor correctly sets the data sources and fallback oracle. Initialize a new contract instance with some test data feed ids, source addresses and a fallback oracle address, and then use getter functions to verify that these values were correctly set.
-// 2. **Test Set Data Feed Sources:** Test if only the owner can call the `setDataFeedSources` function. Also check if it correctly updates the data sources mapping, and emits the `DataFeedSourceUpdated` event.
-// 3. **Test Set Fallback Oracle:** Check if only the owner can call the `setFallbackOracle` function. Verify that it correctly updates the fallback oracle and emits the `FallbackOracleUpdated` event.
-// 4. **Test Get Feed Data with Positive Result:** Using a known data feed id, ensure that the `getFeedData` function returns the correct data if the source aggregator returns a positive result.
-// 5. **Test Get Feed Data with Negative Result:** Using a known data feed id, ensure that the `getFeedData` function returns the correct data from the fallback oracle if the source aggregator returns a negative result or zero.
-// 6. **Test Get Feed Data with Non-Existent ID:** Check the behaviour of the `getFeedData` function when given a non-existent id. It should return 0.
-// 7. **Test Get Feeds Data:** Check if the `getFeedsData` function returns an array with the correct data for multiple data feed ids.
-// 8. **Test Get Source of Data:** Verify that the `getSourceOfData` function returns the correct address for a given data feed id.
-// 9. **Test Get Fallback Oracle:** Check if the `getFallbackOracle` function correctly returns the address of the fallback oracle.
-// 10. **Test Exceptional Cases:** Make sure that the contract correctly handles exceptions such as:
-//     - Attempting to set data feed sources with mismatched arrays of ids and sources.
-//     - Attempting to call `setDataFeedSources` and `setFallbackOracle` from non-owner accounts.
-// Remember, these test cases will require you to mock the Chainlink Aggregators and your fallback oracle to return controlled results. For instance, you might want to create a mock Chainlink Aggregator that you can configure to return specific results (positive, zero, or negative) when queried.
