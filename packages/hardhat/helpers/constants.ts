@@ -38,12 +38,21 @@ export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 export const ONE_ADDRESS = "0x0000000000000000000000000000000000000001";
 
 export const ONE_ETH = parseEther("1");
-export const TWO_ETH = parseEther("1");
-export const THREE_ETH = parseEther("1");
-export const FOUR_ETH = parseEther("1");
+export const TWO_ETH = parseEther("2");
+export const THREE_ETH = parseEther("3");
+export const FOUR_ETH = parseEther("4");
 
 export const PERCENTAGE_FACTOR = "10000";
 export const HALF_PERCENTAGE = "5000";
+
+export const UPDATEINTERVAL = 60;
+export const FEE = 0.1 * 10 ** 18; //Vary depending to the network
+export const JOB_ID = "d220e5e687884462909a03021385b7ae"; //adjust with the correct value
+export const REGISTRAR = "0xE16Df59B887e3Caa439E0b29B42bA2e7976FD8b2"; //The address of the Chainlink Automation registry contract
+
+//Uniswap parameters
+export const ROUTERADDRESS = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
+export const FACTORYADDRESS = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f";
 
 export const DEFAULT_NAMED_ACCOUNTS = {
   deployer: {

@@ -1,5 +1,22 @@
-import { MockV3Aggregator, Token, LinkToken, DinamikoPriceOracle, DinamikoFeedOracle } from "../typechain-types";
-import { ZERO_ADDRESS, getDeployIds } from "./constants";
+import {
+  MockV3Aggregator,
+  Token,
+  LinkToken,
+  DinamikoPriceOracle,
+  DinamikoFeedOracle,
+  PriceBasedSubscriptions,
+  InflationRateBased,
+  SubscriptionAction,
+} from "../typechain-types";
+import {
+  FACTORYADDRESS,
+  JOB_ID,
+  REGISTRAR,
+  ROUTERADDRESS,
+  UPDATEINTERVAL,
+  ZERO_ADDRESS,
+  getDeployIds,
+} from "./constants";
 import { deployContract } from "./utilities/tx";
 import { getNetworkName } from "./utilities/utils";
 
@@ -39,4 +56,47 @@ export const deployDinamikoPriceOracle = async (assets: string[], sources: strin
 
 export const deployDinamikoFeedsOracle = async (ids: string[], sources: string[]) => {
   await deployContract<DinamikoFeedOracle>("DinamikoFeedOracle", [ids, sources, ZERO_ADDRESS]);
+};
+
+export const deployPriceBasedSubscriptions = async (
+  oracleAddress: string,
+  link: string,
+  transactionsAddress: string,
+  usdtAddress: string,
+) => {
+  await deployContract<PriceBasedSubscriptions>("PriceBasedSubscriptions", [
+    oracleAddress,
+    link,
+    REGISTRAR,
+    UPDATEINTERVAL.toString(),
+    transactionsAddress,
+    usdtAddress,
+  ]);
+};
+
+export const deployInflationRateBased = async (
+  FEE: number,
+  oracleId: string,
+  link: string,
+  transactionsAddress: string,
+  usdtAddress: string,
+) => {
+  await deployContract<InflationRateBased>("InflationRateBased", [
+    FEE.toString(),
+    JOB_ID,
+    oracleId,
+    link,
+    REGISTRAR,
+    UPDATEINTERVAL.toString(),
+    transactionsAddress,
+    usdtAddress,
+  ]);
+};
+
+// export const deploySubscriptionAction = async (_routerAddress: string, _factoryAddress: string) => {
+//   await deployContract<SubscriptionAction>("SubscriptionAction", [_routerAddress, _factoryAddress]);
+// };
+
+export const deploySubscriptionAction = async () => {
+  await deployContract<SubscriptionAction>("SubscriptionAction", [ROUTERADDRESS, FACTORYADDRESS]);
 };
