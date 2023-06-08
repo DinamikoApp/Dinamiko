@@ -67,3 +67,43 @@ p {
   /*  background: rgba(17, 14, 32, 0.7); */
   backdrop-filter: blur(9px);
 }
+
+/* .step-enter {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.step-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.step-exit {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.step-exit-active {
+  opacity: 0;
+  transform: translateX(-100%);
+  transition: opacity 300ms, transform 300ms;
+} */
+
+.step-fade-enter {
+  opacity: 0;
+}
+
+.step-fade-enter-active {
+  opacity: 1;
+  transition: opacity 300ms;
+}
+
+.step-fade-exit {
+  opacity: 1;
+}
+
+.step-fade-exit-active {
+  opacity: 0;
+  transition: opacity 300ms;
+}
