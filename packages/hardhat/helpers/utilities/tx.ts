@@ -1,4 +1,4 @@
-import { Contract, ContractTransaction, ContractFactory, BigNumber, Signer } from "ethers";
+import { Contract, ContractTransaction, ContractFactory } from "ethers";
 import { tEthereumAddress, PoolData } from "../types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { Libraries } from "hardhat-deploy/types";
@@ -77,12 +77,13 @@ export const deployByFactory = async <ContractType extends Contract>(
 
   const contractFactory: ContractFactory = await hre.ethers.getContractFactory(abi, bytecode, from);
   const deployedContract = await contractFactory.deploy(...args);
-  const { address, deployTransaction } = await deployedContract.deployed();
+  const deployedInstance = await deployedContract.deployed();
+  const { address } = deployedInstance;
   await appendJsonToFile("./temp/", {
     [name]: { address, abi },
   });
-  console.log(`Deployed ${name} at tx:${deployTransaction.blockHash})...:  deployed at ${address}`);
-  return hre.ethers.getContractAt(abi, deployedContract.address) as any as ContractType;
+  console.log(`Deployed ${name} ...:  deployed at ${address}`);
+  return deployedInstance as any as ContractType;
 };
 
 export const deployContract = async <ContractType extends Contract>(
@@ -126,22 +127,6 @@ export const getAddressFromJson = async (network: string, id: string) => {
     return artifactJson.address;
   }
   throw `Missing artifact at ${artifactPath}`;
-};
-
-export const deployPool = async (
-  nonfungiblePositionManager: Contract,
-  uniSwapFactory: Contract,
-  token0: string,
-  token1: string,
-  fee: number,
-  price: BigNumber,
-  from: Signer, // if price is not a BigNumber, replace BigNumber with the correct type
-): Promise<string> => {
-  await nonfungiblePositionManager
-    .connect(from)
-    .createAndInitializePoolIfNecessary(token0, token1, fee, price, { gasLimit: 5000000 });
-  const poolAddress: string = await uniSwapFactory.connect(from).getPool(token0, token1, fee);
-  return poolAddress;
 };
 
 export async function getPoolData(poolContract: Contract): Promise<PoolData> {
