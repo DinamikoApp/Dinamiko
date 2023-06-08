@@ -11,9 +11,6 @@ export const isValidAddress = (value: tEthereumAddress): boolean =>
 
 export const isEqualAddress = (a: tEthereumAddress, b: tEthereumAddress) => getAddress(a) === getAddress(b);
 
-export const isLocalDevelopmentNetwork = (networkName: string) =>
-  networkName == "LOCALHOST" || networkName == "HARDHAT";
-
 export const getNetworkName = () => hre.network.name.toUpperCase();
 
 export const getChainId = () => hre.network.config.chainId;
@@ -63,3 +60,4 @@ export const encodePriceSqrt = (reserve1: number | string, reserve0: number | st
       .toString(),
   );
 };
+export const isLocalDevelopmentNetwork = (chainId: number | undefined) => chainId == 31337;
