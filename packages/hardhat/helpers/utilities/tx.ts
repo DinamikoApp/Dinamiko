@@ -1,10 +1,12 @@
-import { Contract, ContractTransaction } from "ethers";
-import { tEthereumAddress } from "../types";
+import { Contract, ContractTransaction, ContractFactory, BigNumber, Signer } from "ethers";
+import { tEthereumAddress, PoolData } from "../types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { Libraries } from "hardhat-deploy/types";
 import crypto from "crypto";
 import path from "path";
 import fs from "fs/promises";
+import { appendJsonToFile } from "./utils";
+import { ethers } from "hardhat";
 
 declare let hre: HardhatRuntimeEnvironment;
 
@@ -65,6 +67,24 @@ export const getBlockTimestamp = async (blockNumber?: number): Promise<number> =
   return block.timestamp;
 };
 
+export const deployByFactory = async <ContractType extends Contract>(
+  name: string,
+  abi: any[],
+  bytecode: string,
+  args: any[] = [],
+): Promise<ContractType> => {
+  const [from] = await ethers.getSigners();
+
+  const contractFactory: ContractFactory = await hre.ethers.getContractFactory(abi, bytecode, from);
+  const deployedContract = await contractFactory.deploy(...args);
+  const { address, deployTransaction } = await deployedContract.deployed();
+  await appendJsonToFile("./temp/", {
+    [name]: { address, abi },
+  });
+  console.log(`Deployed ${name} at tx:${deployTransaction.blockHash})...:  deployed at ${address}`);
+  return hre.ethers.getContractAt(abi, deployedContract.address) as any as ContractType;
+};
+
 export const deployContract = async <ContractType extends Contract>(
   contract: string,
   args?: (string | string[])[],
@@ -107,3 +127,36 @@ export const getAddressFromJson = async (network: string, id: string) => {
   }
   throw `Missing artifact at ${artifactPath}`;
 };
+
+export const deployPool = async (
+  nonfungiblePositionManager: Contract,
+  uniSwapFactory: Contract,
+  token0: string,
+  token1: string,
+  fee: number,
+  price: BigNumber,
+  from: Signer, // if price is not a BigNumber, replace BigNumber with the correct type
+): Promise<string> => {
+  await nonfungiblePositionManager
+    .connect(from)
+    .createAndInitializePoolIfNecessary(token0, token1, fee, price, { gasLimit: 5000000 });
+  const poolAddress: string = await uniSwapFactory.connect(from).getPool(token0, token1, fee);
+  return poolAddress;
+};
+
+export async function getPoolData(poolContract: Contract): Promise<PoolData> {
+  const [tickSpacing, fee, liquidity, slot0] = await Promise.all([
+    poolContract.tickSpacing(),
+    poolContract.fee(),
+    poolContract.liquidity(),
+    poolContract.slot0(),
+  ]);
+
+  return {
+    tickSpacing: tickSpacing,
+    fee: fee,
+    liquidity: liquidity,
+    sqrtPriceX96: slot0[0],
+    tick: slot0[1],
+  };
+}
