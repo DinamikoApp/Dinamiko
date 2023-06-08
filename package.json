@@ -33,9 +33,5 @@
     "dotenv": "^16.0.3",
     "husky": "^8.0.1",
     "lint-staged": "^13.0.3"
-  },
-  "dependencies": {
-    "@uniswap/v3-periphery": "^1.4.3",
-    "ethers": "^5.7.2"
   }
 }

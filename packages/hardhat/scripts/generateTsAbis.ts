@@ -1,10 +1,22 @@
 import * as fs from "fs";
 //@ts-expect-error  This script runs after `hardhat deploy --export` therefore its deterministic that it will present
 import allGeneratedContracts from "../temp/hardhat_contracts.json";
-import prettier from "prettier";
+import factoryContracts from "../temp/factory_deployed.json";
 
-function main() {
+import prettier from "prettier";
+import { getChainId, isForkedNetwork, getNetworkName, isLocalDevelopmentNetwork } from "../helpers/utilities/utils";
+
+async function main() {
   const TARGET_DIR = "../nextjs/generated/";
+
+  const chainId = (getChainId() || 31337).toString();
+  const isForked = await isForkedNetwork();
+
+  if (isLocalDevelopmentNetwork(getNetworkName()) && !isForked) {
+    // console.log(fileContent);
+    const generatedContracts = allGeneratedContracts[chainId][0].contracts;
+    allGeneratedContracts[chainId][0].contracts = { ...generatedContracts, ...factoryContracts };
+  }
 
   const fileContent = Object.entries(allGeneratedContracts).reduce((content, [chainId, chainConfig]) => {
     return `${content}${parseInt(chainId).toFixed(0)}:${JSON.stringify(chainConfig, null, 2)},`;
@@ -20,7 +32,7 @@ function main() {
     }),
   );
 
-  // remove generted output temp folder
+  // remove generated output temp folder
   fs.rmSync("./temp", { recursive: true, force: true });
 }
 

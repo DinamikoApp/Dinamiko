@@ -4,15 +4,17 @@ import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import "hardhat-deploy";
 import { DEFAULT_NAMED_ACCOUNTS } from "./helpers/constants";
+import {
+  eArbitrumNetwork,
+  eAvalancheNetwork,
+  eEthereumNetwork,
+  eFantomNetwork,
+  eHarmonyNetwork,
+  eOptimismNetwork,
+  ePolygonNetwork,
+} from "./helpers/types";
 
-// If not set, it uses ours Alchemy's default API key.
-// You can get your own at https://dashboard.alchemyapi.io
-const providerApiKey = process.env.ALCHEMY_API_KEY || "oKxs-03sij-U_N0iOlrSsZFr29-IqbuF";
-// If not set, it uses the hardhat account 0 private key.
-const deployerPrivateKey =
-  process.env.DEPLOYER_PRIVATE_KEY ?? "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
-// If not set, it uses ours Etherscan default API key.
-const etherscanApiKey = process.env.ETHERSCAN_API_KEY || "DNXJA8RX2Q3VZ4URQIWP7Z68CJXQZSC6AW";
+import { ETHERSCAN_KEY, getCommonNetworkConfig, hardhatNetworkSettings } from "./helpers/helper-hardhat-config";
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -28,59 +30,41 @@ const config: HardhatUserConfig = {
       },
     ],
   },
-  defaultNetwork: "localhost",
+  defaultNetwork: "hardhat",
   namedAccounts: {
     ...DEFAULT_NAMED_ACCOUNTS,
   },
   networks: {
     // View the networks that are pre-configured.
     // If the network you are looking for is not here you can add new network settings
-    hardhat: {
-      forking: {
-        url: `https://eth-mainnet.alchemyapi.io/v2/${providerApiKey}`,
-        enabled: process.env.MAINNET_FORKING_ENABLED === "true",
-      },
+    hardhat: hardhatNetworkSettings,
+    localhost: {
+      url: "http://127.0.0.1:8545",
+      ...hardhatNetworkSettings,
     },
-    mainnet: {
-      url: `https://eth-mainnet.alchemyapi.io/v2/${providerApiKey}`,
-      accounts: [deployerPrivateKey],
-    },
-    sepolia: {
-      url: `https://eth-sepolia.g.alchemy.com/v2/${providerApiKey}`,
-      accounts: [deployerPrivateKey],
-    },
-    goerli: {
-      url: `https://eth-goerli.alchemyapi.io/v2/${providerApiKey}`,
-      accounts: [deployerPrivateKey],
-    },
-    arbitrum: {
-      url: `https://arb-mainnet.g.alchemy.com/v2/${providerApiKey}`,
-      accounts: [deployerPrivateKey],
-    },
-    arbitrumGoerli: {
-      url: `https://arb-goerli.g.alchemy.com/v2/${providerApiKey}`,
-      accounts: [deployerPrivateKey],
-    },
-    optimism: {
-      url: `https://opt-mainnet.g.alchemy.com/v2/${providerApiKey}`,
-      accounts: [deployerPrivateKey],
-    },
-    optimismGoerli: {
-      url: `https://opt-goerli.g.alchemy.com/v2/${providerApiKey}`,
-      accounts: [deployerPrivateKey],
-    },
-    polygon: {
-      url: `https://polygon-mainnet.g.alchemy.com/v2/${providerApiKey}`,
-      accounts: [deployerPrivateKey],
-    },
-    polygonMumbai: {
-      url: `https://polygon-mumbai.g.alchemy.com/v2/${providerApiKey}`,
-      accounts: [deployerPrivateKey],
-    },
+    main: getCommonNetworkConfig(eEthereumNetwork.main, 1),
+    kovan: getCommonNetworkConfig(eEthereumNetwork.kovan, 42),
+    rinkeby: getCommonNetworkConfig(eEthereumNetwork.rinkeby, 4),
+    ropsten: getCommonNetworkConfig(eEthereumNetwork.ropsten, 3),
+    [ePolygonNetwork.polygon]: getCommonNetworkConfig(ePolygonNetwork.polygon, 137),
+    [ePolygonNetwork.mumbai]: getCommonNetworkConfig(ePolygonNetwork.mumbai, 80001),
+    arbitrum: getCommonNetworkConfig(eArbitrumNetwork.arbitrum, 42161),
+    [eArbitrumNetwork.arbitrumTestnet]: getCommonNetworkConfig(eArbitrumNetwork.arbitrumTestnet, 421611),
+    [eHarmonyNetwork.main]: getCommonNetworkConfig(eHarmonyNetwork.main, 1666600000),
+    [eHarmonyNetwork.testnet]: getCommonNetworkConfig(eHarmonyNetwork.testnet, 1666700000),
+    [eAvalancheNetwork.avalanche]: getCommonNetworkConfig(eAvalancheNetwork.avalanche, 43114),
+    [eAvalancheNetwork.fuji]: getCommonNetworkConfig(eAvalancheNetwork.fuji, 43113),
+    [eFantomNetwork.main]: getCommonNetworkConfig(eFantomNetwork.main, 250),
+    [eFantomNetwork.testnet]: getCommonNetworkConfig(eFantomNetwork.testnet, 4002),
+    [eOptimismNetwork.testnet]: getCommonNetworkConfig(eOptimismNetwork.testnet, 420),
+    [eOptimismNetwork.main]: getCommonNetworkConfig(eOptimismNetwork.main, 10),
+    [eEthereumNetwork.goerli]: getCommonNetworkConfig(eEthereumNetwork.goerli, 5),
+    [eEthereumNetwork.sepolia]: getCommonNetworkConfig(eEthereumNetwork.sepolia, 11155111),
+    [eArbitrumNetwork.goerliNitro]: getCommonNetworkConfig(eArbitrumNetwork.goerliNitro, 421613),
   },
   verify: {
     etherscan: {
-      apiKey: `${etherscanApiKey}`,
+      apiKey: ETHERSCAN_KEY,
     },
   },
 };

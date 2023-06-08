@@ -4,7 +4,7 @@
   "scripts": {
     "account": "hardhat run scripts/listAccount.ts",
     "chain": "hardhat node --network hardhat --no-deploy",
-    "compile": "hardhat compile",
+    "compile": "hardhat compile && hardhat run scripts/generateTypechain.ts",
     "deploy": "hardhat deploy --export-all ./temp/hardhat_contracts.json \"$@\" && hardhat run scripts/generateTsAbis.ts",
     "fork": "MAINNET_FORKING_ENABLED=true hardhat node --network hardhat --no-deploy",
     "generate": "hardhat run scripts/generateAccount.ts",
@@ -46,6 +46,8 @@
   "dependencies": {
     "@chainlink/contracts": "^0.6.1",
     "@openzeppelin/contracts": "^4.9.0",
+    "@uniswap/v3-periphery": "^1.4.3",
+    "bignumber.js": "^9.1.1",
     "dotenv": "^16.0.3",
     "envfile": "^6.18.0",
     "qrcode": "^1.5.1"
