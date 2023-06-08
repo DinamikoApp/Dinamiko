@@ -14,12 +14,12 @@ const setNewEnvConfig = (existingEnvConfig = {}) => {
 
   const newEnvConfig = {
     ...existingEnvConfig,
-    DEPLOYER_PRIVATE_KEY: randomWallet.privateKey,
+    MNEMONIC: randomWallet.mnemonic.phrase,
   };
 
   // Store in .env
   fs.writeFileSync(envFilePath, stringify(newEnvConfig));
-  console.log("📄 Private Key saved to packages/hardhat/.env file");
+  console.log("📄 mnemonic saved to packages/hardhat/.env file");
 };
 
 async function main() {
@@ -31,7 +31,7 @@ async function main() {
 
   // .env file exists
   const existingEnvConfig = parse(fs.readFileSync(envFilePath).toString());
-  if (existingEnvConfig.DEPLOYER_PRIVATE_KEY) {
+  if (existingEnvConfig.MNEMONIC) {
     console.log("⚠️ You already have a deployer account. Check the packages/hardhat/.env file");
     return;
   }
