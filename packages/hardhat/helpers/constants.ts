@@ -49,6 +49,9 @@ export const UPDATEINTERVAL = 60;
 export const FEE = 0.1 * 10 ** 18; //Vary depending to the network
 export const JOB_ID = "d220e5e687884462909a03021385b7ae"; //adjust with the correct value
 export const REGISTRAR = "0xE16Df59B887e3Caa439E0b29B42bA2e7976FD8b2"; //The address of the Chainlink Automation registry contract
+export const KEEP_REGISTRY = "0xE16Df59B887e3Caa439E0b29B42bA2e7976FD8b2"; //The address of the Chainlink Automation registry contract
+export const LINK_ORACLE = "0x6090149792dAAeE9D1D568c9f9a6F6B46AA29eFD"; //Chainlink oracle address
+export const MIN_WAIT_PERIOD_SECONDS = 10; //Testnet value - necessary updae with the correct value
 
 //Uniswap parameters
 export const ROUTERADDRESS = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";

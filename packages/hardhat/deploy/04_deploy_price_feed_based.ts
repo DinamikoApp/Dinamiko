@@ -29,16 +29,22 @@ const deployPriceBasedSubscriptionsContract: DeployFunction = async function ({
   console.log(
     "Oracle address:",
     oracleAddress,
+    "\n",
     "Link address:",
     link,
+    "\n",
     "Keeper registry:",
     registrar,
+    "\n",
     "Update time interval:",
     updateInterval,
+    "\n",
     "Transaction address:",
     transactionsAddress,
+    "\n",
     "USDT Address:",
     usdtAddress,
+    "\n",
   );
   await deployPriceBasedSubscriptions(oracleAddress, link, transactionsAddress, usdtAddress);
 };

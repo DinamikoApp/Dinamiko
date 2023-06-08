@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 // import { getNetworkName } from "../helpers/utilities/utils";
-import { deploySubscriptionAction } from "../helpers/contract-deployments";
+import { deployRateBasedSubscriptions } from "../helpers/contract-deployments";
 import { FACTORYADDRESS, ROUTERADDRESS } from "../helpers/constants";
 
 /**
@@ -10,19 +10,19 @@ import { FACTORYADDRESS, ROUTERADDRESS } from "../helpers/constants";
  *
  * @param hre HardhatRuntimeEnvironment object.
  */
-const deploySubscriptionActionContract: DeployFunction = async function ({ deployments }: HardhatRuntimeEnvironment) {
+const deployRateBasedSubscriptions: DeployFunction = async function ({ deployments }: HardhatRuntimeEnvironment) {
   const { log } = deployments;
   //const networkName = getNetworkName();
   const routerAddress = ROUTERADDRESS; //Uniswap router address
   const factoryAddress = FACTORYADDRESS; //Uniswap factory address
 
-  log("Deploying Subscription Actions ...");
-  console.log("Router address:", routerAddress, "Factory address:", factoryAddress);
-  await deploySubscriptionAction();
+  log("Deploying Rate Based Subscriptions ...");
+  console.log("Router address:", routerAddress, "\n", "Factory address:", factoryAddress);
+  await deployRateBasedSubscriptions();
 };
 
-export default deploySubscriptionActionContract;
+export default deployRateBasedSubscriptions;
 
 // Tags are useful if you have multiple deploy files and only want to run one of them.
 // e.g. yarn deploy --tags YourContract
-deploySubscriptionActionContract.tags = ["SubscriptionAction"];
+deployRateBasedSubscriptions.tags = ["RateBasedSubscriptions"];

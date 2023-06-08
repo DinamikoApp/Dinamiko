@@ -8,8 +8,8 @@
 // import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
 // import "@openzeppelin/contracts/security/Pausable.sol";
 // import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-// import "./interfaces/ITransactions.sol";
-// import "./interfaces/IDinamikoFeedOracle.sol";
+// import "../interfaces/ITransactions.sol";
+// import "../interfaces/IDinamikoFeedOracle.sol";
 
 // /// @title KeeperRegistrarInterface
 // /// @author NatX
@@ -212,25 +212,7 @@
 
 // }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// }
 
 
 

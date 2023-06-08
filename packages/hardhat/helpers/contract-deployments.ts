@@ -4,10 +4,16 @@ import {
   LinkToken,
   DinamikoPriceOracle,
   DinamikoFeedOracle,
-  PriceBasedSubscriptions,
   InflationRateBased,
   SubscriptionAction,
+  VolumeOracle,
+  RateBasedSubscriptions,
+  TimeBasedSubscriptions,
+  TradingVolumeBased,
+  ERC20BalanceMonitor,
+  EthBalanceMonitor,
 } from "../typechain-types";
+import { PriceBasedSubscriptions } from "../typechain-types/contracts/PriceFeedBased.sol";
 import {
   FACTORYADDRESS,
   JOB_ID,
@@ -93,10 +99,65 @@ export const deployInflationRateBased = async (
   ]);
 };
 
-// export const deploySubscriptionAction = async (_routerAddress: string, _factoryAddress: string) => {
-//   await deployContract<SubscriptionAction>("SubscriptionAction", [_routerAddress, _factoryAddress]);
-// };
-
 export const deploySubscriptionAction = async () => {
   await deployContract<SubscriptionAction>("SubscriptionAction", [ROUTERADDRESS, FACTORYADDRESS]);
+};
+
+export const deployVolumeOracle = async (link: string, linkOracle: string) => {
+  await deployContract<VolumeOracle>("VolumeOracle", [link, linkOracle, JOB_ID]);
+};
+
+export const deployRateBasedSubscriptions = async (
+  oracleAddress: string,
+  link: string,
+  registrar: string,
+  transactionsAddress: string,
+  usdtAddress: string,
+) => {
+  await deployContract<RateBasedSubscriptions>("RateBasedSubscriptions", [
+    oracleAddress,
+    link,
+    registrar,
+    UPDATEINTERVAL.toString(),
+    transactionsAddress,
+    usdtAddress,
+  ]);
+};
+
+export const deployTimeBasedSubscriptions = async (link: string, transactionsAddress: string, usdtAddress: string) => {
+  await deployContract<TimeBasedSubscriptions>("TimeBasedSubscriptions", [
+    link,
+    REGISTRAR,
+    UPDATEINTERVAL.toString(),
+    transactionsAddress,
+    usdtAddress,
+  ]);
+};
+
+export const deployTradingVolumeBased = async (link: string, transactionsAddress: string) => {
+  await deployContract<TradingVolumeBased>("TradingVolumeBased", [
+    link,
+    REGISTRAR,
+    UPDATEINTERVAL.toString(),
+    transactionsAddress,
+  ]);
+};
+
+export const deployERC20BalanceMonitor = async (
+  erc20TokenAddress: string,
+  keeperRegistryAddress: string,
+  minWaitPeriodSeconds: number,
+) => {
+  await deployContract<ERC20BalanceMonitor>("ERC20BalanceMonitor", [
+    erc20TokenAddress,
+    keeperRegistryAddress,
+    minWaitPeriodSeconds.toString(),
+  ]);
+};
+
+export const deployEthBalanceMonitor = async (keeperRegistryAddress: string, minWaitPeriodSeconds: number) => {
+  await deployContract<EthBalanceMonitor>("EthBalanceMonitor", [
+    keeperRegistryAddress,
+    minWaitPeriodSeconds.toString(),
+  ]);
 };
