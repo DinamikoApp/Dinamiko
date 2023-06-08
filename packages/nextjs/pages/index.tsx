@@ -2,6 +2,7 @@ import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 import type { NextPage } from "next";
+import CryptoChart from "~~/components/CryptoChart";
 
 const Home: NextPage = () => {
   return (
@@ -74,6 +75,8 @@ const Home: NextPage = () => {
               </div>
             </div>
           </div>
+
+          <CryptoChart />
         </div>
       </section>
     </>

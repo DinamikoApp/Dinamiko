@@ -24,7 +24,7 @@ export function SubscriptionConditionSelection() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-3/4 py-12 mx-auto">
         {conditions.map((condition, index) => (
           <div
-            className={`border border-gray-300 p-2 py-2 cursor-pointer ${
+            className={`bg-[#00022C] p-2 py-2 cursor-pointer ${
               selectedCondition === condition ? "border-blue-500" : ""
             }`}
             key={index}
@@ -37,12 +37,12 @@ export function SubscriptionConditionSelection() {
 
       <div className="mt-8">
         <div className="flex items-center mt-2 align-middle justify-center">
-          <p className="mr-2">Custom value:</p>
+          <p className="mr-6 text-xl">Custom value</p>
           <input
             type="text"
             value={selectedCondition || "0%"}
             onChange={handleInputChange}
-            className="border text-black border-gray-300 px-2 py-1 w-20"
+            className="border text-black bg-[#D9D9D9] px-2 py-1 w-40 text-center text-xl"
           />
         </div>
       </div>

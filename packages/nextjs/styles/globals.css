@@ -48,6 +48,11 @@ p {
   background: linear-gradient(261.51deg, #ff00b8 19.74%, #26ffe5 92.62%);
 }
 
+.bg-lightgradient {
+  background: #000116;
+  box-shadow: 0px 4px 9px 5px #00033d;
+}
+
 .bg-gradient-1 {
   background: linear-gradient(196.57deg, #171717 11.47%, #ff00b8 233.89%);
   box-shadow: -5.71913px 12.5821px 4.57531px rgba(0, 0, 0, 0.25);
