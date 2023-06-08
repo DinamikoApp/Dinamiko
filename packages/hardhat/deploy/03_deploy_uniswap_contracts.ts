@@ -1,26 +1,27 @@
 import { utils } from "ethers";
 import WETH9 from "../abis/WETH9.json";
 import NFTDescriptorAbi from "@uniswap/v3-periphery/artifacts/contracts/libraries/NFTDescriptor.sol/NFTDescriptor.json";
-import UniswapV3Factory from "@uniswap/v3-core/artifacts/contracts/UniswapV3Factory.sol/UniswapV3Factory.json";
+import UniswapV3FactoryAbi from "@uniswap/v3-core/artifacts/contracts/UniswapV3Factory.sol/UniswapV3Factory.json";
 import SwapRouterAbi from "@uniswap/v3-periphery/artifacts/contracts/SwapRouter.sol/SwapRouter.json";
-import NonfungiblePositionManager from "@uniswap/v3-periphery/artifacts/contracts/NonfungiblePositionManager.sol/NonfungiblePositionManager.json";
-import NonfungibleTokenPositionDescriptor from "@uniswap/v3-periphery/artifacts/contracts/NonfungibleTokenPositionDescriptor.sol/NonfungibleTokenPositionDescriptor.json";
+import NonfungiblePositionManagerAbi from "@uniswap/v3-periphery/artifacts/contracts/NonfungiblePositionManager.sol/NonfungiblePositionManager.json";
+import NonfungibleTokenPositionDescriptorAbi from "@uniswap/v3-periphery/artifacts/contracts/NonfungibleTokenPositionDescriptor.sol/NonfungibleTokenPositionDescriptor.json";
 
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { getNetworkName, isForkedNetwork, isLocalDevelopmentNetwork } from "../helpers/utilities/utils";
 import { getSupportedTokens, linkLibraries } from "../helpers/deploy-config-helper";
 import { deployByFactory } from "../helpers/utilities/tx";
+
 // import { getDeployIds } from "../helpers/constants";
 // import { getAToken } from "../helpers/contract-getters";
 import { Token } from "../typechain-types";
-// import { TokenInterface } from "../typechain-types/contracts/mocks/tokens/Token";
-
-// import { getDeployIds } from "../helpers/constants";
-// const bn = require("bignumber.js");
-// const { promisify } = require("util");
-// const fs = require("fs");
-// bn.config({ EXPONENTIAL_AT: 999999, DECIMAL_PLACES: 40 });
+import {
+  NFTDescriptor,
+  NonfungiblePositionManager,
+  NonfungibleTokenPositionDescriptor,
+  SwapRouter,
+} from "../typechain-types/deployFromAbi/v3-periphery";
+import { UniswapV3Factory } from "../typechain-types/deployFromAbi/v3-core";
 
 const deployUniswap: DeployFunction = async function ({ deployments, ethers }: HardhatRuntimeEnvironment) {
   const { log } = deployments;
@@ -32,37 +33,45 @@ const deployUniswap: DeployFunction = async function ({ deployments, ethers }: H
     log("Local network detected! Deploying Uniswap Mock Tokens...");
 
     const weth = await deployByFactory("WETH", WETH9.abi, WETH9.bytecode);
-    const uniswapFactory = await deployByFactory("UniswapV3Factory", UniswapV3Factory.abi, UniswapV3Factory.bytecode);
-    const swapRouter = await deployByFactory("SwapRouter", SwapRouterAbi.abi, SwapRouterAbi.bytecode, [
+    const uniswapFactory: UniswapV3Factory = await deployByFactory(
+      "UniswapV3Factory",
+      UniswapV3FactoryAbi.abi,
+      UniswapV3FactoryAbi.bytecode,
+    );
+    const swapRouter: SwapRouter = await deployByFactory("SwapRouter", SwapRouterAbi.abi, SwapRouterAbi.bytecode, [
       `${uniswapFactory.address}`,
       `${weth.address}`,
     ]);
 
-    const nftDescriptor = await deployByFactory("NFTDescriptor", NFTDescriptorAbi.abi, NFTDescriptorAbi.bytecode);
+    const nftDescriptor: NFTDescriptor = await deployByFactory(
+      "NFTDescriptor",
+      NFTDescriptorAbi.abi,
+      NFTDescriptorAbi.bytecode,
+    );
 
-    const artifactBytecode = NonfungibleTokenPositionDescriptor.bytecode;
+    const nativeCurrencyLabelBytes = utils.formatBytes32String("WETH");
+
+    const artifactBytecode = NonfungibleTokenPositionDescriptorAbi.bytecode;
     const linkRefs = {
       "NFTDescriptor.sol": {
         NFTDescriptor: [{ length: 20, start: 1681 }],
       },
     };
     const libraries = { NFTDescriptor: nftDescriptor.address };
-
     const linkedBytecode = linkLibraries({ bytecode: artifactBytecode, linkReferences: linkRefs }, libraries);
-    const nativeCurrencyLabelBytes = utils.formatBytes32String("WETH");
 
-    const nonfungibleTokenPositionDescriptor = await deployByFactory(
+    const nonfungibleTokenPositionDescriptor: NonfungibleTokenPositionDescriptor = await deployByFactory(
       "NonFungibleTokenPositionDescriptor",
-      NonfungibleTokenPositionDescriptor.abi,
+      NonfungibleTokenPositionDescriptorAbi.abi,
       linkedBytecode,
       [`${weth.address}`, nativeCurrencyLabelBytes],
     );
 
-    const nonfungiblePositionManager = await deployByFactory(
+    const nftPositionManager: NonfungiblePositionManager = await deployByFactory(
       "NonfungiblePositionManager",
-      NonfungiblePositionManager.abi,
-      NonfungiblePositionManager.bytecode,
-      [`${uniswapFactory.address}`, `${uniswapFactory.address}`, `${uniswapFactory.address}`],
+      NonfungiblePositionManagerAbi.abi,
+      NonfungiblePositionManagerAbi.bytecode,
+      [`${uniswapFactory.address}`, `${weth.address}`, `${nonfungibleTokenPositionDescriptor.address}`],
     );
 
     const addresses = {
@@ -71,7 +80,7 @@ const deployUniswap: DeployFunction = async function ({ deployments, ethers }: H
       SWAP_ROUTER_ADDRESS: `${swapRouter.address}`,
       NFT_DESCRIPTOR_ADDRESS: `${nftDescriptor.address}`,
       POSITION_DESCRIPTOR_ADDRESS: `${nonfungibleTokenPositionDescriptor.address}`,
-      POSITION_MANAGER_ADDRESS: `${nonfungiblePositionManager.address}`,
+      POSITION_MANAGER_ADDRESS: `${nftPositionManager.address}`,
     };
 
     console.log(addresses);
@@ -88,18 +97,14 @@ const deployUniswap: DeployFunction = async function ({ deployments, ethers }: H
       (await token["faucet(uint256)"](100000)).wait(2);
     }
 
-    // const FEE = 300;
-    // const { WETH, DAI, USDC, USDT, WBTC, LINK, SUSHI, AAVE, CRV } = tokens;
-    // const wethDai = await deployPool(
-    //   nonfungiblePositionManager,
-    //   uniswapFactory,
-    //   WETH,
-    //   DAI,
-    //   FEE,
-    //   encodePriceSqrt(1, 10),
-    //   deployer,
-    // );
-    // console.log(wethDai);
+    // Create Liquidity Pool
+    const { DAI, USDT } = tokens;
+    let erc20Address = [DAI, USDT];
+    erc20Address = erc20Address.sort();
+    const pairFee = 3000;
+    await uniswapFactory.createPool(erc20Address[0], erc20Address[1], pairFee);
+    const poolAddress: string = await uniswapFactory.getPool(erc20Address[0], erc20Address[1], pairFee);
+    console.log(poolAddress, `Local Pool address ${erc20Address[0]} ${erc20Address[1]}`);
   }
 };
 
