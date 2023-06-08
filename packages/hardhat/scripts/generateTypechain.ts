@@ -1,20 +1,19 @@
 import { runTypeChain, glob } from "typechain";
 
-async function main() {
-  const cwd = process.cwd();
-  const config = {
-    paths: {
-      artifacts: "./node_modules/@uniswap/v3-periphery/artifacts",
-    },
-  };
-  const allFiles = glob(cwd, [`${config.paths.artifacts}/!(build-info)/**/+([a-zA-Z0-9_]).json`]);
+interface TypeChainCOnfig {
+  path: string;
+  name: string;
+}
 
+async function generateTypeChain(config: TypeChainCOnfig) {
+  const cwd = process.cwd();
+  const corePath = glob(cwd, [`${config.path}/!(build-info)/**/+([a-zA-Z0-9_]).json`]);
   const result = await runTypeChain({
     cwd,
-    filesToProcess: allFiles,
-    outDir: "typechain-types/abiDeploy/common/stuff",
+    filesToProcess: corePath,
+    outDir: `typechain-types/deployFromAbi/${config.name}/`,
     target: "ethers-v5",
-    allFiles,
+    allFiles: corePath,
     flags: {
       alwaysGenerateOverloads: false,
       discriminateTypes: true,
@@ -23,8 +22,23 @@ async function main() {
       environment: "hardhat",
     },
   });
+  console.log(`Generating TypeChain for ${result.filesGenerated} from  ABIS  for ${config.name}`);
+}
+async function main() {
+  const config: TypeChainCOnfig[] = [
+    {
+      path: "./node_modules/@uniswap/v3-periphery/artifacts",
+      name: "v3-periphery",
+    },
+    {
+      path: "./node_modules/@uniswap/v3-core/artifacts",
+      name: "v3-core",
+    },
+  ];
 
-  console.log(`Generating TypeChain for ${result.filesGenerated} from  ABIS`);
+  for (const key in config) {
+    generateTypeChain(config[key]);
+  }
 }
 
 main().catch(console.error);
