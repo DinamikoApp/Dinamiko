@@ -1,7 +1,16 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { iParamsPerNetwork, eNetwork, ITokenAddress, IContractAddress, tEthereumAddress } from "./types";
+import {
+  iParamsPerNetwork,
+  eNetwork,
+  ITokenAddress,
+  IContractAddress,
+  tEthereumAddress,
+  LinkReference,
+  Libraries,
+} from "./types";
 import { getDeployIds } from "./constants";
 import { convertStringToBytes32, isLocalDevelopmentNetwork } from "./utilities/utils";
+import { getAddress } from "ethers/lib/utils";
 declare let hre: HardhatRuntimeEnvironment;
 
 export const getParamPerNetwork = <T>(param: iParamsPerNetwork<T> | undefined, network: eNetwork): T | undefined => {
@@ -91,4 +100,27 @@ export const getChainlinkPriceOracles = async (networkName: string): Promise<ITo
 export const getSupportedDataFeeds = async (networkName: string): Promise<ITokenAddress> => {
   const { TESTNET_DATA_AGGR_PREFIX } = getDeployIds(networkName);
   return getDeployedConfig(networkName, TESTNET_DATA_AGGR_PREFIX);
+};
+
+export const linkLibraries = (
+  { bytecode, linkReferences }: { bytecode: string; linkReferences: any },
+  libraries: Libraries,
+): string => {
+  Object.keys(linkReferences).forEach(fileName => {
+    Object.keys(linkReferences[fileName]).forEach(contractName => {
+      if (!libraries.hasOwnProperty(contractName)) {
+        throw new Error(`Missing link library name ${contractName}`);
+      }
+      const address = getAddress(libraries[contractName]).toLowerCase().slice(2);
+      linkReferences[fileName][contractName].forEach(({ start, length }: LinkReference) => {
+        const start2 = 2 + start * 2;
+        const length2 = length * 2;
+        bytecode = bytecode
+          .slice(0, start2)
+          .concat(address)
+          .concat(bytecode.slice(start2 + length2, bytecode.length));
+      });
+    });
+  });
+  return bytecode;
 };

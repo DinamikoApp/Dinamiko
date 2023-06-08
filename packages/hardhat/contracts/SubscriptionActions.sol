@@ -26,12 +26,7 @@ contract SubscriptionAction {
     factoryAddress = _factoryAddress;
   }
 
-  function executeSwap(
-    address tokenIn,
-    address tokenOut,
-    uint amount,
-    address receiver
-  ) private returns (uint amountOut) {
+  function _swap(address tokenIn, address tokenOut, uint amount, address receiver) private returns (uint amountOut) {
     TransferHelper.safeApprove(tokenIn, address(swapRouter), amount);
 
     ISwapRouter.ExactInputSingleParams memory params = ISwapRouter.ExactInputSingleParams({
@@ -54,12 +49,12 @@ contract SubscriptionAction {
 
   // Function to buy asset
   function buyAsset(address _purchaseToken, uint _amount, address _receiver) public returns (uint) {
-    return executeSwap(_purchaseToken, factoryAddress, _amount, _receiver);
+    return _swap(_purchaseToken, factoryAddress, _amount, _receiver);
   }
 
   // Function to sell token
   function sellToken(address _sellToken, uint _amount, address _receiver) public returns (uint) {
-    return executeSwap(_sellToken, factoryAddress, _amount, _receiver);
+    return _swap(_sellToken, factoryAddress, _amount, _receiver);
   }
 }
 

@@ -81,3 +81,31 @@ export enum EthereumNetworkNames {
 export type iParamsPerNetwork<T> = {
   [k in eNetwork]?: T;
 };
+
+export interface Artifacts {
+  [key: string]: any;
+}
+
+export interface LinkReference {
+  length: number;
+  start: number;
+}
+
+export interface Libraries {
+  [key: string]: string;
+}
+
+export interface PoolData {
+  tickSpacing: number;
+  fee: number;
+  liquidity: number;
+  sqrtPriceX96: any; // replace "any" with the actual type
+  tick: any; // replace "any" with the actual type
+}
+
+export interface PoolContract {
+  tickSpacing(): Promise<number>;
+  fee(): Promise<number>;
+  liquidity(): Promise<number>;
+  slot0(): Promise<any[]>; // replace "any" with the actual type
+}

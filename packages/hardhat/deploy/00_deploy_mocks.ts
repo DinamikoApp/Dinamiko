@@ -1,6 +1,6 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
-import { getNetworkName, isLocalDevelopmentNetwork } from "../helpers/utilities/utils";
+import { getNetworkName, isForkedNetwork, isLocalDevelopmentNetwork } from "../helpers/utilities/utils";
 import {
   MOCK_CHAINLINK_TOKEN_TO_USD_AGGREGATORS_PRICES,
   MOCK_TOKEN_LIST,
@@ -22,7 +22,8 @@ import {
 const deployMocks: DeployFunction = async function ({ deployments }: HardhatRuntimeEnvironment) {
   const { log } = deployments;
   // Should Only Deploy Mock If it Local Network
-  if (isLocalDevelopmentNetwork(getNetworkName())) {
+  const isForked = await isForkedNetwork();
+  if (isLocalDevelopmentNetwork(getNetworkName()) && !isForked) {
     log("Local network detected! Deploying Mock Tokens...");
     for (const key in MOCK_TOKEN_LIST) {
       if (key === "ETH") continue;
