@@ -2,14 +2,14 @@
 pragma solidity ^0.8.0;
 
 /// importing necessary contracts
-import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 import "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "../interfaces/ITransactions.sol";
+import "./interfaces/ITransactions.sol";
 
 
 /// @title KeeperRegistrarInterface
@@ -91,7 +91,7 @@ contract InflationRateBased is ChainlinkClient, ConfirmedOwner, Pausable, Automa
     /// @param transactionsAddress address of transactions contract
     /// @param _usdtAddress the usdt token address
     constructor(uint _fee, string memory _jobId, address _oracleId, LinkTokenInterface link, KeeperRegistrarInterface registrar, uint updateInterval, address transactionsAddress, address _usdtAddress) ConfirmedOwner(msg.sender) {
-        setChainlinkToken(link);
+        setChainlinkToken(address(link));
         oracleId = _oracleId;
         jobId =  _jobId;// "d220e5e687884462909a03021385b7ae"
         fee = (_fee * LINK_DIVISIBILITY) / 10; // 0,5 * 10**18 (Varies by network and job)

@@ -30,6 +30,8 @@
   },
   "packageManager": "yarn@3.2.3",
   "devDependencies": {
+    "@chainlink/contracts": "^0.6.1",
+    "@openzeppelin/contracts": "^4.9.1",
     "dotenv": "^16.0.3",
     "husky": "^8.0.1",
     "lint-staged": "^13.0.3"
