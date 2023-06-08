@@ -1,71 +1,46 @@
 import React, { useState } from "react";
-import Image from "next/image";
 import ActionButtons from "../components/ActionButtons";
 import type { NextPage } from "next";
-
-interface Subscription {
-  id: number;
-  title: string;
-  imageSrc: string;
-}
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { SubscriptionAction } from "~~/components/subscription/SubscriptionAction";
+import { SubscriptionConditionSelection } from "~~/components/subscription/SubscriptionConditionSelection";
+import { SubscriptionSelectAsset } from "~~/components/subscription/SubscriptionSelectAsset";
+import { SubscriptionTimeBasedSubscription } from "~~/components/subscription/SubscriptionTimeBasedSubscription";
+import { SubscriptionType } from "~~/components/subscription/SubscriptionType";
 
 const CreateSubscription: NextPage = () => {
-  const [selectedSubscription, setSelectedSubscription] = useState<number | null>(null);
+  const [currentStep, setCurrentStep] = useState(1);
 
-  const handleSubscriptionChange = (subscriptionId: number) => {
-    setSelectedSubscription(subscriptionId);
-    console.log(subscriptionId);
+  const handleNext = () => {
+    setCurrentStep(prevStep => prevStep + 1);
   };
 
-  const subscriptions: Subscription[] = [
-    {
-      id: 1,
-      title: "Time based",
-      imageSrc: "/assets/img/3d-hourglass.svg",
-    },
-    {
-      id: 2,
-      title: "Inflation rate",
-      imageSrc: "/assets/img/inflation.svg",
-    },
-    {
-      id: 3,
-      title: "Asset price",
-      imageSrc: "/assets/img/3d-sold.svg",
-    },
-    {
-      id: 4,
-      title: "Trending volume",
-      imageSrc: "/assets/img/trending.svg",
-    },
-  ];
+  const handlePrevious = () => {
+    setCurrentStep(prevStep => prevStep - 1);
+  };
+
+  const handleFinish = () => {
+    toast.success("Subscription completed!");
+  };
+
+  const isLastStep = currentStep === 5;
 
   return (
-    <div className="container mx-auto p-8">
-      <h1 className="text-sm font-medium mb-2">Create a subscription</h1>
-      <h2 className="text-2xl font-bold mb-12">Please select subscription type</h2>
+    <section className="container mx-auto p-8">
+      {currentStep === 1 && <SubscriptionType />}
+      {currentStep === 2 && <SubscriptionAction />}
+      {currentStep === 3 && <SubscriptionSelectAsset />}
+      {currentStep === 4 && <SubscriptionConditionSelection />}
+      {currentStep === 5 && <SubscriptionTimeBasedSubscription />}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {subscriptions.map(subscription => (
-          <div className="border border-gray-300 p-4 relative" key={subscription.id}>
-            <label className="absolute top-2 right-2">
-              <input
-                type="radio"
-                name="subscription"
-                value={subscription.id}
-                checked={selectedSubscription === subscription.id}
-                onChange={() => handleSubscriptionChange(subscription.id)}
-                className="form-radio h-4 w-4 text-blue-500 cursor-pointer"
-              />
-            </label>
-            <Image src={subscription.imageSrc} alt={subscription.title} width={300} height={200} className="mb-2" />
-            <p className=" font-medium text-center">{subscription.title}</p>
-          </div>
-        ))}
-      </div>
-
-      <ActionButtons previousHref="" nextHref="/action" />
-    </div>
+      <ActionButtons
+        onPrevious={currentStep > 1 ? handlePrevious : undefined}
+        onNext={currentStep < 5 ? handleNext : handleFinish}
+        isLastStep={isLastStep}
+      />
+      <ToastContainer />
+    </section>
   );
 };
 

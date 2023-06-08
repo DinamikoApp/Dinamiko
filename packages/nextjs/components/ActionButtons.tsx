@@ -1,25 +1,28 @@
-import Link from "next/link";
+import React from "react";
 
 type ActionButtonsProps = {
-  previousHref?: string;
-  nextHref: string;
+  onPrevious?: () => void;
+  onNext: () => void;
+  isLastStep: boolean;
 };
 
-const ActionButtons: React.FC<ActionButtonsProps> = ({ previousHref, nextHref }) => {
+const ActionButtons: React.FC<ActionButtonsProps> = ({ onPrevious, onNext, isLastStep }) => {
   return (
-    <div className="flex justify-between mt-12 ">
-      {previousHref && (
-        <Link href={previousHref} legacyBehavior>
-          <a className=" hover:bg-white hover:text-black text-white py-2 px-4 cursor-pointer border-2 border-white">
-            Back
-          </a>
-        </Link>
+    <div className="flex justify-between mt-12">
+      {onPrevious && (
+        <button
+          onClick={onPrevious}
+          className="hover:bg-white hover:text-black text-white py-2 px-4 cursor-pointer border-2 border-white"
+        >
+          Back
+        </button>
       )}
-      <Link href={nextHref} legacyBehavior>
-        <a className="  hover:bg-white hover:text-black text-white py-3 px-6 cursor-pointer border-2 border-none bg-gradient">
-          Proceed
-        </a>
-      </Link>
+      <button
+        onClick={onNext}
+        className="hover:bg-white hover:text-black text-white py-3 px-6 cursor-pointer border-2 border-none bg-gradient"
+      >
+        {isLastStep ? "Finish" : "Proceed"}
+      </button>
     </div>
   );
 };
