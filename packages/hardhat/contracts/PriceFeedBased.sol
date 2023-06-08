@@ -37,7 +37,7 @@ struct RegistrationParams {
 /// @author NatX
 /// @notice The contract handles the creation of price based subscriptions and executing of these type of subscriptions
 /// @dev The contract utilizes the Uniswap V3 contracts to buy tokens, sell tokens and add liquidity
-contract priceBasedSubscriptions is ConfirmedOwner, Pausable, AutomationCompatibleInterface  {
+contract PriceBasedSubscriptions is ConfirmedOwner, Pausable, AutomationCompatibleInterface  {
 
     LinkTokenInterface public immutable i_link;
     KeeperRegistrarInterface public immutable i_registrar;
@@ -166,8 +166,8 @@ contract priceBasedSubscriptions is ConfirmedOwner, Pausable, AutomationCompatib
     /// @param priceTarget the price of the token for subscription execution
     /// @param tokenIn the token that the user wants to sell
     /// @param amount the amount worth of tokens the user wants to buy in USDT
-    function createSellSubscription(int priceTarget, address tokenIn, uint amount, address aggregatorAddress) public {
-        Subscription memory newSub = Subscription(msg.sender, 2, tokenIn, usdtAddress, amount, 0, priceTarget, aggregatorAddress, true);
+    function createSellSubscription(uint priceTarget, address tokenIn, uint amount) public {
+        Subscription memory newSub = Subscription(msg.sender, 2, tokenIn, usdtAddress, amount, 0, priceTarget, true);
         subscriptions[subCounter] = newSub;
         userSubscriptions[msg.sender].push(newSub);
         // approve the contract to spend the given amount of tokens specified on the frontend
@@ -202,13 +202,10 @@ function executeSubscriptions() public {
             transactions.buyToken(subscriptions[i].tokenOut, subscriptions[i].amountIn, subscriptions[i].owner);
         }
         else if (subscriptions[i].priceTarget <= currentPrice && subscriptions[i].transactionType == 2 && subscriptions[i].active == true) {
-            address owner_ = subscriptions[i].owner;
-            address token = subscriptions[i].tokenIn;
-            uint256 amount = subscriptions[i].amountIn;
             // transfer from the user to the smart contract
             IERC20 _token = IERC20(subscriptions[i].tokenIn);
             _token.transferFrom(subscriptions[i].owner, transactionsAdd, subscriptions[i].amountIn);
-            transactions.sellToken(token, subscriptions[i].amountIn, subscriptions[i].owner);
+            transactions.sellToken(subscriptions[i].tokenIn, subscriptions[i].amountIn, subscriptions[i].owner);
         }
     }
 
