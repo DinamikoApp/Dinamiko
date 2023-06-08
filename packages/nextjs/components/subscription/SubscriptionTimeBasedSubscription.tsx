@@ -49,7 +49,7 @@ export function SubscriptionTimeBasedSubscription() {
           {boxes.map(box => (
             <div
               key={box.value}
-              className={`border p-2 text-center cursor-pointer bg-darkblue ${
+              className={`bg-[#00022C] p-2 text-center cursor-pointer bg-darkblue ${
                 isActiveBox(box.value) ? "border-2 border-white" : ""
               }`}
               onClick={() => handleBoxClick(box.value)}
@@ -61,18 +61,16 @@ export function SubscriptionTimeBasedSubscription() {
 
         <div className="flex mt-4 align-middle justify-center">
           <div className="mr-2">
-            <span className="font-bold">Custom time:</span>
+            <span className="text-xl mr-6">Custom time</span>
             <input
               type="text"
-              className="border text-black border-gray-300 px-2 py-1 ml-2"
+              className="border text-black border-gray-300 px-2 py-2 ml-2 text-center"
               value={customTimeValue}
               onChange={handleCustomTimeValueChange}
             />
-          </div>
 
-          <div>
             <select
-              className="border border-gray-300 px-2 py-1 ml-2 text-black"
+              className="border border-gray-300 px-2 py-2 text-black"
               value={customTimeUnit}
               onChange={e => setCustomTimeUnit(e.target.value)}
             >

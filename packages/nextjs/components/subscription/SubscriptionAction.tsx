@@ -34,24 +34,26 @@ export function SubscriptionAction() {
 
   return (
     <div>
-      <h1 className="text-sm font-medium mb-2">Subscription Action</h1>
-      <h2 className="text-2xl font-bold mb-4">Please select an action</h2>
+      <h1 className="text-sm font-medium mb-4">Create a Subscription</h1>
+      <h2 className="text-3xl font-medium mb-4">Subscription action</h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-4/5 mx-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 w-4/5 mx-auto py-6">
         {actions.map(action => (
-          <div className="border border-gray-300 p-4 relative" key={action.id}>
-            <label className="absolute top-2 right-2">
-              <input
-                type="radio"
-                name="action"
-                value={action.id}
-                checked={selectedAction === action.id}
-                onChange={() => handleActionChange(action.id)}
-                className="form-radio h-4 w-4 text-blue-500 cursor-pointer"
-              />
-            </label>
-            <Image src={action.imageSrc} alt={action.title} width={300} height={200} className="mb-2" />
-            <p className="font-medium text-center">{action.title}</p>
+          <div key={action.id} className={`p-1 ${selectedAction === action.id ? "bg-gradient" : "bg-lightgradient"}`}>
+            <div className="p-4 relative bg-primary">
+              <label className="absolute top-2 right-2">
+                <input
+                  type="radio"
+                  name="action"
+                  value={action.id}
+                  checked={selectedAction === action.id}
+                  onChange={() => handleActionChange(action.id)}
+                  className="form-radio h-4 w-4 text-blue-500 cursor-pointer"
+                />
+              </label>
+              <Image src={action.imageSrc} alt={action.title} width={300} height={200} className="mb-2" />
+              <p className="font-medium text-center">{action.title}</p>
+            </div>
           </div>
         ))}
       </div>
