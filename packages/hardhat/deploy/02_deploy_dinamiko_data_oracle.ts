@@ -19,6 +19,7 @@ const deployDinamikoFeedsOracleContract: DeployFunction = async function ({ depl
   log("Deploying Data Oracle ...");
   console.log(ids, sources);
   await deployDinamikoFeedsOracle(ids, sources);
+  log("Done \n \n");
 };
 
 export default deployDinamikoFeedsOracleContract;

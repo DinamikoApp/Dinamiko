@@ -4,9 +4,16 @@ import {
   LinkToken,
   DinamikoPriceOracle,
   DinamikoFeedOracle,
-  PriceBasedSubscriptions,
-  InflationRateBased,
   SubscriptionAction,
+  TradingVolumeBased,
+  ERC20BalanceMonitor,
+  PriceFeedBased,
+  EthBalanceMonitor,
+  InflationBased,
+  DinamikoVolumeOracle,
+  DinamikoVolumeOracleUpdater,
+  TimeBase,
+  DataFeedBased,
 } from "../typechain-types";
 import {
   FACTORYADDRESS,
@@ -50,53 +57,149 @@ export const deployLinkToken = async () => {
   await deployContract<LinkToken>("LinkToken", [], undefined, `${TESTNET_TOKEN_PREFIX}LINK`);
 };
 
+//DinamikoPriceOracle
 export const deployDinamikoPriceOracle = async (assets: string[], sources: string[]) => {
   await deployContract<DinamikoPriceOracle>("DinamikoPriceOracle", [assets, sources, ZERO_ADDRESS, ZERO_ADDRESS, "8"]);
 };
 
+//DinamikoFeedOracle
 export const deployDinamikoFeedsOracle = async (ids: string[], sources: string[]) => {
   await deployContract<DinamikoFeedOracle>("DinamikoFeedOracle", [ids, sources, ZERO_ADDRESS]);
 };
 
-export const deployPriceBasedSubscriptions = async (
+//DeployPriceFeedBased
+export const deployPriceFeedBased = async (
   oracleAddress: string,
-  link: string,
-  transactionsAddress: string,
-  usdtAddress: string,
-) => {
-  await deployContract<PriceBasedSubscriptions>("PriceBasedSubscriptions", [
-    oracleAddress,
-    link,
-    REGISTRAR,
-    UPDATEINTERVAL.toString(),
-    transactionsAddress,
-    usdtAddress,
-  ]);
-};
-
-export const deployInflationRateBased = async (
   FEE: number,
   oracleId: string,
   link: string,
-  transactionsAddress: string,
-  usdtAddress: string,
+  baseCurrency: string,
 ) => {
-  await deployContract<InflationRateBased>("InflationRateBased", [
+  await deployContract<PriceFeedBased>("PriceFeedBased", [
+    oracleAddress,
     FEE.toString(),
     JOB_ID,
     oracleId,
     link,
     REGISTRAR,
     UPDATEINTERVAL.toString(),
-    transactionsAddress,
-    usdtAddress,
+    baseCurrency,
   ]);
 };
 
-// export const deploySubscriptionAction = async (_routerAddress: string, _factoryAddress: string) => {
-//   await deployContract<SubscriptionAction>("SubscriptionAction", [_routerAddress, _factoryAddress]);
-// };
+//InflationBased
+export const deployInflationBased = async (FEE: number, oracleId: string, link: string, baseCurrency: string) => {
+  await deployContract<InflationBased>("InflationBased", [
+    FEE.toString(),
+    JOB_ID,
+    oracleId,
+    link,
+    REGISTRAR,
+    UPDATEINTERVAL.toString(),
+    baseCurrency,
+  ]);
+};
 
+//SubscriptionAction
 export const deploySubscriptionAction = async () => {
   await deployContract<SubscriptionAction>("SubscriptionAction", [ROUTERADDRESS, FACTORYADDRESS]);
+};
+
+//DinamikoVolumeOracle
+export const deployDinamikoVolumeOracle = async (link: string, linkOracle: string, jobId: string, symbol: string) => {
+  await deployContract<DinamikoVolumeOracle>("DinamikoVolumeOracle", [link, linkOracle, jobId, symbol]);
+};
+
+//DinamikoVolumeOracleUpdater
+export const deployDinamikoVolumeOracleUpdater = async (
+  oracleAddress: string,
+  FEE: number,
+  oracleId: string,
+  link: string,
+  baseCurrency: string,
+  volumeOracle: string,
+) => {
+  await deployContract<DinamikoVolumeOracleUpdater>("DinamikoVolumeOracleUpdater", [
+    oracleAddress,
+    FEE.toString(),
+    JOB_ID,
+    oracleId,
+    link,
+    REGISTRAR,
+    UPDATEINTERVAL.toString(),
+    baseCurrency,
+    volumeOracle,
+  ]);
+};
+
+//TimeBase
+export const deployTimeBase = async (
+  oracleAddress: string,
+  FEE: number,
+  oracleId: string,
+  link: string,
+  baseToken: string,
+) => {
+  await deployContract<TimeBase>("TimeBase", [
+    oracleAddress,
+    FEE.toString(),
+    JOB_ID,
+    oracleId,
+    link,
+    REGISTRAR,
+    UPDATEINTERVAL.toString(),
+    baseToken,
+  ]);
+};
+
+//TradingVolume
+export const deployTradingVolumeBased = async (FEE: number, oracleId: string, link: string, baseToken: string) => {
+  await deployContract<TradingVolumeBased>("TradingVolumeBased", [
+    FEE.toString(),
+    JOB_ID,
+    oracleId,
+    link,
+    REGISTRAR,
+    UPDATEINTERVAL.toString(),
+    baseToken,
+  ]);
+};
+
+export const deployERC20BalanceMonitor = async (
+  erc20TokenAddress: string,
+  keeperRegistryAddress: string,
+  minWaitPeriodSeconds: number,
+) => {
+  await deployContract<ERC20BalanceMonitor>("ERC20BalanceMonitor", [
+    erc20TokenAddress,
+    keeperRegistryAddress,
+    minWaitPeriodSeconds.toString(),
+  ]);
+};
+
+export const deployEthBalanceMonitor = async (keeperRegistryAddress: string, minWaitPeriodSeconds: number) => {
+  await deployContract<EthBalanceMonitor>("EthBalanceMonitor", [
+    keeperRegistryAddress,
+    minWaitPeriodSeconds.toString(),
+  ]);
+};
+
+//TradingVolume
+export const deployDataFeedBased = async (
+  oracleAddress: string,
+  FEE: number,
+  oracleId: string,
+  link: string,
+  baseCurrency: string,
+) => {
+  await deployContract<DataFeedBased>("DataFeedBased", [
+    oracleAddress,
+    FEE.toString(),
+    JOB_ID,
+    oracleId,
+    link,
+    REGISTRAR,
+    UPDATEINTERVAL.toString(),
+    baseCurrency,
+  ]);
 };

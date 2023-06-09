@@ -21,9 +21,9 @@ const deployDinamikoPriceOracleContract: DeployFunction = async function ({ depl
   const supportedTokensPriceFeeds = await getChainlinkPriceOracles(networkName);
   const { assets, sources } = mapTokenAddressToPriceFeeds(supportedTokens, supportedTokensPriceFeeds, networkName);
 
-  log("Deploying Oracle Tokens...");
+  log("Deploying Dinamiko Price Oracle...");
   await deployDinamikoPriceOracle(assets, sources);
-  // // Should Only Deploy Mock If it Local Network
+  log("Done \n \n");
 };
 
 export default deployDinamikoPriceOracleContract;
