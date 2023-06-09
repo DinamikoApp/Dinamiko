@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./base/interfaces/ITradingVolumeBased.sol";
+import "./base/interfaces/IDataFeedBased.sol";
 import "./base/interfaces/IKeeperRegistrarInterface.sol";
 import "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
@@ -9,39 +9,36 @@ import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "../oracles/interfaces/IDinamikoVolumeOracle.sol";
+import "../oracles/interfaces/IDinamikoFeedOracle.sol";
 import "hardhat/console.sol";
 
-contract TradingVolumeBased is
-  ChainlinkClient,
-  ConfirmedOwner,
-  Pausable,
-  AutomationCompatibleInterface,
-  ITradingVolumeBased
-{
+contract DataFeedBased is ChainlinkClient, ConfirmedOwner, Pausable, AutomationCompatibleInterface, IDataFeedBased {
   using Chainlink for Chainlink.Request;
 
+  int256 public LastInflationsRate = 0;
   address public oracleId;
   string public jobId;
   uint256 public fee;
   KeeperRegistrarInterface public immutable i_registrar;
+  IDinamikoFeedOracle feedOracle;
 
-  TradingVolumeBasedSubscription[] public subscriptions;
+  DataFeedBasedSubscription[] public subscriptions;
   uint public immutable interval;
   uint public lastTimeStamp;
 
-  address public baseToken;
+  address public baseCurrency;
 
   uint256 public subscriptionIds;
 
   constructor(
+    address oracleAddress,
     uint _fee,
     string memory _jobId,
     address _oracleId,
     address _link,
     KeeperRegistrarInterface _registrar,
     uint updateInterval,
-    address _baseToken
+    address _baseCurrency
   ) ConfirmedOwner(msg.sender) {
     setChainlinkToken(_link);
     setChainlinkOracle(_oracleId);
@@ -51,7 +48,8 @@ contract TradingVolumeBased is
 
     interval = updateInterval;
     lastTimeStamp = block.timestamp;
-    baseToken = _baseToken;
+    feedOracle = IDinamikoFeedOracle(oracleAddress);
+    baseCurrency = _baseCurrency;
   }
 
   /**
@@ -68,34 +66,6 @@ contract TradingVolumeBased is
     performData = checkData;
   }
 
-  function createSubscription(
-    uint subscriptionType,
-    uint amount,
-    uint action,
-    address token1,
-    address token2,
-    address liquidityPool,
-    address volumeOracle,
-    int256 volumePercentChange
-  ) external override returns (uint256 subscriptionId) {
-    subscriptionId = subscriptionIds++;
-    IDinamikoVolumeOracle volumeOracleInstance = IDinamikoVolumeOracle(volumeOracle);
-    uint256 currentVolume = volumeOracleInstance.getVolume();
-
-    subscriptions[subscriptionId] = TradingVolumeBasedSubscription(
-      subscriptionType,
-      amount,
-      action,
-      token1,
-      token2,
-      liquidityPool,
-      volumeOracle,
-      currentVolume,
-      volumePercentChange
-    );
-    emit CreateSubscription(subscriptionType, amount, action, token1, token2, volumeOracle, volumePercentChange);
-  }
-
   /**
    *  @notice handles the automatic execution of subscriptions
    *  @dev additional checks are performed before the upkeep is performed
@@ -105,6 +75,31 @@ contract TradingVolumeBased is
       executeSubscriptions();
       lastTimeStamp = block.timestamp;
     }
+  }
+
+  function createSubscription(
+    uint subscriptionType,
+    uint amount,
+    uint action,
+    address token1,
+    address token2,
+    address liquidityPool,
+    int256 feedChangePercent,
+    bytes32 feedId
+  ) external payable override returns (uint256 subscriptionId) {
+    subscriptionId = subscriptionIds++;
+    uint256 currentDataFeedValue = feedOracle.getFeedData(feedId);
+    subscriptions[subscriptionId] = DataFeedBasedSubscription(
+      subscriptionType,
+      amount,
+      action,
+      token1,
+      token2,
+      liquidityPool,
+      currentDataFeedValue,
+      feedChangePercent
+    );
+    emit CreateSubscription(subscriptionType, amount, action, token1, token2, feedId);
   }
 
   /**
@@ -125,7 +120,7 @@ contract TradingVolumeBased is
     }
   }
 
-  function getSubscriptions() external view override returns (TradingVolumeBasedSubscription[] memory) {
+  function getSubscriptions() external view override returns (DataFeedBasedSubscription[] memory) {
     return subscriptions;
   }
 

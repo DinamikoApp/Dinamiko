@@ -6,8 +6,9 @@ pragma abicoder v2;
 import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
+import "./base/interfaces/ISubscriptionActions.sol";
 
-contract SubscriptionAction {
+contract SubscriptionAction is ISubscriptionAction {
   // Immutable variable for the Uniswap Swap Router
   ISwapRouter internal immutable swapRouter;
 
@@ -48,12 +49,12 @@ contract SubscriptionAction {
   }
 
   // Function to buy asset
-  function buyAsset(address _purchaseToken, uint _amount, address _receiver) public returns (uint) {
+  function buyAsset(address _purchaseToken, uint _amount, address _receiver) external override returns (uint) {
     return _swap(_purchaseToken, factoryAddress, _amount, _receiver);
   }
 
   // Function to sell token
-  function sellToken(address _sellToken, uint _amount, address _receiver) public returns (uint) {
+  function sellToken(address _sellToken, uint _amount, address _receiver) external override returns (uint) {
     return _swap(_sellToken, factoryAddress, _amount, _receiver);
   }
 }

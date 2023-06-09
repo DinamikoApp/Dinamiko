@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./base/interfaces/ITradingVolumeBased.sol";
+import "./base/interfaces/IInflationBased.sol";
 import "./base/interfaces/IKeeperRegistrarInterface.sol";
 import "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
@@ -9,28 +9,21 @@ import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "../oracles/interfaces/IDinamikoVolumeOracle.sol";
 import "hardhat/console.sol";
 
-contract TradingVolumeBased is
-  ChainlinkClient,
-  ConfirmedOwner,
-  Pausable,
-  AutomationCompatibleInterface,
-  ITradingVolumeBased
-{
+contract InflationBased is ChainlinkClient, ConfirmedOwner, Pausable, AutomationCompatibleInterface, IInflationBased {
   using Chainlink for Chainlink.Request;
 
+  int256 public LastInflationsRate = 0;
   address public oracleId;
   string public jobId;
   uint256 public fee;
   KeeperRegistrarInterface public immutable i_registrar;
 
-  TradingVolumeBasedSubscription[] public subscriptions;
+  InflationBaseSubscription[] public subscriptions;
   uint public immutable interval;
   uint public lastTimeStamp;
-
-  address public baseToken;
+  address public baseCurrency;
 
   uint256 public subscriptionIds;
 
@@ -41,7 +34,7 @@ contract TradingVolumeBased is
     address _link,
     KeeperRegistrarInterface _registrar,
     uint updateInterval,
-    address _baseToken
+    address _baseCurrency
   ) ConfirmedOwner(msg.sender) {
     setChainlinkToken(_link);
     setChainlinkOracle(_oracleId);
@@ -51,7 +44,49 @@ contract TradingVolumeBased is
 
     interval = updateInterval;
     lastTimeStamp = block.timestamp;
-    baseToken = _baseToken;
+    baseCurrency = _baseCurrency;
+    requestInflationRate();
+  }
+
+  /**
+   *  @notice This functions gets the current inflation rate
+   *  @dev The function needs to be fired first before the inflation rate can be updated (a few seconds have to pass first the inflation rate is set)
+   */
+  function requestInflationRate() public returns (bytes32 requestId) {
+    Chainlink.Request memory req = buildChainlinkRequest(
+      bytes32(bytes(jobId)),
+      address(this),
+      this.fulfillInflationRate.selector
+    );
+    req.add("service", "truflation/current");
+    req.add("keypath", "yearOverYearInflation");
+    req.add("abi", "int256");
+    req.add("multiplier", "1000000000000000000");
+    req.add("refundTo", Strings.toHexString(uint160(msg.sender), 20));
+
+    return sendChainlinkRequestTo(oracleId, req, fee);
+  }
+
+  /**
+   * @notice this function sets the inflation rate value
+   * @dev This function is called inside the requestInflationWei function
+   */
+  function fulfillInflationRate(
+    bytes32 _requestId,
+    bytes memory _inflation
+  ) public recordChainlinkFulfillment(_requestId) {
+    LastInflationsRate = toInt256(_inflation);
+  }
+
+  /**
+   *  @notice converts bytes type to int256
+   *  @param _bytes the bytes input to be converted
+   *  @return value the converted int value to be returned
+   */
+  function toInt256(bytes memory _bytes) internal pure returns (int256 value) {
+    assembly {
+      value := mload(add(_bytes, 0x20))
+    }
   }
 
   /**
@@ -68,6 +103,18 @@ contract TradingVolumeBased is
     performData = checkData;
   }
 
+  /**
+   *  @notice handles the automatic execution of subscriptions
+   *  @dev additional checks are performed before the upkeep is performed
+   */
+  function performUpkeep(bytes calldata /* performData */) external override {
+    if ((block.timestamp - lastTimeStamp) > interval) {
+      requestInflationRate();
+      executeSubscriptions();
+      lastTimeStamp = block.timestamp;
+    }
+  }
+
   function createSubscription(
     uint subscriptionType,
     uint amount,
@@ -75,36 +122,20 @@ contract TradingVolumeBased is
     address token1,
     address token2,
     address liquidityPool,
-    address volumeOracle,
-    int256 volumePercentChange
+    int256 inflationChangePercent
   ) external override returns (uint256 subscriptionId) {
     subscriptionId = subscriptionIds++;
-    IDinamikoVolumeOracle volumeOracleInstance = IDinamikoVolumeOracle(volumeOracle);
-    uint256 currentVolume = volumeOracleInstance.getVolume();
-
-    subscriptions[subscriptionId] = TradingVolumeBasedSubscription(
+    subscriptions[subscriptionId] = InflationBaseSubscription(
       subscriptionType,
       amount,
       action,
       token1,
       token2,
       liquidityPool,
-      volumeOracle,
-      currentVolume,
-      volumePercentChange
+      LastInflationsRate,
+      inflationChangePercent
     );
-    emit CreateSubscription(subscriptionType, amount, action, token1, token2, volumeOracle, volumePercentChange);
-  }
-
-  /**
-   *  @notice handles the automatic execution of subscriptions
-   *  @dev additional checks are performed before the upkeep is performed
-   */
-  function performUpkeep(bytes calldata /* performData */) external override {
-    if ((block.timestamp - lastTimeStamp) > interval) {
-      executeSubscriptions();
-      lastTimeStamp = block.timestamp;
-    }
+    emit CreateSubscription(subscriptionType, amount, action, token1, token2);
   }
 
   /**
@@ -125,7 +156,7 @@ contract TradingVolumeBased is
     }
   }
 
-  function getSubscriptions() external view override returns (TradingVolumeBasedSubscription[] memory) {
+  function getSubscriptions() external view override returns (InflationBaseSubscription[] memory) {
     return subscriptions;
   }
 
