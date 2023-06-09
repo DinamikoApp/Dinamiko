@@ -1,7 +1,9 @@
+import { useEffect } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useDisconnect, useSwitchNetwork } from "wagmi";
+import { useAccount, useDisconnect, useSwitchNetwork } from "wagmi";
 import { ArrowLeftOnRectangleIcon, ArrowsRightLeftIcon, ChevronDownIcon } from "@heroicons/react/24/solid";
 import { Balance, BlockieAvatar } from "~~/components/scaffold-eth";
+import { getUser, saveUser } from "~~/firebase/firestore";
 import { useAutoConnect, useNetworkColor } from "~~/hooks/scaffold-eth";
 import { getTargetNetwork } from "~~/utils/scaffold-eth";
 
@@ -15,6 +17,16 @@ export const RainbowKitCustomConnectButton = () => {
   const configuredNetwork = getTargetNetwork();
   const { disconnect } = useDisconnect();
   const { switchNetwork } = useSwitchNetwork();
+  const { address, isConnected } = useAccount();
+
+  useEffect(() => {
+    (async () => {
+      const user = await getUser(address);
+      if (user == null) {
+        saveUser(address);
+      }
+    })();
+  }, [isConnected]);
 
   return (
     <ConnectButton.Custom>

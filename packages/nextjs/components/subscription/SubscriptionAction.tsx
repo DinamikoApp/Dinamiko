@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Image from "next/image";
+import { SelectProps } from "~~/types/SelectProp";
 
 interface SubscriptionAction {
   id: number;
@@ -7,26 +8,27 @@ interface SubscriptionAction {
   imageSrc: string;
 }
 
-export function SubscriptionAction() {
-  const [selectedAction, setSelectedAction] = useState<number | null>(null);
+export function SubscriptionAction(props: SelectProps) {
+  const [selectedAction, setSelectedAction] = useState<number>(0);
 
   const handleActionChange = (actionId: number) => {
     setSelectedAction(actionId);
+    props.onSelect(actionId);
   };
 
   const actions: SubscriptionAction[] = [
     {
-      id: 1,
+      id: 0,
       title: "Buy assets",
       imageSrc: "/assets/img/buy-assets.svg",
     },
     {
-      id: 2,
+      id: 1,
       title: "Sell assets",
       imageSrc: "/assets/img/3d-sold.svg",
     },
     {
-      id: 3,
+      id: 2,
       title: "Add liquidity",
       imageSrc: "/assets/img/3d-hourglass.svg",
     },

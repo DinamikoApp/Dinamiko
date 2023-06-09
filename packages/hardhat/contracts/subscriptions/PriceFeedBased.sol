@@ -84,7 +84,7 @@ contract PriceFeedBased is ChainlinkClient, ConfirmedOwner, Pausable, Automation
     address token1,
     address token2,
     address liquidityPool,
-    int256 assetPriceChangePercent
+    uint256 assetPriceChangePercent
   ) external override returns (uint256 subscriptionId) {
     subscriptionId = subscriptionIds++;
     uint256 currentPrice = priceOracle.getAssetPrice(token1);

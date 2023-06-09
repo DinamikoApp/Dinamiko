@@ -12,12 +12,12 @@ import "./ISubscriptionBase.sol";
 interface IDataFeedBased is ISubscriptionBase {
   function createSubscription(
     uint subscriptionType,
-    uint amount,
+    uint256 amount,
     uint action,
     address token1,
     address token2,
     address liquidityPool,
-    int256 feedChangePercent,
+    uint256 feedChangePercent,
     bytes32 feedId
   ) external payable returns (uint256 subscriptionId);
 
@@ -38,12 +38,12 @@ interface IDataFeedBased is ISubscriptionBase {
 
   struct DataFeedBasedSubscription {
     uint subscriptionType;
-    uint amount;
+    uint256 amount;
     uint action;
     address token1;
     address token2;
     address liquidityPool;
     uint256 lastDataFeedValue;
-    int256 feedChangePercent;
+    uint256 feedChangePercent;
   }
 }

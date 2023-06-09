@@ -1,16 +1,16 @@
 import React, { useState } from "react";
-import { SUPPORTED_TOKENS } from "~~/networkHelpers";
+import { SUPPORTED_LIQUIDITY_POOLS } from "../../networkHelpers";
 import { InputProps } from "~~/types/SelectProp";
 
-export function SubscriptionSelectAsset(prop: InputProps) {
-  const [selectedAsset, setSelectedAsset] = useState<string>("");
+export function SubscriptionSelectLiquidityPool(prop: InputProps) {
+  const [selectedAsset, setSelectedAsset] = useState<string | null>(null);
 
   const handleConditionClick = (asset: string) => {
     setSelectedAsset(asset);
     prop.onChange(asset);
   };
 
-  const assets: string[] = Object.keys(SUPPORTED_TOKENS);
+  const assets: string[] = Object.keys(SUPPORTED_LIQUIDITY_POOLS);
 
   return (
     <div>

@@ -17,7 +17,7 @@ interface IInflationBased is ISubscriptionBase {
     address token1,
     address token2,
     address liquidityPool,
-    int256 inflationChangePercent
+    uint256 inflationChangePercent
   ) external returns (uint256 subscriptionId);
 
   function getSubscriptions() external view returns (InflationBaseSubscription[] memory);
@@ -41,7 +41,7 @@ interface IInflationBased is ISubscriptionBase {
     address token1;
     address token2;
     address liquidityPool;
-    int256 lastInflationRate;
-    int256 inflationChangePercent;
+    uint256 lastInflationRate;
+    uint256 inflationChangePercent;
   }
 }

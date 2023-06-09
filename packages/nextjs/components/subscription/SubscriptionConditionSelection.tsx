@@ -1,16 +1,19 @@
 import React, { useState } from "react";
+import { InputProps } from "~~/types/SelectProp";
 
-export function SubscriptionConditionSelection() {
-  const [selectedCondition, setSelectedCondition] = useState<string | null>(null);
+export function SubscriptionConditionSelection(props: InputProps) {
+  const [selectedCondition, setSelectedCondition] = useState<string>("");
 
   const handleConditionClick = (condition: string) => {
     setSelectedCondition(condition);
+    props.onChange(condition);
   };
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     if (value === "" || /^[-+]?\d+(\s?\d+)?%?$/.test(value)) {
       setSelectedCondition(value);
+      props.onChange(value);
     }
   };
 

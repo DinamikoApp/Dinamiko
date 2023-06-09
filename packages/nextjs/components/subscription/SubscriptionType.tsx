@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
+import { SUPPORTED_ACTIONS } from "~~/networkHelpers";
+import { SelectProps } from "~~/types/SelectProp";
 
 interface Subscription {
   id: number;
@@ -7,36 +9,15 @@ interface Subscription {
   imageSrc: string;
 }
 
-export function SubscriptionType() {
-  const [selectedSubscription, setSelectedSubscription] = useState<number | null>(null);
+export function SubscriptionType(props: SelectProps) {
+  const [selectedSubscription, setSelectedSubscription] = useState<number>(0);
 
   const handleSubscriptionChange = (subscriptionId: number) => {
     setSelectedSubscription(subscriptionId);
-    console.log(subscriptionId);
+    props.onSelect(subscriptionId);
   };
 
-  const subscriptions: Subscription[] = [
-    {
-      id: 1,
-      title: "Time based",
-      imageSrc: "/assets/img/3d-hourglass.svg",
-    },
-    {
-      id: 2,
-      title: "Inflation rate",
-      imageSrc: "/assets/img/inflation.svg",
-    },
-    {
-      id: 3,
-      title: "Asset price",
-      imageSrc: "/assets/img/3d-sold.svg",
-    },
-    {
-      id: 4,
-      title: "Trending volume",
-      imageSrc: "/assets/img/trending.svg",
-    },
-  ];
+  const subscriptions: Subscription[] = SUPPORTED_ACTIONS;
 
   return (
     <div>

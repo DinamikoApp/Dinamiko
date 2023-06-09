@@ -16,7 +16,7 @@ contract DinamikoVolumeOracleUpdater is ChainlinkClient, ConfirmedOwner, Pausabl
   using Chainlink for Chainlink.Request;
 
   address private oracleId;
-  string private jobId;
+  bytes32 private jobId;
   uint256 private fee;
   KeeperRegistrarInterface private immutable i_registrar;
   IDinamikoVolumeOracle volumeOracle;
@@ -28,7 +28,7 @@ contract DinamikoVolumeOracleUpdater is ChainlinkClient, ConfirmedOwner, Pausabl
 
   constructor(
     uint _fee,
-    string memory _jobId,
+    bytes32 _jobId,
     address _oracleId,
     address _link,
     KeeperRegistrarInterface _registrar,
@@ -64,6 +64,7 @@ contract DinamikoVolumeOracleUpdater is ChainlinkClient, ConfirmedOwner, Pausabl
    */
   function performUpkeep(bytes calldata /* performData */) external override {
     if ((block.timestamp - lastTimeStamp) > interval) {
+      volumeOracle.requestVolumeData();
       lastTimeStamp = block.timestamp;
     }
   }

@@ -12,13 +12,13 @@ import "./ISubscriptionBase.sol";
 interface ITimeBased is ISubscriptionBase {
   function createSubscription(
     uint subscriptionType,
-    uint amount,
+    uint256 amount,
     uint action,
     address token1,
     address token2,
     address liquidityPool,
     uint256 interval,
-    int256 assetPricePercent
+    uint256 assetPricePercent
   ) external returns (uint256 subscriptionId);
 
   function getSubscriptions() external view returns (TimeBasedSubscription[] memory);
@@ -45,6 +45,6 @@ interface ITimeBased is ISubscriptionBase {
     address liquidityPool;
     uint256 interval;
     uint256 lastAssetPrice;
-    int256 assetPricePercent;
+    uint256 assetPricePercent;
   }
 }
