@@ -106,6 +106,7 @@ const deployUniswap: DeployFunction = async function ({ deployments, ethers }: H
     const poolAddress: string = await uniswapFactory.getPool(erc20Address[0], erc20Address[1], pairFee);
     console.log(poolAddress, `Local Pool address ${erc20Address[0]} ${erc20Address[1]}`);
   }
+  log("Done \n \n");
 };
 
 export default deployUniswap;

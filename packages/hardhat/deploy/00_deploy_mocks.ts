@@ -45,6 +45,7 @@ const deployMocks: DeployFunction = async function ({ deployments }: HardhatRunt
     for (const key in MOCK_CHAINLINK_DATA_FEEDS_AGGREGATORS) {
       await deployDataFeedAggregator(key, MOCK_CHAINLINK_DATA_FEEDS_AGGREGATORS[key]);
     }
+    log("Done \n \n");
   }
 };
 
