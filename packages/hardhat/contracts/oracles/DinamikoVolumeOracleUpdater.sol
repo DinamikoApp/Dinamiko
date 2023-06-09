@@ -1,31 +1,30 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./base/interfaces/ITimeBased.sol";
-import "./base/interfaces/IKeeperRegistrarInterface.sol";
+import "./interfaces/IDinamikoVolumeOracle.sol";
+import "../subscriptions/base/interfaces/IKeeperRegistrarInterface.sol";
 import "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "../oracles/interfaces/IDinamikoPriceOracle.sol";
+import "../oracles/interfaces/IDinamikoFeedOracle.sol";
 import "hardhat/console.sol";
 
-contract TimeBase is ChainlinkClient, ConfirmedOwner, Pausable, AutomationCompatibleInterface, ITimeBased {
+contract DinamikoVolumeOracleUpdater is ChainlinkClient, ConfirmedOwner, Pausable, AutomationCompatibleInterface {
   using Chainlink for Chainlink.Request;
 
-  address public oracleId;
-  string public jobId;
-  uint256 public fee;
-  KeeperRegistrarInterface public immutable i_registrar;
+  address private oracleId;
+  string private jobId;
+  uint256 private fee;
+  KeeperRegistrarInterface private immutable i_registrar;
+  IDinamikoVolumeOracle volumeOracle;
 
-  TimeBasedSubscription[] public subscriptions;
   uint public immutable interval;
   uint public lastTimeStamp;
-  address public baseToken;
-  uint256 public subscriptionIds;
-  IDinamikoPriceOracle priceOracle;
+
+  address public baseCurrency;
 
   constructor(
     address oracleAddress,
@@ -35,48 +34,23 @@ contract TimeBase is ChainlinkClient, ConfirmedOwner, Pausable, AutomationCompat
     address _link,
     KeeperRegistrarInterface _registrar,
     uint updateInterval,
-    address _baseToken
+    address _baseCurrency,
+    address _volumeOracle
   ) ConfirmedOwner(msg.sender) {
     setChainlinkToken(_link);
     setChainlinkOracle(_oracleId);
     jobId = _jobId;
     i_registrar = _registrar;
     fee = (_fee * LINK_DIVISIBILITY) / 10; // 0,5 * 10**18 (Varies by network and job)
-
     interval = updateInterval;
     lastTimeStamp = block.timestamp;
-    baseToken = _baseToken;
-    priceOracle = IDinamikoPriceOracle(oracleAddress);
-  }
-
-  function createSubscription(
-    uint subscriptionType,
-    uint amount,
-    uint action,
-    address token1,
-    address token2,
-    address liquidityPool,
-    uint256 interval,
-    int256 assetPricePercent
-  ) external override returns (uint256 subscriptionId) {
-    subscriptionId = subscriptionIds++;
-    uint256 currentPrice = priceOracle.getAssetPrice(token1);
-    subscriptions[subscriptionId] = TimeBasedSubscription(
-      subscriptionType,
-      amount,
-      action,
-      token1,
-      token2,
-      liquidityPool,
-      currentPrice,
-      interval,
-      assetPricePercent
-    );
+    volumeOracle = IDinamikoVolumeOracle(volumeOracle);
   }
 
   /**
    * @notice function to check if an upkeep needs to be performed
    * @param checkData passed in by the chainlink node/operator
+   *
    * @return upkeepNeeded upkeepNeeded returns if the upkeep is needed or not
    * @return performData
    */
@@ -93,7 +67,6 @@ contract TimeBase is ChainlinkClient, ConfirmedOwner, Pausable, AutomationCompat
    */
   function performUpkeep(bytes calldata /* performData */) external override {
     if ((block.timestamp - lastTimeStamp) > interval) {
-      executeSubscriptions();
       lastTimeStamp = block.timestamp;
     }
   }
@@ -106,22 +79,7 @@ contract TimeBase is ChainlinkClient, ConfirmedOwner, Pausable, AutomationCompat
     require(link.transfer(msg.sender, link.balanceOf(address(this))), "Unable to transfer");
   }
 
-  function pause() public override onlyOwner {
+  function pause() public onlyOwner {
     _pause();
-  }
-
-  function executeSubscriptions() internal {
-    for (uint i = 0; i < subscriptions.length; i++) {
-      console.log(subscriptions[i].subscriptionType);
-    }
-  }
-
-  function getSubscriptions() external view override returns (TimeBasedSubscription[] memory) {
-    return subscriptions;
-  }
-
-  function deleteSubscription(uint256 subscriptionId) external override onlyOwner returns (uint256 subId) {
-    subscriptionId = subId;
-    delete subscriptions[subId];
   }
 }

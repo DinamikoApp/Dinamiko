@@ -13,12 +13,13 @@ contract DinamikoVolumeOracle is ChainlinkClient, ConfirmedOwner, IDinamikoVolum
   using Chainlink for Chainlink.Request;
 
   uint256 private volume;
-  bytes32 private immutable jobId;
+  bytes32 private jobId;
   uint256 private fee;
-  string symbol;
+  string private symbol;
 
-  event RequestVolume(bytes32 indexed requestId, uint256 volume);
-  event FundsAdded(uint256 amountAdded, uint256 newBalance, address sender);
+  event JobIdUpdated(bytes32 newJobId);
+  event SymbolUpdated(string newSymbol);
+  event FeeUpdated(uint256 newFee);
 
   /**
    * @notice Initialize the link token and target oracle
@@ -36,9 +37,9 @@ contract DinamikoVolumeOracle is ChainlinkClient, ConfirmedOwner, IDinamikoVolum
   ) ConfirmedOwner(msg.sender) {
     setChainlinkToken(_linkAddress);
     setChainlinkOracle(_linkOracleAddress);
-    jobId = _jobId;
+    setJobId(_jobId);
     fee = (1 * LINK_DIVISIBILITY) / 10; // 0,1 * 10**18 (Varies by network and job)
-    symbol = _symbol;
+    setSymbol(_symbol);
   }
 
   /**
@@ -82,5 +83,29 @@ contract DinamikoVolumeOracle is ChainlinkClient, ConfirmedOwner, IDinamikoVolum
   function withdrawLink() public override onlyOwner {
     LinkTokenInterface link = LinkTokenInterface(chainlinkTokenAddress());
     require(link.transfer(msg.sender, link.balanceOf(address(this))), "Unable to transfer");
+  }
+
+  /**
+   * Set the jobId
+   */
+  function setJobId(bytes32 _jobId) public onlyOwner {
+    jobId = _jobId;
+    emit JobIdUpdated(_jobId);
+  }
+
+  /**
+   * Set the symbol
+   */
+  function setSymbol(string memory _symbol) public onlyOwner {
+    symbol = _symbol;
+    emit SymbolUpdated(_symbol);
+  }
+
+  /**
+   * Set the fee
+   */
+  function setFee(uint256 _fee) public onlyOwner {
+    fee = _fee;
+    emit FeeUpdated(_fee);
   }
 }
