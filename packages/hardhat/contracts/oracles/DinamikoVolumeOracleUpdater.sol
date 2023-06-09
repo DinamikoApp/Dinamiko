@@ -27,15 +27,12 @@ contract DinamikoVolumeOracleUpdater is ChainlinkClient, ConfirmedOwner, Pausabl
   address public baseCurrency;
 
   constructor(
-    address oracleAddress,
     uint _fee,
     string memory _jobId,
     address _oracleId,
     address _link,
     KeeperRegistrarInterface _registrar,
-    uint updateInterval,
-    address _baseCurrency,
-    address _volumeOracle
+    uint updateInterval
   ) ConfirmedOwner(msg.sender) {
     setChainlinkToken(_link);
     setChainlinkOracle(_oracleId);
