@@ -3,8 +3,8 @@ pragma solidity ^0.8.0;
 
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import {IDinamikoFeedOracle} from "../interfaces/IDinamikoFeedOracle.sol";
-import "../interfaces/IPriceOracleGetter.sol";
+import {IDinamikoFeedOracle} from "./interfaces/IDinamikoFeedOracle.sol";
+import "./interfaces/IPriceOracleGetter.sol";
 
 /**
  * @title  DinamikoFeedOracle Feed oracle
