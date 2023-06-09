@@ -23,7 +23,7 @@ const deployDinamikoVolumeOracleUpdaterContract: DeployFunction = async function
   const baseCurrency = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"; //USDC smart contract address
   const volumeOracle = "0x09635F643e140090A9A8Dcd712eD6285858ceBef"; //The DinamikoOracleVolume deployment address
 
-  log("Deploying Dinamiko Volume Oracle Uopdater...");
+  log("Deploying Dinamiko Volume Oracle Updater...");
   console.log(
     "Oracle address:",
     oracleAddress,

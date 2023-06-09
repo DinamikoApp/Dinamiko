@@ -2,9 +2,6 @@
 import { ethers } from "hardhat";
 import { evmRevert, evmSnapshot } from "../helpers/utilities/tx";
 import { expect } from "chai";
-//import { deployDataFeedAggregator } from "../helpers/contract-deployments";
-//import { MOCK_CHAINLINK_DATA_FEEDS_AGGREGATORS } from "../helpers/constants";
-//import { DinamikoFeedOracle, MockV3Aggregator } from "../typechain-types";
 
 describe("DinamikoFeedOracle Contract ", function () {
   let snap: string;
@@ -16,23 +13,7 @@ describe("DinamikoFeedOracle Contract ", function () {
     await evmRevert(snap);
   });
 
-  // We define a fixture to reuse the same setup in every test.
-
-  //let dinamikoFeedOracle: DinamikoFeedOracle;
   let owner: any;
-
-  //let mockAggregator: MockV3Aggregator;
-  //const key = "MOCKDATAFEED";
-
-  // let dataFeeds: string[];
-  // let aggregatorAddress: string[];
-
-  // before(async () => {
-  // mockAggregator = (await deployDataFeedAggregator(
-  //   key,
-  //   MOCK_CHAINLINK_DATA_FEEDS_AGGREGATORS[key],
-  // )) as MockV3Aggregator;
-  // });
 
   const fallbackOracleAddress = "0x0000000000000000000000000000000000000000";
   const dataFeedIds = ["30DayETHAPR", "90DayETHAPR"].map(ethers.utils.formatBytes32String);
@@ -154,22 +135,6 @@ describe("DinamikoFeedOracle Contract ", function () {
     });
   });
 
-  it("Should return the correct data if the source aggregator returns a positive result", async function () {
-    //Check that the contract instance was created correctly
-    // const instance = await ethers.getContractFactory("DinamikoFeedOracle");
-    // const oracle = await instance.deploy(dataFeedIds, sourceAddresses, fallbackOracleAddress);
-    // await oracle.deployed();
-    // expect(oracle).to.not.be.undefined;
-    // const existentFeedId = ethers.utils.formatBytes32String("90DayETHAPR");
-    // const result = await oracle.getFeedData(existentFeedId);
-    //expect(result).to.equal(581273);
-    //console.log("The result is: ", result.toNumber());
-  });
-
-  it("Should return the correct data from the fallback oracle if the source aggregator returns a negative result or zero", async () => {
-    // Function test
-  });
-
   it("Should return 0 when given a non-existent id", async () => {
     // Check that the contract instance was created correctly
     const instance = await ethers.getContractFactory("DinamikoFeedOracle");
@@ -182,15 +147,6 @@ describe("DinamikoFeedOracle Contract ", function () {
     const result = await oracle.getFeedData(nonExistentFeedId);
     expect(result).to.equal(0);
     console.log("The id is non-existing. The result is: ", result.toNumber());
-  });
-
-  it("Should return an array with the correct data for multiple data feed ids", async () => {
-    // const instance = await ethers.getContractFactory("DinamikoFeedOracle");
-    // const oracle = await instance.deploy(dataFeedIds, sourceAddresses, fallbackOracleAddress);
-    // await oracle.deployed();
-    // //Call getFeedsData for multiple data feed ids
-    // const results = await oracle.getFeedsData(dataFeedIds);
-    // // Verify that results match the expected results for each id
   });
 
   it("Should return the correct address for a given data feed id", async () => {
