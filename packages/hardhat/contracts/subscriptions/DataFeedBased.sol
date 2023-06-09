@@ -12,7 +12,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../oracles/interfaces/IDinamikoFeedOracle.sol";
 import "hardhat/console.sol";
 
-contract PriceFeedBased is ChainlinkClient, ConfirmedOwner, Pausable, AutomationCompatibleInterface, IDataFeedBased {
+contract DataFeedBased is ChainlinkClient, ConfirmedOwner, Pausable, AutomationCompatibleInterface, IDataFeedBased {
   using Chainlink for Chainlink.Request;
 
   int256 public LastInflationsRate = 0;
