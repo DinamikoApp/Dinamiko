@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./base/interfaces/IPriceFeedBased.sol";
+import "./base/interfaces/IDataFeedBased.sol";
 import "./base/interfaces/IKeeperRegistrarInterface.sol";
 import "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
@@ -9,10 +9,10 @@ import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "../oracles/interfaces/IDinamikoPriceOracle.sol";
+import "../oracles/interfaces/IDinamikoFeedOracle.sol";
 import "hardhat/console.sol";
 
-contract PriceFeedBased is ChainlinkClient, ConfirmedOwner, Pausable, AutomationCompatibleInterface, IPriceFeedBased {
+contract PriceFeedBased is ChainlinkClient, ConfirmedOwner, Pausable, AutomationCompatibleInterface, IDataFeedBased {
   using Chainlink for Chainlink.Request;
 
   int256 public LastInflationsRate = 0;
@@ -20,9 +20,9 @@ contract PriceFeedBased is ChainlinkClient, ConfirmedOwner, Pausable, Automation
   string public jobId;
   uint256 public fee;
   KeeperRegistrarInterface public immutable i_registrar;
-  IDinamikoPriceOracle priceOracle;
+  IDinamikoFeedOracle feedOracle;
 
-  PriceFeedBasedSubscription[] public subscriptions;
+  DataFeedBasedSubscription[] public subscriptions;
   uint public immutable interval;
   uint public lastTimeStamp;
 
@@ -48,7 +48,7 @@ contract PriceFeedBased is ChainlinkClient, ConfirmedOwner, Pausable, Automation
 
     interval = updateInterval;
     lastTimeStamp = block.timestamp;
-    priceOracle = IDinamikoPriceOracle(oracleAddress);
+    feedOracle = IDinamikoFeedOracle(oracleAddress);
     baseCurrency = _baseCurrency;
   }
 
@@ -84,21 +84,22 @@ contract PriceFeedBased is ChainlinkClient, ConfirmedOwner, Pausable, Automation
     address token1,
     address token2,
     address liquidityPool,
-    int256 assetPriceChangePercent
-  ) external override returns (uint256 subscriptionId) {
+    int256 feedChangePercent,
+    bytes32 feedId
+  ) external payable override returns (uint256 subscriptionId) {
     subscriptionId = subscriptionIds++;
-    uint256 currentPrice = priceOracle.getAssetPrice(token1);
-    subscriptions[subscriptionId] = PriceFeedBasedSubscription(
+    uint256 currentDataFeedValue = feedOracle.getFeedData(feedId);
+    subscriptions[subscriptionId] = DataFeedBasedSubscription(
       subscriptionType,
       amount,
       action,
       token1,
       token2,
       liquidityPool,
-      currentPrice,
-      assetPriceChangePercent
+      currentDataFeedValue,
+      feedChangePercent
     );
-    emit CreateSubscription(subscriptionType, amount, action, token1);
+    emit CreateSubscription(subscriptionType, amount, action, token1, token2, feedId);
   }
 
   /**
@@ -119,7 +120,7 @@ contract PriceFeedBased is ChainlinkClient, ConfirmedOwner, Pausable, Automation
     }
   }
 
-  function getSubscriptions() external view override returns (PriceFeedBasedSubscription[] memory) {
+  function getSubscriptions() external view override returns (DataFeedBasedSubscription[] memory) {
     return subscriptions;
   }
 
