@@ -17,8 +17,9 @@ interface ITradingVolumeBased is ISubscriptionBase {
     address token1,
     address token2,
     address liquidityPool,
-    uint volumePercentChange
-  ) external payable returns (uint256 subscriptionId);
+    address volumeOracle,
+    int256 volumePercentChange
+  ) external returns (uint256 subscriptionId);
 
   function getSubscriptions() external view returns (TradingVolumeBasedSubscription[] memory);
 

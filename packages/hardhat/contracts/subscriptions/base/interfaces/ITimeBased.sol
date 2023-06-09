@@ -18,8 +18,8 @@ interface ITimeBased is ISubscriptionBase {
     address token2,
     address liquidityPool,
     uint256 interval,
-    uint256 assetPricePercent
-  ) external payable returns (uint256 subscriptionId);
+    int256 assetPricePercent
+  ) external returns (uint256 subscriptionId);
 
   function getSubscriptions() external view returns (TimeBasedSubscription[] memory);
 
