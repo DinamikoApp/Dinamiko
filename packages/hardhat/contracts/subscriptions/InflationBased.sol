@@ -45,7 +45,6 @@ contract InflationBased is ChainlinkClient, ConfirmedOwner, Pausable, Automation
     interval = updateInterval;
     lastTimeStamp = block.timestamp;
     baseCurrency = _baseCurrency;
-    requestInflationRate();
   }
 
   /**
