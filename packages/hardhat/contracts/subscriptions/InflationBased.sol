@@ -14,7 +14,7 @@ import "hardhat/console.sol";
 contract InflationBased is ChainlinkClient, ConfirmedOwner, Pausable, AutomationCompatibleInterface, IInflationBased {
   using Chainlink for Chainlink.Request;
 
-  int256 public LastInflationsRate = 0;
+  uint256 public LastInflationsRate = 0;
   address public oracleId;
   string public jobId;
   uint256 public fee;
@@ -45,7 +45,6 @@ contract InflationBased is ChainlinkClient, ConfirmedOwner, Pausable, Automation
     interval = updateInterval;
     lastTimeStamp = block.timestamp;
     baseCurrency = _baseCurrency;
-    requestInflationRate();
   }
 
   /**
@@ -75,7 +74,7 @@ contract InflationBased is ChainlinkClient, ConfirmedOwner, Pausable, Automation
     bytes32 _requestId,
     bytes memory _inflation
   ) public recordChainlinkFulfillment(_requestId) {
-    LastInflationsRate = toInt256(_inflation);
+    LastInflationsRate = uint256(toInt256(_inflation));
   }
 
   /**
@@ -117,12 +116,12 @@ contract InflationBased is ChainlinkClient, ConfirmedOwner, Pausable, Automation
 
   function createSubscription(
     uint subscriptionType,
-    uint amount,
+    uint256 amount,
     uint action,
     address token1,
     address token2,
     address liquidityPool,
-    int256 inflationChangePercent
+    uint256 inflationChangePercent
   ) external override returns (uint256 subscriptionId) {
     subscriptionId = subscriptionIds++;
     subscriptions[subscriptionId] = InflationBaseSubscription(

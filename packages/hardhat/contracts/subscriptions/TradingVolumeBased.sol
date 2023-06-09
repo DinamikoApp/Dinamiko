@@ -76,7 +76,7 @@ contract TradingVolumeBased is
     address token2,
     address liquidityPool,
     address volumeOracle,
-    int256 volumePercentChange
+    uint256 volumePercentChange
   ) external override returns (uint256 subscriptionId) {
     subscriptionId = subscriptionIds++;
     IDinamikoVolumeOracle volumeOracleInstance = IDinamikoVolumeOracle(volumeOracle);

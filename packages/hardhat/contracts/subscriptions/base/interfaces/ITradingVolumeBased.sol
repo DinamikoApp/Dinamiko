@@ -18,7 +18,7 @@ interface ITradingVolumeBased is ISubscriptionBase {
     address token2,
     address liquidityPool,
     address volumeOracle,
-    int256 volumePercentChange
+    uint256 volumePercentChange
   ) external returns (uint256 subscriptionId);
 
   function getSubscriptions() external view returns (TradingVolumeBasedSubscription[] memory);
@@ -32,20 +32,20 @@ interface ITradingVolumeBased is ISubscriptionBase {
     address token1,
     address token2,
     address volumeOracle,
-    int256 volumeParentageChange
+    uint256 volumeParentageChange
   );
 
   event DeleteSubscription(uint256 indexed subscriptionId, uint indexed subscriptionType);
 
   struct TradingVolumeBasedSubscription {
     uint subscriptionType;
-    uint amount;
+    uint256 amount;
     uint action;
     address token1;
     address token2;
     address liquidityPool;
     address volumeOracle;
     uint256 lastKnowVolume;
-    int256 volumePercentChange;
+    uint256 volumePercentChange;
   }
 }

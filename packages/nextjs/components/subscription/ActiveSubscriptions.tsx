@@ -1,16 +1,12 @@
 import React from "react";
-import {
-  SubscriptionItem,
-  SubscriptionItemEmptyState,
-  SubscriptionItemLoadingState,
-  TSubscriptionItemProps,
-} from "./index";
+import { SubscriptionItem, SubscriptionItemEmptyState, SubscriptionItemLoadingState } from "./index";
+import { GetSubscriptions } from "~~/firebase/firestore";
 
 export function ActiveSubscriptions({
   subscriptions,
   loading,
 }: {
-  subscriptions: TSubscriptionItemProps[];
+  subscriptions: GetSubscriptions[];
   loading: boolean;
 }) {
   return (
@@ -27,7 +23,7 @@ function ActiveSubscriptionsContent({
   subscriptions,
   loading,
 }: {
-  subscriptions: TSubscriptionItemProps[];
+  subscriptions: GetSubscriptions[];
   loading: boolean;
 }) {
   if (loading) {

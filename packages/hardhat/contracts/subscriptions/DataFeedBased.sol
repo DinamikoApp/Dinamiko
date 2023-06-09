@@ -79,12 +79,12 @@ contract DataFeedBased is ChainlinkClient, ConfirmedOwner, Pausable, AutomationC
 
   function createSubscription(
     uint subscriptionType,
-    uint amount,
+    uint256 amount,
     uint action,
     address token1,
     address token2,
     address liquidityPool,
-    int256 feedChangePercent,
+    uint256 feedChangePercent,
     bytes32 feedId
   ) external payable override returns (uint256 subscriptionId) {
     subscriptionId = subscriptionIds++;
@@ -127,5 +127,11 @@ contract DataFeedBased is ChainlinkClient, ConfirmedOwner, Pausable, AutomationC
   function deleteSubscription(uint256 subscriptionId) external override onlyOwner returns (uint256 subId) {
     subscriptionId = subId;
     delete subscriptions[subId];
+  }
+
+  function calculatePercentage(uint256 value, uint256 percentage) internal pure returns (uint256) {
+    // Multiply the value by the percentage and divide by 100
+    uint256 result = (value * percentage) / 100;
+    return result;
   }
 }

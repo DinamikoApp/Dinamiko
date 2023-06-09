@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import Head from "next/head";
+import { TimeProps } from "~~/types/SelectProp";
 
-export function SubscriptionTimeBasedSubscription() {
+export function SubscriptionTimeBasedSubscription(props: TimeProps) {
   const [customTimeValue, setCustomTimeValue] = useState("1");
   const [customTimeUnit, setCustomTimeUnit] = useState("hour");
   const [selectedCustomTime, setSelectedCustomTime] = useState("");
@@ -29,6 +30,7 @@ export function SubscriptionTimeBasedSubscription() {
     };
 
     getCustomTime();
+    props.onChange(customTimeValue, customTimeUnit);
   }, [customTimeValue, customTimeUnit]);
 
   const isActiveBox = (value: string) => {

@@ -12,12 +12,12 @@ import "./ISubscriptionBase.sol";
 interface IPriceFeedBased is ISubscriptionBase {
   function createSubscription(
     uint subscriptionType,
-    uint amount,
+    uint256 amount,
     uint action,
     address token1,
     address token2,
     address liquidityPool,
-    int256 assetPriceChangePercent
+    uint256 assetPriceChangePercent
   ) external returns (uint256 subscriptionId);
 
   function getSubscriptions() external view returns (PriceFeedBasedSubscription[] memory);
@@ -30,12 +30,12 @@ interface IPriceFeedBased is ISubscriptionBase {
 
   struct PriceFeedBasedSubscription {
     uint subscriptionType;
-    uint amount;
+    uint256 amount;
     uint action;
     address token1;
     address token2;
     address liquidityPool;
     uint256 lastAssetPrice;
-    int256 assetPercent;
+    uint256 assetPercent;
   }
 }

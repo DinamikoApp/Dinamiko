@@ -57,7 +57,7 @@ contract TimeBase is ChainlinkClient, ConfirmedOwner, Pausable, AutomationCompat
     address token2,
     address liquidityPool,
     uint256 interval,
-    int256 assetPricePercent
+    uint256 assetPricePercent
   ) external override returns (uint256 subscriptionId) {
     subscriptionId = subscriptionIds++;
     uint256 currentPrice = priceOracle.getAssetPrice(token1);

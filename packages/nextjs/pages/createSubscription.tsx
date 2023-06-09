@@ -1,43 +1,116 @@
 import React, { useState } from "react";
 import ActionButtons from "../components/ActionButtons";
+import moment from "moment";
 import type { NextPage } from "next";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useAccount } from "wagmi";
 import { SubscriptionAction } from "~~/components/subscription/SubscriptionAction";
 import { SubscriptionConditionSelection } from "~~/components/subscription/SubscriptionConditionSelection";
 import { SubscriptionSelectAsset } from "~~/components/subscription/SubscriptionSelectAsset";
+import { SubscriptionSelectLiquidityPool } from "~~/components/subscription/SubscriptionSelectLiqidityPool";
 import { SubscriptionTimeBasedSubscription } from "~~/components/subscription/SubscriptionTimeBasedSubscription";
 import { SubscriptionType } from "~~/components/subscription/SubscriptionType";
+import { saveSubscription } from "~~/firebase/firestore";
+import { convertSubscriptionTransaction } from "~~/firebase/firestore/ToText";
+
+const SelectAssetsType = ({
+  target,
+  onSelectAsset,
+  onSelectLiquidity,
+}: {
+  target: number;
+  onSelectAsset: (text: string) => void;
+  onSelectLiquidity: (text: string) => void;
+}) => {
+  if (target === 2) {
+    return <SubscriptionSelectLiquidityPool onChange={onSelectLiquidity} />;
+  }
+  return <SubscriptionSelectAsset onChange={onSelectAsset} />;
+};
 
 const CreateSubscription: NextPage = () => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [subscription, setSubscription] = useState(0);
+  const [subscriptionAction, setSubscriptionAction] = useState(0);
+  const [asset, setAsset] = useState("");
+  const [liquidityPool, setLiquidityPool] = useState("");
+  const [subscriptionCondition, setSubscriptionCondition] = useState(0);
+  const [subscriptionTime, setSubscriptionTime] = useState(0);
+  const [isFinished, setIsFinished] = useState(false);
+  const { address, isConnected } = useAccount();
 
   const handleNext = () => {
     setCurrentStep(prevStep => prevStep + 1);
+    if (currentStep + 1 == 5) setIsFinished(true);
   };
 
   const handlePrevious = () => {
+    if (currentStep + 1 >= 5) setIsFinished(false);
     setCurrentStep(prevStep => prevStep - 1);
   };
 
   const handleFinish = () => {
-    toast.success("Subscription completed!");
+    const data = {
+      type: subscription,
+      action: subscriptionAction,
+      asset,
+      liquidityPool,
+      subscriptionCondition,
+      subscriptionTime,
+    };
+    const subscriptionData = convertSubscriptionTransaction(data, 1);
+    if (subscriptionData) {
+      setCurrentStep(1);
+      setIsFinished(false);
+      saveSubscription(subscriptionData, address || "");
+      toast.success("Subscription completed!");
+    }
   };
 
-  const isLastStep = currentStep === 5;
+  const handleSubSelect = (index: number) => setSubscription(index);
+
+  const handleActionSelect = (index: number) => setSubscriptionAction(index);
+
+  const handleSelectAsset = (text: any) => setAsset(`${text}`);
+
+  const handleSelectLiquidityPool = (text: string) => setLiquidityPool(text);
+
+  const handleSelectCondition = (text: string) => {
+    setSubscriptionCondition(parseInt(text));
+  };
+
+  const handleDateChange = (time: string, uint: string) => {
+    let timeFrame = 0;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    if (uint === "hour") timeFrame = moment.duration({ hours: parseInt(time) }).asSeconds();
+    if (uint === "day") timeFrame = moment.duration({ days: parseInt(time) }).asSeconds();
+    if (uint === "week") timeFrame = moment.duration({ weeks: parseInt(time) }).asSeconds();
+    if (uint === "month") timeFrame = moment.duration({ months: parseInt(time) }).asSeconds();
+    setSubscriptionTime(timeFrame);
+  };
 
   return (
     <section className="container mx-auto p-8">
-      {currentStep === 1 && <SubscriptionType />}
-      {currentStep === 2 && <SubscriptionAction />}
-      {currentStep === 3 && <SubscriptionSelectAsset />}
-      {currentStep === 4 && <SubscriptionConditionSelection />}
-      {currentStep === 5 && <SubscriptionTimeBasedSubscription />}
+      {currentStep === 1 && <SubscriptionType onSelect={handleSubSelect} />}
+      {currentStep === 2 && <SubscriptionAction onSelect={handleActionSelect} />}
+      {currentStep === 3 && (
+        <SelectAssetsType
+          target={subscriptionAction}
+          onSelectLiquidity={handleSelectLiquidityPool}
+          onSelectAsset={handleSelectAsset}
+        />
+      )}
+      {currentStep === 4 && <SubscriptionConditionSelection onChange={handleSelectCondition} />}
+      {currentStep === 5 && <SubscriptionTimeBasedSubscription onChange={handleDateChange} />}
 
       <ActionButtons
-        onPrevious={currentStep > 1 ? handlePrevious : undefined}
-        onNext={currentStep < 5 ? handleNext : handleFinish}
-        isLastStep={isLastStep}
+        onFinish={handleFinish}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+        isLastStep={isFinished}
+        index={currentStep}
+        disabled={isConnected}
       />
       <ToastContainer />
     </section>
