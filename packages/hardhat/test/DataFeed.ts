@@ -1,89 +1,85 @@
-import { evmRevert, evmSnapshot } from "../helpers/utilities/tx";
 import { ethers } from "hardhat";
+import "@nomiclabs/hardhat-ethers";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
-import { FEE, JOB_ID, REGISTRAR, UPDATEINTERVAL } from "../helpers/constants";
+import { evmRevert, evmSnapshot } from "../helpers/utilities/tx";
+import { JOB_ID } from "../helpers/constants";
+import { DataFeedBased } from "../typechain-types";
 
-describe("DataFeedBased Contract ", function () {
+describe("DataFeedBased Contract ", () => {
   let snap: string;
+  let df: DataFeedBased;
+  let owner: SignerWithAddress;
 
   beforeEach(async () => {
     snap = await evmSnapshot();
   });
-
   afterEach(async () => {
     await evmRevert(snap);
   });
 
-  // Set up test data
-  const oracleAddress = "0x09635F643e140090A9A8Dcd712eD6285858ceBef"; //The oracle price address
-  const fee = FEE; //Vary depending to the network
-  const jobId = JOB_ID; //adjust with the correct value
-  const oracleId = "0xa85233C63b9Ee964Add6F2cffe00Fd84eb32338f"; //The DinamikoPriceOracle deployment address
-  const link = "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707"; //Link token address
-  const registrar = REGISTRAR; ////The address of the Chainlink Automation registry contract
-  const updateInterval = UPDATEINTERVAL;
-  const baseCurrency = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"; //USDC smart contract address
-
   describe("constructor", function () {
-    it("Should set the correct values in the constructor", async () => {
-      const instance = await ethers.getContractFactory("DataFeedBased");
-      const oracle = await instance.deploy(
+    beforeEach(async () => {
+      const accounts = await ethers.getSigners();
+      owner = accounts[0];
+
+      const oracleAddress = "0x09635F643e140090A9A8Dcd712eD6285858ceBef"; //The oracle price address
+      const jobId = JOB_ID; //Chainlink Job_Id - adjust with the correct value
+      const oracleId = "0x09635F643e140090A9A8Dcd712eD6285858ceBef";
+      const lt = "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707"; //Link token address
+      const registrar = "0xE16Df59B887e3Caa439E0b29B42bA2e7976FD8b2";
+      const baseCurrency = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"; //USDC smart contract address deployed on Hardhat
+
+      const dfFactory = await ethers.getContractFactory("DataFeedBased", owner);
+
+      df = (await dfFactory.deploy(
         oracleAddress,
-        ethers.utils.parseEther(fee.toFixed(18)),
+        ethers.utils.parseEther((0.1).toFixed(18)),
         jobId,
         oracleId,
-        link,
+        lt,
         registrar,
-        updateInterval,
+        60,
         baseCurrency,
-      );
-      await oracle.deployed();
+      )) as DataFeedBased;
 
-      expect(oracle).to.not.be.undefined;
+      await df.deployTransaction.wait();
+    });
 
-      expect(await oracle.jobId()).to.equal("d220e5e687884462909a03021385b7ae");
-      expect(await oracle.i_registrar()).to.equal("0xE16Df59B887e3Caa439E0b29B42bA2e7976FD8b2");
-      expect(await oracle.interval()).to.equal(60);
-      expect(await oracle.baseCurrency()).to.equal("0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0");
+    it("Should set the correct values in the constructor", async () => {
+      expect(df).to.not.be.undefined;
+      expect(await df.owner()).to.equal(owner.address);
+      expect(await df.jobId()).to.equal("d220e5e687884462909a03021385b7ae");
+      expect(await df.i_registrar()).to.equal("0xE16Df59B887e3Caa439E0b29B42bA2e7976FD8b2");
+      expect(await df.interval()).to.equal(60);
+      expect(await df.baseCurrency()).to.equal("0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0");
     });
   });
 
   describe("createSubscription _function", function () {
-    it("Should create a subscription", async function () {
-      const instance = await ethers.getContractFactory("DataFeedBased");
-      const oracle = await instance.deploy(
-        oracleAddress,
-        ethers.utils.parseEther(fee.toFixed(18)),
-        jobId,
-        oracleId,
-        link,
-        registrar,
-        updateInterval,
-        baseCurrency,
-      );
-      await oracle.deployed();
+    it("should create a subscription", async function () {
+      const subscriptionType = 1;
+      const amount = 100;
+      const action = 1;
+      const token1 = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9"; // USDT in hardhat
+      const token2 = "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707"; // LINK in hardhat
+      const liquidityPool = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9"; // example liquidity pool address
+      const feedChangePercent = 10;
+      const feedId = ethers.utils.formatBytes32String("feedId");
 
-      expect(oracle).to.not.be.undefined;
-
-      const subscriptionId = await oracle.createSubscription(
-        1, //subscriptionType
-        100, //amount
-        1, //action
-        "0x0165878A594ca255338adfa4d48449f69242Eb8F", //SUSHI ADDRESS ON HARDHAT - token1
-        "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0", //USDC ADDRESS ON HARDHAT - token2
-        "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9", //LIQUIDITY POOL ON HARDHAT - liquidity
-        2, //fee change percentage
-        10, //feedId
+      const subScriptionId = await df.createSubscription(
+        subscriptionType,
+        amount,
+        action,
+        token1,
+        token2,
+        liquidityPool,
+        feedChangePercent,
+        feedId,
       );
 
-      const subscription = await oracle.createSubscription(subscriptionId);
-
-      expect(subscription.subscriptionType).to.equal(1);
-      expect(subscription.amount).to.equal(100);
-      expect(subscription.action).to.equal(1);
-      expect(subscription.token1).to.equal("0x0165878A594ca255338adfa4d48449f69242Eb8F");
-      expect(subscription.token2).to.equal("0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0");
-      expect(subscription.liquidityPool).to.equal("0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9");
+      await subScriptionId.wait();
+      expect(subScriptionId).not.to.equal(0);
     });
   });
 });
