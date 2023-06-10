@@ -123,6 +123,7 @@ contract InflationBased is ChainlinkClient, ConfirmedOwner, Pausable, Automation
     address liquidityPool,
     uint256 inflationChangePercent
   ) external override returns (uint256 subscriptionId) {
+    require(subscriptionType < 3 && subscriptionType > 0, "Subscription Type does not exist ");
     subscriptionId = subscriptionIds++;
     subscriptions[subscriptionId] = InflationBaseSubscription(
       subscriptionType,

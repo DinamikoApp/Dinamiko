@@ -86,6 +86,7 @@ contract PriceFeedBased is ChainlinkClient, ConfirmedOwner, Pausable, Automation
     address liquidityPool,
     uint256 assetPriceChangePercent
   ) external override returns (uint256 subscriptionId) {
+    require(subscriptionType < 3 && subscriptionType > 0, "Subscription Type does not exist ");
     subscriptionId = subscriptionIds++;
     uint256 currentPrice = priceOracle.getAssetPrice(token1);
     subscriptions[subscriptionId] = PriceFeedBasedSubscription(

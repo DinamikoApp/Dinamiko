@@ -10,7 +10,7 @@ import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../oracles/interfaces/IDinamikoFeedOracle.sol";
-import "hardhat/console.sol";
+import "./base/interfaces/ISubscriptionActions.sol";
 
 contract DataFeedBased is ChainlinkClient, ConfirmedOwner, Pausable, AutomationCompatibleInterface, IDataFeedBased {
   using Chainlink for Chainlink.Request;
@@ -29,6 +29,7 @@ contract DataFeedBased is ChainlinkClient, ConfirmedOwner, Pausable, AutomationC
   address public baseCurrency;
 
   uint256 public subscriptionIds;
+  ISubscriptionAction public subscriptionAction;
 
   constructor(
     address oracleAddress,
@@ -38,7 +39,8 @@ contract DataFeedBased is ChainlinkClient, ConfirmedOwner, Pausable, AutomationC
     address _link,
     KeeperRegistrarInterface _registrar,
     uint updateInterval,
-    address _baseCurrency
+    address _baseCurrency,
+    address _subscriptionAction
   ) ConfirmedOwner(msg.sender) {
     setChainlinkToken(_link);
     setChainlinkOracle(_oracleId);
@@ -87,6 +89,7 @@ contract DataFeedBased is ChainlinkClient, ConfirmedOwner, Pausable, AutomationC
     uint256 feedChangePercent,
     bytes32 feedId
   ) external payable override returns (uint256 subscriptionId) {
+    require(subscriptionType < 3 && subscriptionType > 0, "Subscription Type does not exist");
     subscriptionId = subscriptionIds++;
     uint256 currentDataFeedValue = feedOracle.getFeedData(feedId);
     subscriptions[subscriptionId] = DataFeedBasedSubscription(
@@ -116,7 +119,7 @@ contract DataFeedBased is ChainlinkClient, ConfirmedOwner, Pausable, AutomationC
 
   function executeSubscriptions() internal {
     for (uint i = 0; i < subscriptions.length; i++) {
-      console.log(subscriptions[i].subscriptionType);
+      if (subscriptions[i].subscriptionType == 0) {}
     }
   }
 

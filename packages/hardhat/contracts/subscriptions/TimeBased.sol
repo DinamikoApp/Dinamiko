@@ -59,6 +59,7 @@ contract TimeBase is ChainlinkClient, ConfirmedOwner, Pausable, AutomationCompat
     uint256 interval,
     uint256 assetPricePercent
   ) external override returns (uint256 subscriptionId) {
+    require(subscriptionType < 3 && subscriptionType > 0, "Subscription Type does not exist ");
     subscriptionId = subscriptionIds++;
     uint256 currentPrice = priceOracle.getAssetPrice(token1);
     subscriptions[subscriptionId] = TimeBasedSubscription(

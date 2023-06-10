@@ -78,6 +78,7 @@ contract TradingVolumeBased is
     address volumeOracle,
     uint256 volumePercentChange
   ) external override returns (uint256 subscriptionId) {
+    require(subscriptionType < 3 && subscriptionType > 0, "Subscription Type does not exist ");
     subscriptionId = subscriptionIds++;
     IDinamikoVolumeOracle volumeOracleInstance = IDinamikoVolumeOracle(volumeOracle);
     uint256 currentVolume = volumeOracleInstance.getVolume();
