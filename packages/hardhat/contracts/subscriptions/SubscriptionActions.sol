@@ -7,8 +7,6 @@ import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
 import "./base/interfaces/ISubscriptionActions.sol";
-import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
-import "@uniswap/v3-periphery/contracts/interfaces/INonfungiblePositionManager.sol";
 
 contract SubscriptionAction is ISubscriptionAction {
   // Immutable variable for the Uniswap Swap Router
@@ -58,39 +56,5 @@ contract SubscriptionAction is ISubscriptionAction {
   // Function to sell token
   function sellToken(address _sellToken, uint _amount, address _receiver) external override returns (uint) {
     return _swap(_sellToken, factoryAddress, _amount, _receiver);
-  }
-
-  function addLiquidity(
-    address token0,
-    address token1,
-    uint24 fee,
-    int24 tickLower,
-    int24 tickUpper,
-    uint256 amount0Desired,
-    uint256 amount1Desired,
-    uint256 amount0Min,
-    uint256 amount1Min,
-    address recipient,
-    uint256 deadline
-  ) external {
-    // Need to approve the position manager to spend tokens here
-    // ERC20(token0).approve(address(positionManager), amount0Desired);
-    // ERC20(token1).approve(address(positionManager), amount1Desired);
-
-    positionManager.mint(
-      INonfungiblePositionManager.MintParams({
-        token0: token0,
-        token1: token1,
-        fee: fee,
-        tickLower: tickLower,
-        tickUpper: tickUpper,
-        amount0Desired: amount0Desired,
-        amount1Desired: amount1Desired,
-        amount0Min: amount0Min,
-        amount1Min: amount1Min,
-        recipient: recipient,
-        deadline: deadline
-      })
-    );
   }
 }

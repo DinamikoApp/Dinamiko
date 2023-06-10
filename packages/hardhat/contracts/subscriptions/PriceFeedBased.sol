@@ -12,44 +12,27 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../oracles/interfaces/IDinamikoPriceOracle.sol";
 import "hardhat/console.sol";
 
-contract PriceFeedBased is ChainlinkClient, ConfirmedOwner, Pausable, AutomationCompatibleInterface, IPriceFeedBased {
-  using Chainlink for Chainlink.Request;
-
-  int256 public LastInflationsRate = 0;
-  address public oracleId;
-  string public jobId;
-  uint256 public fee;
+contract PriceFeedBased is ConfirmedOwner, Pausable, AutomationCompatibleInterface, IPriceFeedBased {
   KeeperRegistrarInterface public immutable i_registrar;
-  IDinamikoPriceOracle priceOracle;
+  IDinamikoPriceOracle public priceOracle;
 
   PriceFeedBasedSubscription[] public subscriptions;
   uint public immutable interval;
   uint public lastTimeStamp;
-
   address public baseCurrency;
-
   uint256 public subscriptionIds;
 
   constructor(
     address oracleAddress,
-    uint _fee,
-    string memory _jobId,
-    address _oracleId,
-    address _link,
     KeeperRegistrarInterface _registrar,
     uint updateInterval,
     address _baseCurrency
   ) ConfirmedOwner(msg.sender) {
-    setChainlinkToken(_link);
-    setChainlinkOracle(_oracleId);
-    jobId = _jobId;
-    i_registrar = _registrar;
-    fee = (_fee * LINK_DIVISIBILITY) / 10; // 0,5 * 10**18 (Varies by network and job)
-
     interval = updateInterval;
     lastTimeStamp = block.timestamp;
     priceOracle = IDinamikoPriceOracle(oracleAddress);
     baseCurrency = _baseCurrency;
+    i_registrar = KeeperRegistrarInterface(_registrar);
   }
 
   /**
@@ -100,14 +83,6 @@ contract PriceFeedBased is ChainlinkClient, ConfirmedOwner, Pausable, Automation
       assetPriceChangePercent
     );
     emit CreateSubscription(subscriptionType, amount, action, token1);
-  }
-
-  /**
-   * @notice Allow withdraw of Link tokens from the contract
-   */
-  function withdrawLink() public onlyOwner {
-    LinkTokenInterface link = LinkTokenInterface(chainlinkTokenAddress());
-    require(link.transfer(msg.sender, link.balanceOf(address(this))), "Unable to transfer");
   }
 
   function pause() public override onlyOwner {

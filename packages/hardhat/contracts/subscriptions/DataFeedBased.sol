@@ -12,42 +12,24 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../oracles/interfaces/IDinamikoFeedOracle.sol";
 import "./base/interfaces/ISubscriptionActions.sol";
 
-contract DataFeedBased is ChainlinkClient, ConfirmedOwner, Pausable, AutomationCompatibleInterface, IDataFeedBased {
-  using Chainlink for Chainlink.Request;
-
-  int256 public LastInflationsRate = 0;
-  address public oracleId;
-  string public jobId;
-  uint256 public fee;
+contract DataFeedBased is Pausable, AutomationCompatibleInterface, IDataFeedBased, ConfirmedOwner {
   KeeperRegistrarInterface public immutable i_registrar;
   IDinamikoFeedOracle feedOracle;
 
   DataFeedBasedSubscription[] public subscriptions;
   uint public immutable interval;
   uint public lastTimeStamp;
-
   address public baseCurrency;
-
   uint256 public subscriptionIds;
   ISubscriptionAction public subscriptionAction;
 
   constructor(
     address oracleAddress,
-    uint _fee,
-    string memory _jobId,
-    address _oracleId,
-    address _link,
     KeeperRegistrarInterface _registrar,
     uint updateInterval,
-    address _baseCurrency,
-    address _subscriptionAction
+    address _baseCurrency
   ) ConfirmedOwner(msg.sender) {
-    setChainlinkToken(_link);
-    setChainlinkOracle(_oracleId);
-    jobId = _jobId;
     i_registrar = _registrar;
-    fee = (_fee * LINK_DIVISIBILITY) / 10; // 0,5 * 10**18 (Varies by network and job)
-
     interval = updateInterval;
     lastTimeStamp = block.timestamp;
     feedOracle = IDinamikoFeedOracle(oracleAddress);
@@ -103,14 +85,6 @@ contract DataFeedBased is ChainlinkClient, ConfirmedOwner, Pausable, AutomationC
       feedChangePercent
     );
     emit CreateSubscription(subscriptionType, amount, action, token1, token2, feedId);
-  }
-
-  /**
-   * @notice Allow withdraw of Link tokens from the contract
-   */
-  function withdrawLink() public onlyOwner {
-    LinkTokenInterface link = LinkTokenInterface(chainlinkTokenAddress());
-    require(link.transfer(msg.sender, link.balanceOf(address(this))), "Unable to transfer");
   }
 
   function pause() public override onlyOwner {
