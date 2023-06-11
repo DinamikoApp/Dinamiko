@@ -6,6 +6,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useAccount } from "wagmi";
 import { SubscriptionAction } from "~~/components/subscription/SubscriptionAction";
+import { SubscriptionAmountSelection } from "~~/components/subscription/SubscriptionAmount";
 import { SubscriptionConditionSelection } from "~~/components/subscription/SubscriptionConditionSelection";
 import { SubscriptionSelectAsset } from "~~/components/subscription/SubscriptionSelectAsset";
 import { SubscriptionSelectLiquidityPool } from "~~/components/subscription/SubscriptionSelectLiqidityPool";
@@ -41,12 +42,16 @@ const CreateSubscription: NextPage = () => {
   const { address, isConnected } = useAccount();
 
   const handleNext = () => {
-    setCurrentStep(prevStep => prevStep + 1);
-    if (currentStep + 1 == 5) setIsFinished(true);
+    if (currentStep === 1 && subscription !== 0) {
+      setCurrentStep(3);
+    } else {
+      setCurrentStep(prevStep => prevStep + 1);
+    }
+    if (currentStep + 1 === 6) setIsFinished(true);
   };
 
   const handlePrevious = () => {
-    if (currentStep + 1 >= 5) setIsFinished(false);
+    if (currentStep + 1 >= 6) setIsFinished(false);
     setCurrentStep(prevStep => prevStep - 1);
   };
 
@@ -93,16 +98,19 @@ const CreateSubscription: NextPage = () => {
   return (
     <section className="container mx-auto p-8">
       {currentStep === 1 && <SubscriptionType onSelect={handleSubSelect} />}
-      {currentStep === 2 && <SubscriptionAction onSelect={handleActionSelect} />}
-      {currentStep === 3 && (
+      {currentStep === 2 && subscription === 0 && <SubscriptionTimeBasedSubscription onChange={handleDateChange} />}
+      {currentStep === 2 && subscription !== 0 && <SubscriptionAction onSelect={handleActionSelect} />}
+      {currentStep === 3 && <SubscriptionAction onSelect={handleActionSelect} />}
+      {currentStep === 4 && (
         <SelectAssetsType
           target={subscriptionAction}
           onSelectLiquidity={handleSelectLiquidityPool}
           onSelectAsset={handleSelectAsset}
         />
       )}
-      {currentStep === 4 && <SubscriptionConditionSelection onChange={handleSelectCondition} />}
-      {currentStep === 5 && <SubscriptionTimeBasedSubscription onChange={handleDateChange} />}
+      {currentStep === 5 && <SubscriptionConditionSelection onChange={handleSelectCondition} />}
+
+      {currentStep === 6 && <SubscriptionAmountSelection />}
 
       <ActionButtons
         onFinish={handleFinish}

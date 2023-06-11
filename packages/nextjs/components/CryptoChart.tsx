@@ -39,7 +39,7 @@ const CryptoChart = () => {
       const prices = chartData.map(data => data.price);
       const minPrice = Math.min(...prices);
       const maxPrice = Math.max(...prices);
-      setYDomain([Math.floor(minPrice / 100) * 100, Math.ceil(maxPrice / 100) * 100]);
+      setYDomain([Math.floor(minPrice / 100) * 100, Math.ceil(maxPrice / 100) * 1]);
     };
 
     calculateYDomain();
@@ -85,7 +85,12 @@ const CryptoChart = () => {
         </select>
         <div>
           <span className="text-xl font-medium">{formatPrice(chartData[0]?.price)}</span>{" "}
-          <span className="bg-[#38BD6B] p-2 rounded ml-4">{calculateChangePercentage()}%</span>
+          <span
+            className="p-2 rounded ml-4"
+            style={{ backgroundColor: Number(calculateChangePercentage()) < 0 ? "red" : "#38BD6B" }}
+          >
+            {calculateChangePercentage()}%
+          </span>
         </div>
       </div>
       <div className="mx-auto">
