@@ -21,13 +21,13 @@ export function SubscriptionSelectLiquidityPool(prop: InputProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 w-3/4 py-6 mx-auto">
           {assets.slice(0, 4).map((asset, index) => (
             <div
-              className={`border border-gray-300 p-2 py-1 cursor-pointer ${
-                selectedAsset === asset ? "border-blue-500" : ""
-              }`}
+              className={`bg-[#00022C] p-1 cursor-pointer ${selectedAsset === asset ? "bg-gradient" : ""}`}
               key={index}
               onClick={() => handleConditionClick(asset)}
             >
-              <p className="font-medium text-center">{asset}</p>
+              <div className="p-2 bg-[#00022C]">
+                <p className="font-medium text-center">{asset}</p>
+              </div>
             </div>
           ))}
         </div>
@@ -35,13 +35,13 @@ export function SubscriptionSelectLiquidityPool(prop: InputProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-4/5 mx-auto">
           {assets.slice(4, 8).map((asset, index) => (
             <div
-              className={`border border-gray-300 p-2 py-2 cursor-pointer ${
-                selectedAsset === asset ? "border-blue-500" : ""
-              }`}
+              className={`bg-[#00022C] p-1 cursor-pointer ${selectedAsset === asset ? "bg-gradient" : ""}`}
               key={index}
               onClick={() => handleConditionClick(asset)}
             >
-              <p className="font-medium text-center">{asset}</p>
+              <div className="p-2 bg-[#00022C]">
+                <p className="font-medium text-center">{asset}</p>
+              </div>
             </div>
           ))}
         </div>

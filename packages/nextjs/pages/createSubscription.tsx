@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Head from "next/head";
 import ActionButtons from "../components/ActionButtons";
 import moment from "moment";
 import type { NextPage } from "next";
@@ -96,32 +97,42 @@ const CreateSubscription: NextPage = () => {
   };
 
   return (
-    <section className="container mx-auto p-8">
-      {currentStep === 1 && <SubscriptionType onSelect={handleSubSelect} />}
-      {currentStep === 2 && subscription === 0 && <SubscriptionTimeBasedSubscription onChange={handleDateChange} />}
-      {currentStep === 2 && subscription !== 0 && <SubscriptionAction onSelect={handleActionSelect} />}
-      {currentStep === 3 && <SubscriptionAction onSelect={handleActionSelect} />}
-      {currentStep === 4 && (
-        <SelectAssetsType
-          target={subscriptionAction}
-          onSelectLiquidity={handleSelectLiquidityPool}
-          onSelectAsset={handleSelectAsset}
+    <>
+      <Head>
+        <title>Dinamiko | Subscribe</title>
+        <meta
+          name="description"
+          content="Invest dynamically in crypto hands-free
+"
         />
-      )}
-      {currentStep === 5 && <SubscriptionConditionSelection onChange={handleSelectCondition} />}
+      </Head>
+      <section className="container mx-auto p-8">
+        {currentStep === 1 && <SubscriptionType onSelect={handleSubSelect} />}
+        {currentStep === 2 && subscription === 0 && <SubscriptionTimeBasedSubscription onChange={handleDateChange} />}
+        {currentStep === 2 && subscription !== 0 && <SubscriptionAction onSelect={handleActionSelect} />}
+        {currentStep === 3 && <SubscriptionAction onSelect={handleActionSelect} />}
+        {currentStep === 4 && (
+          <SelectAssetsType
+            target={subscriptionAction}
+            onSelectLiquidity={handleSelectLiquidityPool}
+            onSelectAsset={handleSelectAsset}
+          />
+        )}
+        {currentStep === 5 && <SubscriptionConditionSelection onChange={handleSelectCondition} />}
 
-      {currentStep === 6 && <SubscriptionAmountSelection />}
+        {currentStep === 6 && <SubscriptionAmountSelection />}
 
-      <ActionButtons
-        onFinish={handleFinish}
-        onPrevious={handlePrevious}
-        onNext={handleNext}
-        isLastStep={isFinished}
-        index={currentStep}
-        disabled={isConnected}
-      />
-      <ToastContainer />
-    </section>
+        <ActionButtons
+          onFinish={handleFinish}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          isLastStep={isFinished}
+          index={currentStep}
+          disabled={isConnected}
+        />
+        <ToastContainer />
+      </section>
+    </>
   );
 };
 
