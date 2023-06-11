@@ -8,9 +8,6 @@ import "./TradingVolumeBased.sol";
 import "./TimeBased.sol";
 import "./base/interfaces/IKeeperRegistrarInterface.sol";
 import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
-import "../oracles/interfaces/IDinamikoPriceOracle.sol";
-import "../oracles/interfaces/IDinamikoFeedOracle.sol";
-import "../oracles/interfaces/IDinamikoInflationOracle.sol";
 
 contract SubscriptionFactory is ConfirmedOwner {
   mapping(address => address) public dataFeeds_owners;
@@ -22,9 +19,9 @@ contract SubscriptionFactory is ConfirmedOwner {
   address public immutable _baseCurrency;
   uint public immutable _baseInterval;
   KeeperRegistrarInterface private immutable _baseRegistrar;
-  IDinamikoPriceOracle public immutable _basePriceOracle;
-  IDinamikoFeedOracle public immutable _baseFeedOracle;
-  IDinamikoInflationOracle public immutable _baseInflationOracle;
+  address public immutable _basePriceOracle;
+  address public immutable _baseFeedOracle;
+  address public immutable _baseInflationOracle;
 
   constructor(
     address priceOracleAddress,
@@ -36,9 +33,9 @@ contract SubscriptionFactory is ConfirmedOwner {
   ) ConfirmedOwner(msg.sender) {
     _baseRegistrar = KeeperRegistrarInterface(_registrar);
     _baseInterval = baseInterval;
-    _basePriceOracle = IDinamikoPriceOracle(priceOracleAddress);
-    _baseFeedOracle = IDinamikoFeedOracle(feedOracleAddress);
-    _baseInflationOracle = IDinamikoInflationOracle(inflationOracleAddress);
+    _basePriceOracle = priceOracleAddress;
+    _baseFeedOracle = feedOracleAddress;
+    _baseInflationOracle = inflationOracleAddress;
     _baseCurrency = baseToken;
   }
 

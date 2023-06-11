@@ -12,7 +12,7 @@ export const isValidAddress = (value: tEthereumAddress): boolean =>
 export const isEqualAddress = (a: tEthereumAddress, b: tEthereumAddress) => getAddress(a) === getAddress(b);
 
 export const isLocalDevelopmentNetwork = (networkName: string) =>
-  networkName == "LOCALHOST" || networkName == "HARDHAT" || networkName == "SEPOLIA";
+  networkName == "LOCALHOST" || networkName == "HARDHAT";
 
 export const getNetworkName = async () => Promise.resolve(hre.network.name.toUpperCase());
 

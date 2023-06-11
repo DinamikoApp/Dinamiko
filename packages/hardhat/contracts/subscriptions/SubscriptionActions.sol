@@ -57,4 +57,28 @@ contract SubscriptionAction is ISubscriptionAction {
   function sellToken(address _sellToken, uint _amount, address _receiver) external override returns (uint) {
     return _swap(_sellToken, factoryAddress, _amount, _receiver);
   }
+
+  function addLiquidity(
+    address tokenA,
+    address tokenB,
+    uint24 fee,
+    uint256 amountA,
+    uint256 amountB,
+    address recipient,
+    uint256 deadline
+  ) external {
+    // Do your own input validation here
+    ISwapRouter.ExactInputSingleParams memory params = ISwapRouter.ExactInputSingleParams({
+      tokenIn: tokenA,
+      tokenOut: tokenB,
+      fee: fee,
+      recipient: recipient,
+      deadline: deadline,
+      amountIn: amountA,
+      amountOutMinimum: amountB,
+      sqrtPriceLimitX96: 0
+    });
+
+    swapRouter.exactInputSingle(params);
+  }
 }

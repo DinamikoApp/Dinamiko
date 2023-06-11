@@ -8,6 +8,7 @@ import {
   LinkReference,
   Libraries,
   UniswapAddressNetworkConfigType,
+  ChainLinkNetworkConfigType,
 } from "./types";
 import { getDeployIds } from "./constants";
 import { convertStringToBytes32, getChainId, isLocalDevelopmentNetwork } from "./utilities/utils";
@@ -20,11 +21,10 @@ export const getParamPerNetwork = <T>(param: iParamsPerNetwork<T> | undefined, n
   return param[network];
 };
 
-const getDeployedConfig = async (networkName: string, prefix: string): Promise<ITokenAddress> => {
-  console.log(`[WARNING] Using deployed contracts instead of token from configuration file`);
+export const getDeployedConfig = async (networkName: string, prefix: string): Promise<ITokenAddress> => {
+  console.log(`[WARNING] Using deployed contracts instead of token from configuration file on network ${networkName}`);
   const allDeployments = await hre.deployments.all();
   const deployedContracts = Object.keys(allDeployments).filter(key => key.includes(prefix));
-  console.log(deployedContracts);
   return deployedContracts.reduce<ITokenAddress>((acc, key) => {
     const symbol = key.replace(prefix, "");
     acc[symbol] = allDeployments[key].address;
@@ -118,6 +118,15 @@ export const getUniswapKeys = async (): Promise<UniswapAddressNetworkConfigType 
   const uniswapConfig = networkConfig[chainId]?.uniswap;
   if (uniswapConfig) {
     return uniswapConfig;
+  }
+};
+
+export const getChainLinkKeys = async (): Promise<ChainLinkNetworkConfigType | undefined> => {
+  console.log("[NOTICE] Using ChainLink keys from configuration file");
+  const chainId = await getChainId();
+  const chainLinkConfig = networkConfig[chainId]?.chainLink;
+  if (chainLinkConfig) {
+    return chainLinkConfig;
   }
 };
 
