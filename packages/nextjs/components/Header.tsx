@@ -42,6 +42,9 @@ export const Header = () => {
         <NavLink href="/subscriptions">Subscriptions</NavLink>
       </li>
       <li>
+        <NavLink href="/token-faucet">Faucet</NavLink>
+      </li>
+      <li>
         <NavLink href="/about">About</NavLink>
       </li>
     </>
