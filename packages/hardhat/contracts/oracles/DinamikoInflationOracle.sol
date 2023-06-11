@@ -14,7 +14,7 @@ contract DinamikoInflationOracle is ChainlinkClient, ConfirmedOwner, IDinamikoIn
   string public jobId;
   uint256 public fee;
 
-  constructor(address oracleId_, string memory jobId_, uint256 fee_, address token_) ConfirmedOwner(msg.sender) {
+  constructor(address token_, address oracleId_, string memory jobId_, uint256 fee_) ConfirmedOwner(msg.sender) {
     setChainlinkToken(token_);
     oracleId = oracleId_;
     jobId = jobId_;
