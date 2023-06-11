@@ -1,6 +1,12 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
-import { deploySubscriptionFactory } from "../helpers/contract-deployments";
+import {
+  deployTimeBasedFactory,
+  deployInflationBasedFactory,
+  deployDataFeedBasedFactory,
+  deployTradingVolumeBasedFactory,
+  deployPriceFeedBasedFactory,
+} from "../helpers/contract-deployments";
 import { getChainLinkKeys, getDeployedConfig, getSupportedTokens } from "../helpers/deploy-config-helper";
 import { getNetworkName } from "../helpers/utilities/utils";
 import { FEED_ORACLE, INFLATION_ORACLE, PRICE_ORACLE } from "../helpers/constants";
@@ -33,14 +39,12 @@ const deploySubscriptionFactoryContract: DeployFunction = async function ({ depl
     console.log(`\n`);
 
     log("Deploying Subscription Factory...");
-    await deploySubscriptionFactory(
-      priceFeedOracleAddress,
-      dataFeedOracleAddress,
-      inflationOracleAddress,
-      REGISTER,
-      KEEPER_UPDATE_INTERVAL.toString(),
-      USDT,
-    );
+    await deployDataFeedBasedFactory(dataFeedOracleAddress, REGISTER, KEEPER_UPDATE_INTERVAL.toString(), USDT);
+    await deployPriceFeedBasedFactory(priceFeedOracleAddress, REGISTER, KEEPER_UPDATE_INTERVAL.toString(), USDT);
+    await deployTradingVolumeBasedFactory(REGISTER, KEEPER_UPDATE_INTERVAL.toString(), USDT);
+    await deployInflationBasedFactory(inflationOracleAddress, REGISTER, KEEPER_UPDATE_INTERVAL.toString(), USDT);
+    await deployTimeBasedFactory(priceFeedOracleAddress, REGISTER, KEEPER_UPDATE_INTERVAL.toString(), USDT);
+
     log("Done \n \n");
   }
 };

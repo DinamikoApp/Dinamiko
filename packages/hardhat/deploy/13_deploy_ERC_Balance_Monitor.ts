@@ -41,7 +41,6 @@ const deployERC20BalanceMonitorContract: DeployFunction = async function ({ depl
 
     log("Deploying Subscription Factory...");
     const monitorToken = await deployERC20BalanceMonitor(LINK, REGISTER, KEEPER_UPDATE_INTERVAL);
-    console.log(contractAddress, minimumLevel, topUpLevel);
     await monitorToken.setWatchList(contractAddress, minimumLevel, topUpLevel);
     log("Done \n \n");
   }

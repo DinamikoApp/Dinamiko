@@ -16,6 +16,11 @@ import {
   DataFeedBased,
   DinamikoInflationOracle,
   DinamikoInflationOracleUpdater,
+  TimeBasedFactory,
+  DataFeedBasedFactory,
+  TradingVolumeBasedFactory,
+  InflationBasedFactory,
+  PriceFeedBasedFactory,
 } from "../typechain-types";
 import { DEFAULT_REGISTRAR, ZERO_ADDRESS, getDeployIds, DEFAULT_UPDATE_INTERVAL } from "./constants";
 import { deployContract } from "./utilities/tx";
@@ -183,19 +188,69 @@ export const deployDataFeedBased = async (
   return await deployContract<DataFeedBased>("DataFeedBased", [feedOracleAddress, REGISTRAR, interval, baseCurrency]);
 };
 
-//Subscription Factory
-export const deploySubscriptionFactory = async (
-  priceOracleAddress: string,
+// DataFeedBased Factory
+export const deployDataFeedBasedFactory = async (
   feedOracleAddress: string,
+  REGISTRAR: string,
+  interval: string,
+  baseCurrency: string,
+) => {
+  return await deployContract<DataFeedBasedFactory>("DataFeedBasedFactory", [
+    feedOracleAddress,
+    REGISTRAR,
+    interval,
+    baseCurrency,
+  ]);
+};
+
+// InflationBased Factory
+export const deployInflationBasedFactory = async (
   inflationOracleAddress: string,
   REGISTRAR: string,
   interval: string,
   baseCurrency: string,
 ) => {
-  return await deployContract<DataFeedBased>("SubscriptionFactory", [
-    priceOracleAddress,
-    feedOracleAddress,
+  return await deployContract<InflationBasedFactory>("InflationBasedFactory", [
     inflationOracleAddress,
+    REGISTRAR,
+    interval,
+    baseCurrency,
+  ]);
+};
+
+// TimeBased Factory
+export const deployTimeBasedFactory = async (
+  priceOracleAddress: string,
+  REGISTRAR: string,
+  interval: string,
+  baseCurrency: string,
+) => {
+  return await deployContract<TimeBasedFactory>("TimeBasedFactory", [
+    priceOracleAddress,
+    REGISTRAR,
+    interval,
+    baseCurrency,
+  ]);
+};
+
+// PriceFeedBased Factory
+export const deployPriceFeedBasedFactory = async (
+  priceOracleAddress: string,
+  REGISTRAR: string,
+  interval: string,
+  baseCurrency: string,
+) => {
+  return await deployContract<PriceFeedBasedFactory>("PriceFeedBasedFactory", [
+    priceOracleAddress,
+    REGISTRAR,
+    interval,
+    baseCurrency,
+  ]);
+};
+
+// TradingVolumeBased Factory
+export const deployTradingVolumeBasedFactory = async (REGISTRAR: string, interval: string, baseCurrency: string) => {
+  return await deployContract<TradingVolumeBasedFactory>("TradingVolumeBasedFactory", [
     REGISTRAR,
     interval,
     baseCurrency,

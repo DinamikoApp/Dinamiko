@@ -97,6 +97,10 @@ contract DataFeedBased is Pausable, AutomationCompatibleInterface, IDataFeedBase
     }
   }
 
+  function setSubScriptionAction(address subAction) public onlyOwner returns (address) {
+    subscriptionAction = ISubscriptionAction(subAction);
+  }
+
   function getSubscriptions() external view override returns (DataFeedBasedSubscription[] memory) {
     return subscriptions;
   }

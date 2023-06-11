@@ -11,6 +11,7 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../oracles/interfaces/IDinamikoVolumeOracle.sol";
 import "hardhat/console.sol";
+import "./base/interfaces/ISubscriptionActions.sol";
 
 contract TradingVolumeBased is ConfirmedOwner, Pausable, AutomationCompatibleInterface, ITradingVolumeBased {
   KeeperRegistrarInterface public immutable i_registrar;
@@ -20,6 +21,7 @@ contract TradingVolumeBased is ConfirmedOwner, Pausable, AutomationCompatibleInt
   uint public lastTimeStamp;
   address public baseToken;
   uint256 public subscriptionIds;
+  ISubscriptionAction public subscriptionAction;
 
   constructor(KeeperRegistrarInterface _registrar, uint updateInterval, address _baseToken) ConfirmedOwner(msg.sender) {
     interval = updateInterval;
@@ -80,6 +82,10 @@ contract TradingVolumeBased is ConfirmedOwner, Pausable, AutomationCompatibleInt
       executeSubscriptions();
       lastTimeStamp = block.timestamp;
     }
+  }
+
+  function setSubScriptionAction(address subAction) public onlyOwner returns (address) {
+    subscriptionAction = ISubscriptionAction(subAction);
   }
 
   function pause() public override onlyOwner {

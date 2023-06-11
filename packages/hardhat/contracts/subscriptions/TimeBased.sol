@@ -11,6 +11,7 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../oracles/interfaces/IDinamikoPriceOracle.sol";
 import "hardhat/console.sol";
+import "./base/interfaces/ISubscriptionActions.sol";
 
 contract TimeBase is ConfirmedOwner, Pausable, AutomationCompatibleInterface, ITimeBased {
   KeeperRegistrarInterface public immutable i_registrar;
@@ -21,6 +22,7 @@ contract TimeBase is ConfirmedOwner, Pausable, AutomationCompatibleInterface, IT
   address public baseToken;
   uint256 public subscriptionIds;
   IDinamikoPriceOracle priceOracle;
+  ISubscriptionAction public subscriptionAction;
 
   constructor(
     address oracleAddress,
@@ -93,6 +95,10 @@ contract TimeBase is ConfirmedOwner, Pausable, AutomationCompatibleInterface, IT
     for (uint i = 0; i < subscriptions.length; i++) {
       console.log(subscriptions[i].subscriptionType);
     }
+  }
+
+  function setSubScriptionAction(address subAction) public onlyOwner returns (address) {
+    subscriptionAction = ISubscriptionAction(subAction);
   }
 
   function getSubscriptions() external view override returns (TimeBasedSubscription[] memory) {

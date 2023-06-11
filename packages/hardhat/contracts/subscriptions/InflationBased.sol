@@ -10,6 +10,7 @@ import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../oracles/interfaces/IDinamikoInflationOracle.sol";
+import "./base/interfaces/ISubscriptionActions.sol";
 
 contract InflationBased is ConfirmedOwner, Pausable, AutomationCompatibleInterface, IInflationBased {
   KeeperRegistrarInterface public immutable i_registrar;
@@ -19,6 +20,7 @@ contract InflationBased is ConfirmedOwner, Pausable, AutomationCompatibleInterfa
   address public baseCurrency;
   IDinamikoInflationOracle public i_inflationOracle;
   uint256 public LastInflationsRate;
+  ISubscriptionAction public subscriptionAction;
 
   uint256 public subscriptionIds;
 
@@ -61,6 +63,10 @@ contract InflationBased is ConfirmedOwner, Pausable, AutomationCompatibleInterfa
     }
   }
 
+  function setSubScriptionAction(address subAction) public onlyOwner returns (address) {
+    subscriptionAction = ISubscriptionAction(subAction);
+  }
+
   function createSubscription(
     uint subscriptionType,
     uint256 amount,
@@ -69,7 +75,7 @@ contract InflationBased is ConfirmedOwner, Pausable, AutomationCompatibleInterfa
     address token2,
     address liquidityPool,
     uint256 inflationChangePercent
-  ) external override returns (uint256 subscriptionId) {
+  ) external override onlyOwner returns (uint256 subscriptionId) {
     require(subscriptionType < 3 && subscriptionType > 0, "Subscription Type does not exist ");
     subscriptionId = subscriptionIds++;
     subscriptions[subscriptionId] = InflationBaseSubscription(
