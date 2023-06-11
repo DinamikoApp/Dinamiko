@@ -23,7 +23,6 @@ describe("DinamikoFeedOracle Contract ", function () {
     const instance = await ethers.getContractFactory("DinamikoFeedOracle");
     const oracle = await instance.deploy(dataFeedIds, sourceAddresses, fallbackOracleAddress);
     await oracle.deployed();
-    console.log("The oracle contract address is: ", oracle.address);
   });
 
   describe("constructor", function () {
@@ -43,19 +42,9 @@ describe("DinamikoFeedOracle Contract ", function () {
         "0x0000000000000000000000000000000000000002",
       );
 
-      console.log(
-        "The 30DayETHAPR data feed sources addresses is: ",
-        await oracle.getSourceOfData(ethers.utils.formatBytes32String("30DayETHAPR")),
-      );
-      console.log(
-        "The 90DayETHAPR data feed sources addresses is: ",
-        await oracle.getSourceOfData(ethers.utils.formatBytes32String("90DayETHAPR")),
-      );
-
       // Check that the fallback oracle address is set correctly
       const expectedFallbackOracle = ethers.utils.getAddress("0x0000000000000000000000000000000000000000");
       expect(await oracle.getFallbackOracle()).to.equal(expectedFallbackOracle);
-      console.log("The fallback oracle address is: ", await oracle.getFallbackOracle());
     });
   });
 
@@ -64,7 +53,7 @@ describe("DinamikoFeedOracle Contract ", function () {
       const instance = await ethers.getContractFactory("DinamikoFeedOracle");
       const oracle = await instance.deploy(dataFeedIds, sourceAddresses, fallbackOracleAddress);
       await oracle.deployed();
-      //console.log("The oracle contract address is: ", oracle.address);
+
       [owner] = await ethers.getSigners();
 
       // Call setDataFeedSources as the non-owner account and check that it throws an error
@@ -74,7 +63,6 @@ describe("DinamikoFeedOracle Contract ", function () {
       await expect(
         oracle.connect(nonOwner).setDataFeedSources(invalidDataFeedIds, invalidSourceAddresses),
       ).to.be.revertedWith("Ownable: caller is not the owner");
-      console.log("Only the owner can call setDataFeedSources");
 
       //Check that the data feed sources were not updated
       expect(await oracle.getSourceOfData(ethers.utils.formatBytes32String("30DayETHAPR"))).to.equal(
@@ -97,10 +85,6 @@ describe("DinamikoFeedOracle Contract ", function () {
       expect(await oracle.getSourceOfData(ethers.utils.formatBytes32String("90DayETHAPR"))).to.equal(
         "0x0000000000000000000000000000000000000002",
       );
-      console.log(
-        "The 30DayETHAPR data feed sources was updated by the owner: ",
-        await oracle.getSourceOfData(ethers.utils.formatBytes32String("30DayETHAPR")),
-      );
     });
 
     it("Should only allow the owner to call setFallbackOracle", async function () {
@@ -119,7 +103,6 @@ describe("DinamikoFeedOracle Contract ", function () {
       await expect(oracle.connect(nonOwner).setFallbackOracle(invalidFallbackOracleAddress)).to.be.revertedWith(
         "Ownable: caller is not the owner",
       );
-      console.log("Only the owner can call setFallbackOracle");
 
       // Check that the fallback oracle address was not updated
       expect(await oracle.getFallbackOracle()).to.equal("0x0000000000000000000000000000000000000000");
@@ -131,66 +114,60 @@ describe("DinamikoFeedOracle Contract ", function () {
 
       // Check that the fallback oracle address was updated correctly
       expect(await oracle.getFallbackOracle()).to.equal(validFallbackOracleAddress);
-      console.log("The fallback oracle address was updated by the owner: ", await oracle.getFallbackOracle());
     });
-  });
 
-  it("Should return 0 when given a non-existent id", async () => {
-    // Check that the contract instance was created correctly
-    const instance = await ethers.getContractFactory("DinamikoFeedOracle");
-    const oracle = await instance.deploy(dataFeedIds, sourceAddresses, fallbackOracleAddress);
-    await oracle.deployed();
+    it("Should return 0 when given a non-existent id", async () => {
+      // Check that the contract instance was created correctly
+      const instance = await ethers.getContractFactory("DinamikoFeedOracle");
+      const oracle = await instance.deploy(dataFeedIds, sourceAddresses, fallbackOracleAddress);
+      await oracle.deployed();
 
-    expect(oracle).to.not.be.undefined;
+      expect(oracle).to.not.be.undefined;
 
-    const nonExistentFeedId = ethers.utils.formatBytes32String("nonExistentFeedId/USD");
-    const result = await oracle.getFeedData(nonExistentFeedId);
-    expect(result).to.equal(0);
-    console.log("The id is non-existing. The result is: ", result.toNumber());
-  });
+      const nonExistentFeedId = ethers.utils.formatBytes32String("nonExistentFeedId/USD");
+      const result = await oracle.getFeedData(nonExistentFeedId);
+      expect(result).to.equal(0);
+    });
 
-  it("Should return the correct address for a given data feed id", async () => {
-    const instance = await ethers.getContractFactory("DinamikoFeedOracle");
-    const oracle = await instance.deploy(dataFeedIds, sourceAddresses, fallbackOracleAddress);
-    await oracle.deployed();
+    it("Should return the correct address for a given data feed id", async () => {
+      const instance = await ethers.getContractFactory("DinamikoFeedOracle");
+      const oracle = await instance.deploy(dataFeedIds, sourceAddresses, fallbackOracleAddress);
+      await oracle.deployed();
 
-    const source = await oracle.getSourceOfData(dataFeedIds[0]);
-    expect(source).to.equal(sourceAddresses[0]);
-    expect(source).not.to.equal(sourceAddresses[1]);
-    console.log("The 30DayETHAPR source address is: ", source);
-  });
+      const source = await oracle.getSourceOfData(dataFeedIds[0]);
+      expect(source).to.equal(sourceAddresses[0]);
+      expect(source).not.to.equal(sourceAddresses[1]);
+    });
 
-  it("Should correctly return the address of the fallback oracle", async () => {
-    const instance = await ethers.getContractFactory("DinamikoFeedOracle");
-    const oracle = await instance.deploy(dataFeedIds, sourceAddresses, fallbackOracleAddress);
-    await oracle.deployed();
+    it("Should correctly return the address of the fallback oracle", async () => {
+      const instance = await ethers.getContractFactory("DinamikoFeedOracle");
+      const oracle = await instance.deploy(dataFeedIds, sourceAddresses, fallbackOracleAddress);
+      await oracle.deployed();
 
-    const oracleAddress = await oracle.getFallbackOracle();
-    expect(oracleAddress).to.equal(fallbackOracleAddress);
-    console.log("The fallback oracle address is: ", oracleAddress.toString());
-  });
+      const oracleAddress = await oracle.getFallbackOracle();
+      expect(oracleAddress).to.equal(fallbackOracleAddress);
+    });
 
-  it("Should reject non-owner calls to setDataFeedSources and setFallbackOracle", async () => {
-    const newDataFeedIds = ["BTCIRBC1-Day", "BTCIRBC1-Week"].map(ethers.utils.formatBytes32String);
-    const newSourceAddresses = [
-      "0x0000000000000000000000000000000000000101",
-      "0x0000000000000000000000000000000000000102",
-    ];
-    const newFallbackOracleAddress = "0x0000000000000000000000000000000000000100";
+    it("Should reject non-owner calls to setDataFeedSources and setFallbackOracle", async () => {
+      const newDataFeedIds = ["BTCIRBC1-Day", "BTCIRBC1-Week"].map(ethers.utils.formatBytes32String);
+      const newSourceAddresses = [
+        "0x0000000000000000000000000000000000000101",
+        "0x0000000000000000000000000000000000000102",
+      ];
+      const newFallbackOracleAddress = "0x0000000000000000000000000000000000000100";
 
-    //const [_, nonOwner] = await ethers.getSigners();
-    const nonOwner = (await ethers.getSigners())[1];
-    const instance = await ethers.getContractFactory("DinamikoFeedOracle");
-    const oracle = await instance.deploy(dataFeedIds, sourceAddresses, fallbackOracleAddress);
-    await oracle.deployed();
+      //const [_, nonOwner] = await ethers.getSigners();
+      const nonOwner = (await ethers.getSigners())[1];
+      const instance = await ethers.getContractFactory("DinamikoFeedOracle");
+      const oracle = await instance.deploy(dataFeedIds, sourceAddresses, fallbackOracleAddress);
+      await oracle.deployed();
 
-    await expect(oracle.connect(nonOwner).setDataFeedSources(newDataFeedIds, newSourceAddresses)).to.be.revertedWith(
-      "Ownable: caller is not the owner",
-    );
-    console.log("Only the owner can call setDataFeedSources");
-    await expect(oracle.connect(nonOwner).setFallbackOracle(newFallbackOracleAddress)).to.be.revertedWith(
-      "Ownable: caller is not the owner",
-    );
-    console.log("Only the owner can call setFallbackOracle");
+      await expect(oracle.connect(nonOwner).setDataFeedSources(newDataFeedIds, newSourceAddresses)).to.be.revertedWith(
+        "Ownable: caller is not the owner",
+      );
+      await expect(oracle.connect(nonOwner).setFallbackOracle(newFallbackOracleAddress)).to.be.revertedWith(
+        "Ownable: caller is not the owner",
+      );
+    });
   });
 });

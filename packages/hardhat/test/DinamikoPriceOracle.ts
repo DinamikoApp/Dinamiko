@@ -32,13 +32,11 @@ describe("DinamikoPriceOracle Contract ", function () {
       // Check each dataFeedId and sourceAddress
       for (let i = 0; i < assets.length; i++) {
         expect(await oracle.getSourceOfAsset(assets[i])).to.equal(sourceAddresses[i], "Incorrect asset source set");
-        console.log("The source address for asset ", assets[i], " is: ", await oracle.getSourceOfAsset(assets[i]));
       }
 
       // Check fallback oracle address
       const expectedFallbackOracle = ethers.utils.getAddress("0x0000000000000000000000000000000000000000");
       expect(await oracle.getFallbackOracle()).to.equal(expectedFallbackOracle);
-      console.log("The fallback oracle address is: ", await oracle.getFallbackOracle());
     });
   });
 
@@ -59,12 +57,10 @@ describe("DinamikoPriceOracle Contract ", function () {
       await expect(oracle.connect(nonOwner).setAssetSources(invalidAsset, invalidSourceAddresses)).to.be.revertedWith(
         "Ownable: caller is not the owner",
       );
-      console.log("Only the owner can call setAssetSources");
 
       //Check that the data feed sources were not updated
       for (let i = 0; i < assets.length; i++) {
         expect(await oracle.getSourceOfAsset(assets[i])).to.equal(sourceAddresses[i], "Incorrect asset source set");
-        console.log("The source address for asset ", assets[i], " is: ", await oracle.getSourceOfAsset(assets[i]));
       }
     });
 
@@ -87,7 +83,6 @@ describe("DinamikoPriceOracle Contract ", function () {
       await expect(oracle.connect(nonOwner).setFallbackOracle(invalidFallbackOracleAddress)).to.be.revertedWith(
         "Ownable: caller is not the owner",
       );
-      console.log("Only the owner can call setFallbackOracle");
 
       // Check that the fallback oracle address was not updated
       expect(await oracle.getFallbackOracle()).to.equal("0x0000000000000000000000000000000000000000");
@@ -99,50 +94,47 @@ describe("DinamikoPriceOracle Contract ", function () {
 
       // Check that the fallback oracle address was updated correctly
       expect(await oracle.getFallbackOracle()).to.equal(validFallbackOracleAddress);
-      console.log("The fallback oracle address was updated by the owner: ", await oracle.getFallbackOracle());
     });
-  });
 
-  it("Should return 0 when given a non-existent asset", async () => {
-    // Check that the contract instance was created correctly
-    const instance = await ethers.getContractFactory("DinamikoPriceOracle");
-    const oracle = await instance.deploy(assets, sourceAddresses, fallbackOracle, baseCurrency, baseCurrencyUnit);
-    await oracle.deployed();
+    it("Should return 0 when given a non-existent asset", async () => {
+      // Check that the contract instance was created correctly
+      const instance = await ethers.getContractFactory("DinamikoPriceOracle");
+      const oracle = await instance.deploy(assets, sourceAddresses, fallbackOracle, baseCurrency, baseCurrencyUnit);
+      await oracle.deployed();
 
-    expect(oracle).to.not.be.undefined;
-  });
+      expect(oracle).to.not.be.undefined;
+    });
 
-  it("Should correctly return the address of the fallback oracle", async () => {
-    const instance = await ethers.getContractFactory("DinamikoPriceOracle");
-    const oracle = await instance.deploy(assets, sourceAddresses, fallbackOracle, baseCurrency, baseCurrencyUnit);
-    await oracle.deployed();
+    it("Should correctly return the address of the fallback oracle", async () => {
+      const instance = await ethers.getContractFactory("DinamikoPriceOracle");
+      const oracle = await instance.deploy(assets, sourceAddresses, fallbackOracle, baseCurrency, baseCurrencyUnit);
+      await oracle.deployed();
 
-    expect(oracle).to.not.be.undefined;
+      expect(oracle).to.not.be.undefined;
 
-    const oracleAddress = await oracle.getFallbackOracle();
-    expect(oracleAddress).to.equal(oracleAddress);
-  });
+      const oracleAddress = await oracle.getFallbackOracle();
+      expect(oracleAddress).to.equal(oracleAddress);
+    });
 
-  it("Should reject non-owner calls to setDataPriceSources and setPriceOracle", async () => {
-    const newAsset = ["0x0000000000000000000000000000000000000111"];
-    const newSourceAddresses = ["0x0000000000000000000000000000000000001101"];
-    const newFallbackOracleAddress = "0x0000000000000000000000000000000000001100";
+    it("Should reject non-owner calls to setDataPriceSources and setPriceOracle", async () => {
+      const newAsset = ["0x0000000000000000000000000000000000000111"];
+      const newSourceAddresses = ["0x0000000000000000000000000000000000001101"];
+      const newFallbackOracleAddress = "0x0000000000000000000000000000000000001100";
 
-    const nonOwner = (await ethers.getSigners())[1];
-    // Check that the contract instance was created correctly
-    const instance = await ethers.getContractFactory("DinamikoPriceOracle");
-    const oracle = await instance.deploy(assets, sourceAddresses, fallbackOracle, baseCurrency, baseCurrencyUnit);
-    await oracle.deployed();
+      const nonOwner = (await ethers.getSigners())[1];
+      // Check that the contract instance was created correctly
+      const instance = await ethers.getContractFactory("DinamikoPriceOracle");
+      const oracle = await instance.deploy(assets, sourceAddresses, fallbackOracle, baseCurrency, baseCurrencyUnit);
+      await oracle.deployed();
 
-    expect(oracle).to.not.be.undefined;
+      expect(oracle).to.not.be.undefined;
 
-    await expect(oracle.connect(nonOwner).setAssetSources(newAsset, newSourceAddresses)).to.be.revertedWith(
-      "Ownable: caller is not the owner",
-    );
-    console.log("Only the owner can call setDataFeedSources");
-    await expect(oracle.connect(nonOwner).setFallbackOracle(newFallbackOracleAddress)).to.be.revertedWith(
-      "Ownable: caller is not the owner",
-    );
-    console.log("Only the owner can call setFallbackOracle");
+      await expect(oracle.connect(nonOwner).setAssetSources(newAsset, newSourceAddresses)).to.be.revertedWith(
+        "Ownable: caller is not the owner",
+      );
+      await expect(oracle.connect(nonOwner).setFallbackOracle(newFallbackOracleAddress)).to.be.revertedWith(
+        "Ownable: caller is not the owner",
+      );
+    });
   });
 });
