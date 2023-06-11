@@ -11,19 +11,19 @@ import "../../oracles/interfaces/IDinamikoFeedOracle.sol";
 
 contract DinamikoVolumeOracleUpdater is ConfirmedOwner, Pausable, AutomationCompatibleInterface {
   KeeperRegistrarInterface private immutable i_registrar;
-  IDinamikoVolumeOracle volumeOracle;
+  IDinamikoVolumeOracle[] volumeOracles;
   uint public immutable interval;
   uint public lastTimeStamp;
 
   constructor(
     KeeperRegistrarInterface _registrar,
     uint updateInterval,
-    address _volumeOracle
+    address[] memory _volumeOracles
   ) ConfirmedOwner(msg.sender) {
     interval = updateInterval;
     lastTimeStamp = block.timestamp;
-    volumeOracle = IDinamikoVolumeOracle(_volumeOracle);
     i_registrar = KeeperRegistrarInterface(_registrar);
+    _setOracleAddresses(_volumeOracles);
   }
 
   /**
@@ -33,6 +33,7 @@ contract DinamikoVolumeOracleUpdater is ConfirmedOwner, Pausable, AutomationComp
    * @return upkeepNeeded upkeepNeeded returns if the upkeep is needed or not
    * @return performData
    */
+
   function checkUpkeep(
     bytes calldata checkData
   ) external view override whenNotPaused returns (bool upkeepNeeded, bytes memory performData) {
@@ -46,12 +47,21 @@ contract DinamikoVolumeOracleUpdater is ConfirmedOwner, Pausable, AutomationComp
    */
   function performUpkeep(bytes calldata /* performData */) external override {
     if ((block.timestamp - lastTimeStamp) > interval) {
-      volumeOracle.requestVolumeData();
+      for (uint i = 0; i < volumeOracles.length; i++) {
+        volumeOracles[i].requestVolumeData();
+      }
       lastTimeStamp = block.timestamp;
     }
   }
 
   function pause() public onlyOwner {
     _pause();
+  }
+
+  function _setOracleAddresses(address[] memory oracles) internal {
+    volumeOracles = new IDinamikoVolumeOracle[](oracles.length);
+    for (uint256 i = 0; i < oracles.length; i++) {
+      volumeOracles[i] = IDinamikoVolumeOracle(oracles[i]);
+    }
   }
 }
