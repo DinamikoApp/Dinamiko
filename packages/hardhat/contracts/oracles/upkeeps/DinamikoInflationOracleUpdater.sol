@@ -47,7 +47,7 @@ contract DinamikoInflationOracleUpdater is ConfirmedOwner, Pausable, AutomationC
    */
   function performUpkeep(bytes calldata /* performData */) external override {
     if ((block.timestamp - lastTimeStamp) > interval) {
-      i_inflationOracle.requestYoyInflation();
+      i_inflationOracle.getInflationRate();
       lastTimeStamp = block.timestamp;
     }
   }

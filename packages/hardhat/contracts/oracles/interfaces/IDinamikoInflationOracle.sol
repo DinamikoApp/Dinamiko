@@ -1,11 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity 0.8.6;
 
 interface IDinamikoInflationOracle {
-  function requestYoyInflation() external returns (bytes32);
-
-  function fulfillYoyInflation(bytes32 _requestId, bytes calldata _inflation) external;
-
   function changeOracle(address _oracle) external;
 
   function changeJobId(string calldata _jobId) external;
@@ -15,4 +11,6 @@ interface IDinamikoInflationOracle {
   function getChainlinkToken() external view returns (address);
 
   function withdrawLink() external;
+
+  function getInflationRate() external view returns (uint256);
 }

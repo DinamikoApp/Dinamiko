@@ -109,3 +109,31 @@ export interface PoolContract {
   liquidity(): Promise<number>;
   slot0(): Promise<any[]>; // replace "any" with the actual type
 }
+
+export interface ChainNetworkConfigType {
+  [key: string]: {
+    name: string;
+    subscriptionId: string;
+    callbackGasLimit: number | string;
+    keepersUpdateInterval: string;
+    supportedToken?: {
+      [token: string]: string;
+    };
+    priceFeeds?: {
+      [feed: string]: string;
+    };
+    dataFeeds?: {
+      [feed: string]: string;
+    };
+    uniswap?: UniswapAddressNetworkConfigType;
+  };
+}
+
+export interface UniswapAddressNetworkConfigType {
+  WETH_ADDRESS: string;
+  FACTORY_ADDRESS: string;
+  SWAP_ROUTER_ADDRESS: string;
+  NFT_DESCRIPTOR_ADDRESS: string;
+  POSITION_DESCRIPTOR_ADDRESS: string;
+  POSITION_MANAGER_ADDRESS: string;
+}

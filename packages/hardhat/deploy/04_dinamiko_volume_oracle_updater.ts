@@ -51,7 +51,7 @@ const deployDinamikoVolumeOracleUpdaterContract: DeployFunction = async function
     "\n",
   );
 
-  await deployDinamikoVolumeOracleUpdater(oracleAddress, fee, oracleId, link, baseCurrency, volumeOracle);
+  await deployDinamikoVolumeOracleUpdater(fee, oracleId, link);
   log("Done \n \n");
 };
 

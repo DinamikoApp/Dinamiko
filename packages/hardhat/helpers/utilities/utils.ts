@@ -12,11 +12,11 @@ export const isValidAddress = (value: tEthereumAddress): boolean =>
 export const isEqualAddress = (a: tEthereumAddress, b: tEthereumAddress) => getAddress(a) === getAddress(b);
 
 export const isLocalDevelopmentNetwork = (networkName: string) =>
-  networkName == "LOCALHOST" || networkName == "HARDHAT";
+  networkName == "LOCALHOST" || networkName == "HARDHAT" || networkName == "SEPOLIA";
 
-export const getNetworkName = () => hre.network.name.toUpperCase();
+export const getNetworkName = async () => Promise.resolve(hre.network.name.toUpperCase());
 
-export const getChainId = () => hre.network.config.chainId;
+export const getChainId = async () => (await hre.ethers.provider.getNetwork()).chainId;
 
 export const convertStringToBytes32 = (text: string) => formatBytes32String(text);
 

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity 0.8.6;
 
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
@@ -9,7 +9,7 @@ import "./interfaces/IDinamikoInflationOracle.sol";
 contract DinamikoInflationOracle is ChainlinkClient, ConfirmedOwner, IDinamikoInflationOracle {
   using Chainlink for Chainlink.Request;
 
-  string public yoyInflation;
+  uint256 public yoyInflation;
   address public oracleId;
   string public jobId;
   uint256 public fee;
@@ -29,7 +29,8 @@ contract DinamikoInflationOracle is ChainlinkClient, ConfirmedOwner, IDinamikoIn
     );
     req.add("service", "truflation/current");
     req.add("keypath", "yearOverYearInflation");
-    req.add("abi", "json");
+    req.add("abi", "int256");
+    req.add("multiplier", "1000000000000000000");
     req.add("refundTo", Strings.toHexString(uint160(msg.sender), 20));
     return sendChainlinkRequestTo(oracleId, req, fee);
   }
@@ -38,26 +39,36 @@ contract DinamikoInflationOracle is ChainlinkClient, ConfirmedOwner, IDinamikoIn
     bytes32 _requestId,
     bytes memory _inflation
   ) public recordChainlinkFulfillment(_requestId) {
-    yoyInflation = string(_inflation);
+    yoyInflation = uint256(toInt256(_inflation));
   }
 
-  function changeOracle(address _oracle) public onlyOwner {
+  function changeOracle(address _oracle) public override onlyOwner {
     oracleId = _oracle;
   }
 
-  function changeJobId(string memory _jobId) public onlyOwner {
+  function changeJobId(string memory _jobId) public override onlyOwner {
     jobId = _jobId;
   }
 
-  function changeFee(uint256 _fee) public onlyOwner {
+  function changeFee(uint256 _fee) public override onlyOwner {
     fee = _fee;
   }
 
-  function getChainlinkToken() public view returns (address) {
+  function toInt256(bytes memory _bytes) internal pure returns (int256 value) {
+    assembly {
+      value := mload(add(_bytes, 0x20))
+    }
+  }
+
+  function getInflationRate() public view override returns (uint256) {
+    return yoyInflation;
+  }
+
+  function getChainlinkToken() public view override returns (address) {
     return chainlinkTokenAddress();
   }
 
-  function withdrawLink() public onlyOwner {
+  function withdrawLink() public override onlyOwner {
     LinkTokenInterface link = LinkTokenInterface(chainlinkTokenAddress());
     require(link.transfer(msg.sender, link.balanceOf(address(this))), "Unable to transfer");
   }

@@ -28,7 +28,8 @@ import { deployContract } from "./utilities/tx";
 import { getNetworkName } from "./utilities/utils";
 
 export const deployMockV3Aggregator = async (symbol: string, value: string, testnet = true, id = "") => {
-  const { TESTNET_PRICE_AGGR_PREFIX } = getDeployIds(getNetworkName());
+  const networkName = await getNetworkName();
+  const { TESTNET_PRICE_AGGR_PREFIX } = getDeployIds(networkName);
   await deployContract<MockV3Aggregator>(
     "MockV3Aggregator",
     ["18", value],
@@ -38,7 +39,8 @@ export const deployMockV3Aggregator = async (symbol: string, value: string, test
 };
 
 export const deployDataFeedAggregator = async (key: string, value: string, testnet = true, id = "") => {
-  const { TESTNET_DATA_AGGR_PREFIX } = getDeployIds(getNetworkName());
+  const networkName = await getNetworkName();
+  const { TESTNET_DATA_AGGR_PREFIX } = getDeployIds(networkName);
   await deployContract<MockV3Aggregator>(
     "MockV3Aggregator",
     ["8", value],
@@ -48,12 +50,14 @@ export const deployDataFeedAggregator = async (key: string, value: string, testn
 };
 
 export const deployMockToken = async (symbol: string, name: string, testnet = true, id = "") => {
-  const { TESTNET_TOKEN_PREFIX } = getDeployIds(getNetworkName());
+  const networkName = await getNetworkName();
+  const { TESTNET_TOKEN_PREFIX } = getDeployIds(networkName);
   await deployContract<Token>("Token", [symbol, name], undefined, testnet ? `${TESTNET_TOKEN_PREFIX}${symbol}` : id);
 };
 
 export const deployLinkToken = async () => {
-  const { TESTNET_TOKEN_PREFIX } = getDeployIds(getNetworkName());
+  const networkName = await getNetworkName();
+  const { TESTNET_TOKEN_PREFIX } = getDeployIds(networkName);
   await deployContract<LinkToken>("LinkToken", [], undefined, `${TESTNET_TOKEN_PREFIX}LINK`);
 };
 
@@ -68,19 +72,12 @@ export const deployDinamikoFeedsOracle = async (ids: string[], sources: string[]
 };
 
 //DeployPriceFeedBased
-export const deployPriceFeedBased = async (
-  oracleAddress: string,
-  FEE: number,
-  oracleId: string,
-  link: string,
-  baseCurrency: string,
-) => {
+export const deployPriceFeedBased = async (oracleAddress: string, baseCurrency: string) => {
+  console.log(
+    `Oracle address: ${oracleAddress} Keeper registry: ${REGISTRAR} Update time interval: ${UPDATEINTERVAL.toString()} Base currency: ${baseCurrency} address`,
+  );
   await deployContract<PriceFeedBased>("PriceFeedBased", [
     oracleAddress,
-    FEE.toString(),
-    JOB_ID,
-    oracleId,
-    link,
     REGISTRAR,
     UPDATEINTERVAL.toString(),
     baseCurrency,
@@ -88,12 +85,12 @@ export const deployPriceFeedBased = async (
 };
 
 //InflationBased
-export const deployInflationBased = async (FEE: number, oracleId: string, link: string, baseCurrency: string) => {
+export const deployInflationBased = async (inflationOracle: string, baseCurrency: string) => {
+  console.log(
+    `Oracle address: ${inflationOracle} Keeper registry: ${REGISTRAR} Update time interval: ${UPDATEINTERVAL.toString()} Base currency: ${baseCurrency} address`,
+  );
   await deployContract<InflationBased>("InflationBased", [
-    FEE.toString(),
-    JOB_ID,
-    oracleId,
-    link,
+    inflationOracle,
     REGISTRAR,
     UPDATEINTERVAL.toString(),
     baseCurrency,
@@ -111,24 +108,14 @@ export const deployDinamikoVolumeOracle = async (link: string, linkOracle: strin
 };
 
 //DinamikoVolumeOracleUpdater
-export const deployDinamikoVolumeOracleUpdater = async (
-  oracleAddress: string,
-  FEE: number,
-  oracleId: string,
-  link: string,
-  baseCurrency: string,
-  volumeOracle: string,
-) => {
+export const deployDinamikoVolumeOracleUpdater = async (FEE: number, oracleId: string, link: string) => {
   await deployContract<DinamikoVolumeOracleUpdater>("DinamikoVolumeOracleUpdater", [
-    oracleAddress,
     FEE.toString(),
     JOB_ID,
     oracleId,
     link,
     REGISTRAR,
     UPDATEINTERVAL.toString(),
-    baseCurrency,
-    volumeOracle,
   ]);
 };
 
@@ -140,6 +127,9 @@ export const deployTimeBase = async (
   link: string,
   baseToken: string,
 ) => {
+  // console.log(
+  //   `Oracle address: ${inflationOracle} Keeper registry: ${REGISTRAR} Update time interval: ${UPDATEINTERVAL.toString()} Base currency: ${baseCurrency} address`,
+  // );
   await deployContract<TimeBase>("TimeBase", [
     oracleAddress,
     FEE.toString(),

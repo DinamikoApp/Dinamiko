@@ -23,6 +23,6 @@ const deploySubscriptionActionContract: DeployFunction = async function ({ deplo
 
 export default deploySubscriptionActionContract;
 
-// Tags are useful if you have multiple deploy files and only want to run one of them.
+// Tags are useful if you have multiple deploy files and only wanthar to run one of them.
 // e.g. yarn deploy --tags YourContract
 deploySubscriptionActionContract.tags = ["SubscriptionAction"];

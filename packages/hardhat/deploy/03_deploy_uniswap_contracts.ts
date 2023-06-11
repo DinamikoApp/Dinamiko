@@ -8,12 +8,10 @@ import NonfungibleTokenPositionDescriptorAbi from "@uniswap/v3-periphery/artifac
 
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
-import { getNetworkName, isForkedNetwork, isLocalDevelopmentNetwork } from "../helpers/utilities/utils";
+import { getNetworkName, isLocalDevelopmentNetwork } from "../helpers/utilities/utils";
 import { getSupportedTokens, linkLibraries } from "../helpers/deploy-config-helper";
 import { deployByFactory } from "../helpers/utilities/tx";
 
-// import { getDeployIds } from "../helpers/constants";
-// import { getAToken } from "../helpers/contract-getters";
 import { Token } from "../typechain-types";
 import {
   NFTDescriptor,
@@ -26,10 +24,11 @@ import { UniswapV3Factory } from "../typechain-types/deployFromAbi/v3-core";
 const deployUniswap: DeployFunction = async function ({ deployments, ethers }: HardhatRuntimeEnvironment) {
   const { log } = deployments;
 
-  const networkName = getNetworkName();
   // Should Only Deploy Mock If it Local Network
-  const isForked = await isForkedNetwork();
-  if (isLocalDevelopmentNetwork(networkName) && !isForked) {
+  const networkName = await getNetworkName();
+  console.log(networkName);
+
+  if (isLocalDevelopmentNetwork(networkName)) {
     log("Local network detected! Deploying Uniswap Mock Tokens...");
 
     const weth = await deployByFactory("WETH", WETH9.abi, WETH9.bytecode);
@@ -74,7 +73,7 @@ const deployUniswap: DeployFunction = async function ({ deployments, ethers }: H
       [`${uniswapFactory.address}`, `${weth.address}`, `${nonfungibleTokenPositionDescriptor.address}`],
     );
 
-    const addresses = {
+    const uniswapKeys = {
       WETH_ADDRESS: `${weth.address}`,
       FACTORY_ADDRESS: `${uniswapFactory.address}`,
       SWAP_ROUTER_ADDRESS: `${swapRouter.address}`,
@@ -83,28 +82,37 @@ const deployUniswap: DeployFunction = async function ({ deployments, ethers }: H
       POSITION_MANAGER_ADDRESS: `${nftPositionManager.address}`,
     };
 
-    console.log(addresses);
     const [deployer] = await ethers.getSigners();
     const tokens = await getSupportedTokens(networkName);
-    console.log(tokens);
 
-    // Gets Token to the deployer account
-    let token: Token;
-    for (const id in tokens) {
-      if (id == "LINK") continue;
-      const tokenFactory = await ethers.getContractFactory("Token");
-      token = (await tokenFactory.connect(deployer).attach(tokens[id])) as Token;
-      (await token["faucet(uint256)"](100000)).wait(2);
+    if (uniswapKeys !== undefined) {
+      const tokenNames = Object.keys(tokens);
+      const tokenAddresses = Object.values(tokens);
+      const PAIR_FEE = 3000;
+
+      let token: Token;
+      for (const id in tokens) {
+        if (id == "LINK") continue;
+        const tokenFactory = await ethers.getContractFactory("Token");
+        token = (await tokenFactory.connect(deployer).attach(tokens[id])) as Token;
+        (await token["faucet(uint256)"](100000)).wait(2);
+        token.approve(uniswapKeys.POSITION_MANAGER_ADDRESS, ethers.utils.parseEther("1000"), { gasLimit: 5000000 });
+      }
+      const uniswapFactory = new ethers.Contract(uniswapKeys.FACTORY_ADDRESS, UniswapV3FactoryAbi.abi, deployer);
+      for (let i = 0; i < tokenNames.length; i++) {
+        const tokenName = tokenNames[i];
+        const tokenAddress = tokenAddresses[i];
+        await uniswapFactory.createPool(tokenAddress, uniswapKeys.WETH_ADDRESS, PAIR_FEE, { gasLimit: 5000000 });
+        console.log(`Liquidity pool created: ${tokenName} - WETH`);
+      }
+
+      for (let i = 0; i < tokenNames.length; i++) {
+        const tokenName = tokenNames[i];
+        const tokenAddress = tokenAddresses[i];
+        const poolAddress: string = await uniswapFactory.getPool(tokenAddress, uniswapKeys.WETH_ADDRESS, PAIR_FEE);
+        console.log(`Pool address: ${poolAddress}  ${tokenName} - WETH `);
+      }
     }
-
-    // Create Liquidity Pool
-    const { DAI, USDT } = tokens;
-    let erc20Address = [DAI, USDT];
-    erc20Address = erc20Address.sort();
-    const pairFee = 3000;
-    await uniswapFactory.createPool(erc20Address[0], erc20Address[1], pairFee);
-    const poolAddress: string = await uniswapFactory.getPool(erc20Address[0], erc20Address[1], pairFee);
-    console.log(poolAddress, `Local Pool address ${erc20Address[0]} ${erc20Address[1]}`);
   }
   log("Done \n \n");
 };

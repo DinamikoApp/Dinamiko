@@ -12,12 +12,11 @@ import { getSupportedDataFeeds, mapByte32IdToDataFeedsAddress } from "../helpers
  */
 const deployDinamikoFeedsOracleContract: DeployFunction = async function ({ deployments }: HardhatRuntimeEnvironment) {
   const { log } = deployments;
-  const networkName = getNetworkName();
+  const networkName = await getNetworkName();
   const supportedDataFeedKeys = await getSupportedDataFeeds(networkName);
   const { ids, sources } = mapByte32IdToDataFeedsAddress(supportedDataFeedKeys, networkName);
 
   log("Deploying Data Oracle ...");
-  console.log(ids, sources);
   await deployDinamikoFeedsOracle(ids, sources);
   log("Done \n \n");
 };
