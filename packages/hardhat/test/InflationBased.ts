@@ -40,6 +40,7 @@ describe("InflationBased contract", () => {
         60,
         baseCurrency,
       )) as InflationBased;
+      await ib.deployed();
     });
 
     it("Should set the correct values in the constructor", async () => {

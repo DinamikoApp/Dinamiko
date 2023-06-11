@@ -42,6 +42,7 @@ describe("TimeBased Contract ", function () {
         60,
         baseToken,
       )) as TimeBase;
+      await tb.deployed();
     });
 
     it("Should set the correct values in the constructor", async () => {

@@ -44,6 +44,7 @@ describe("DataFeedBased Contract ", () => {
       )) as DataFeedBased;
 
       await df.deployTransaction.wait();
+      await df.deployed();
     });
 
     it("Should set the correct values in the constructor", async () => {

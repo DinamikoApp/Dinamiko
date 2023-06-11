@@ -57,53 +57,27 @@ describe("PriceFeedBased Contract ", function () {
     });
   });
 
-  describe("Swap _function", function () {
-    it("should swap tokens correctly when buying asset", async function () {
-      //       //   const purchaseToken = "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707"; // LINK token on hardhat
-      //       //   const amount = ethers.utils.parseEther("1");
-      //       //   const receiver = deployer.address;
-      //       //   // const tokenIn = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
-      //       //   // const swapRouter = "0xc5a5C42992dECbae36851359345FE25997F5C42d";
-      //       //   [deployer] = await ethers.getSigners();
-      //       //   const subscriptionActionFactory = await ethers.getContractFactory("SubscriptionAction", deployer);
-      //       //   subscriptionAction = (await subscriptionActionFactory.deploy(
-      //       //     routerAddress,
-      //       //     factoryAddress,
-      //       //   )) as SubscriptionAction;
-      //       //   await subscriptionAction.deployed();
-      //       //   // Approve the transfer of tokens
-      //       //   const purchaseTokenContract = await ethers.getContractAt("Token", purchaseToken);
-      //       //   await purchaseTokenContract.approve(subscriptionAction.address, amount);
-      //       //   // Call the buyAsset function
-      //       //   const tx = await subscriptionAction.buyAsset(purchaseToken, amount, receiver);
-      //       //   // Check the emitted Transaction event
-      //       //   const receipt = await tx.wait();
-      //       //   const event = receipt.events.pop();
-      //       //   expect(event.event).to.equal("Transaction");
-      //       //   expect(event.args.from).to.equal(deployer.address);
-      //       //   expect(event.args.to).to.equal(receiver);
-      //   expect(event.args.amountOut).to.be.gt(0);
-    });
+  describe("createSubscription _function", function () {
+    it("should create a subscription", async function () {
+      const subscriptionType = 1;
+      const amount = 100;
+      const action = 1;
+      const token1 = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9"; // USDT in hardhat
+      const token2 = "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707"; // LINK in hardhat
+      const liquidityPool = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9"; // example liquidity pool address
 
-    it("should swap tokens correctly when selling token", async function () {
-      //       //   [deployer] = await ethers.getSigners();
-      //       //   const sellToken = "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707"; // LINK token on hardhat
-      //       //   const amount = ethers.utils.parseEther("1");
-      //       //   const receiver = deployer.address;
-      //       //   // Approve the transfer of tokens
-      //       //   const sellTokenContract = await ethers.getContractAt("SubscriptionAction", deployer.address);
-      //       //   await sellTokenContract.approve(subscriptionAction.address, amount);
-      //       //   // Call the sellToken function
-      //       //   const tx = await subscriptionAction.sellToken(sellToken, amount, receiver);
-      //       //   // Check the emitted Transaction event
-      //       //   const receipt = await tx.wait();
-      //       //   const event = receipt.events.pop();
-      //       //   expect(event.event).to.equal("Transaction");
-      //       //   expect(event.args.from).to.equal(deployer.address);
-      //       //   expect(event.args.to).to.equal(receiver);
-      //       //   expect(event.args.amountOut).to.be.gt(0);
-      //     });
-      //   });
+      const subScriptionId = await pf.createSubscription(
+        subscriptionType,
+        amount,
+        action,
+        token1,
+        token2,
+        liquidityPool,
+        1000, //Current price
+      );
+
+      await subScriptionId.wait();
+      expect(subScriptionId).not.to.equal(0);
     });
   });
 });
