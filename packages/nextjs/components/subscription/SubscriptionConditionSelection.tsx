@@ -27,13 +27,13 @@ export function SubscriptionConditionSelection(props: InputProps) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-3/4 py-12 mx-auto">
         {conditions.map((condition, index) => (
           <div
-            className={`bg-[#00022C] p-2 py-2 cursor-pointer ${
-              selectedCondition === condition ? "border-blue-500" : ""
-            }`}
+            className={` bg-[#00022C] p-1 cursor-pointer ${selectedCondition === condition ? "bg-gradient" : ""}`}
             key={index}
             onClick={() => handleConditionClick(condition)}
           >
-            <p className="text-lg font-medium text-center">{condition}</p>
+            <div className="p-2 py-2 bg-[#00022C]">
+              <p className="text-lg font-medium text-center">{condition}</p>
+            </div>
           </div>
         ))}
       </div>

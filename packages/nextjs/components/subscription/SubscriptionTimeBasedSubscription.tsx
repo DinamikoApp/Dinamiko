@@ -51,12 +51,10 @@ export function SubscriptionTimeBasedSubscription(props: TimeProps) {
           {boxes.map(box => (
             <div
               key={box.value}
-              className={`bg-[#00022C] p-2 text-center cursor-pointer bg-darkblue ${
-                isActiveBox(box.value) ? "border-2 border-white" : ""
-              }`}
+              className={`bg-[#00022C] p-1 text-center cursor-pointer ${isActiveBox(box.value) ? "bg-gradient" : ""}`}
               onClick={() => handleBoxClick(box.value)}
             >
-              {box.label}
+              <div className="p-2 bg-[#00022C]">{box.label}</div>
             </div>
           ))}
         </div>
@@ -65,7 +63,7 @@ export function SubscriptionTimeBasedSubscription(props: TimeProps) {
           <div className="mr-2">
             <span className="text-xl mr-6">Custom time</span>
             <input
-              type="text"
+              type="number"
               className="border text-black border-gray-300 px-2 py-2 ml-2 text-center"
               value={customTimeValue}
               onChange={handleCustomTimeValueChange}
