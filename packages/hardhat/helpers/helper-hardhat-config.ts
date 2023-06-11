@@ -197,6 +197,30 @@ export const networkConfig = {
       "BTCIRBC1-Week": "0x2583E47DF3F959B055F4Efa90C4927658669F499",
     },
   },
+  80001: {
+    name: "mumbai",
+    subscriptionId: "1884",
+    keepersUpdateInterval: "30",
+    callbackGasLimit: "500000",
+    supportedToken: {
+      // Tokens Address
+      WETH: "",
+      DAI: "",
+      USDC: "",
+      USDT: "",
+      WBTC: "",
+      SUSHI: "",
+      AAVE: "",
+      CRV: "",
+    },
+    priceFeeds: {
+      ETHUSD: "0x0715A7794a1dc8e42615F059dD6e406A6594651A",
+      WETHUSD: "0x0715A7794a1dc8e42615F059dD6e406A6594651A",
+      LINKUSD: "0x1C2252aeeD50e0c9B64bDfF2735Ee3C932F5C408",
+      DAIUSD: "0x0FCAa9c899EC5A91eBc3D5Dd869De833b06fB046",
+      WBTCUSD: "0x007A22900a3B98143368Bd5906f8E17e9867581b",
+    },
+  },
 };
 
 export const developmentChain = ["hardhat", "localhost"];
