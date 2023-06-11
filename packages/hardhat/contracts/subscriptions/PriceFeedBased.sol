@@ -11,45 +11,30 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../oracles/interfaces/IDinamikoPriceOracle.sol";
 import "hardhat/console.sol";
+import "./base/interfaces/ISubscriptionActions.sol";
 
-contract PriceFeedBased is ChainlinkClient, ConfirmedOwner, Pausable, AutomationCompatibleInterface, IPriceFeedBased {
-  using Chainlink for Chainlink.Request;
-
-  int256 public LastInflationsRate = 0;
-  address public oracleId;
-  string public jobId;
-  uint256 public fee;
+contract PriceFeedBased is ConfirmedOwner, Pausable, AutomationCompatibleInterface, IPriceFeedBased {
   KeeperRegistrarInterface public immutable i_registrar;
-  IDinamikoPriceOracle priceOracle;
+  IDinamikoPriceOracle public priceOracle;
 
   PriceFeedBasedSubscription[] public subscriptions;
   uint public immutable interval;
   uint public lastTimeStamp;
-
   address public baseCurrency;
-
   uint256 public subscriptionIds;
+  ISubscriptionAction public subscriptionAction;
 
   constructor(
     address oracleAddress,
-    uint _fee,
-    string memory _jobId,
-    address _oracleId,
-    address _link,
     KeeperRegistrarInterface _registrar,
     uint updateInterval,
     address _baseCurrency
   ) ConfirmedOwner(msg.sender) {
-    setChainlinkToken(_link);
-    setChainlinkOracle(_oracleId);
-    jobId = _jobId;
-    i_registrar = _registrar;
-    fee = (_fee * LINK_DIVISIBILITY) / 10; // 0,5 * 10**18 (Varies by network and job)
-
     interval = updateInterval;
     lastTimeStamp = block.timestamp;
     priceOracle = IDinamikoPriceOracle(oracleAddress);
     baseCurrency = _baseCurrency;
+    i_registrar = KeeperRegistrarInterface(_registrar);
   }
 
   /**
@@ -86,6 +71,7 @@ contract PriceFeedBased is ChainlinkClient, ConfirmedOwner, Pausable, Automation
     address liquidityPool,
     uint256 assetPriceChangePercent
   ) external override returns (uint256 subscriptionId) {
+    require(subscriptionType < 3 && subscriptionType > 0, "Subscription Type does not exist ");
     subscriptionId = subscriptionIds++;
     uint256 currentPrice = priceOracle.getAssetPrice(token1);
     subscriptions[subscriptionId] = PriceFeedBasedSubscription(
@@ -101,12 +87,8 @@ contract PriceFeedBased is ChainlinkClient, ConfirmedOwner, Pausable, Automation
     emit CreateSubscription(subscriptionType, amount, action, token1);
   }
 
-  /**
-   * @notice Allow withdraw of Link tokens from the contract
-   */
-  function withdrawLink() public onlyOwner {
-    LinkTokenInterface link = LinkTokenInterface(chainlinkTokenAddress());
-    require(link.transfer(msg.sender, link.balanceOf(address(this))), "Unable to transfer");
+  function setSubScriptionAction(address subAction) public returns (address) {
+    subscriptionAction = ISubscriptionAction(subAction);
   }
 
   function pause() public override onlyOwner {
@@ -115,7 +97,7 @@ contract PriceFeedBased is ChainlinkClient, ConfirmedOwner, Pausable, Automation
 
   function executeSubscriptions() internal {
     for (uint i = 0; i < subscriptions.length; i++) {
-      console.log(subscriptions[i].subscriptionType);
+      // console.log(subscriptions[i].subscriptionType);
     }
   }
 

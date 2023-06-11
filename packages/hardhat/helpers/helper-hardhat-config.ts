@@ -1,5 +1,12 @@
 // Rule number one
 import {
+  DEFAULT_JOB_ID,
+  DEFAUlT_LINK_ORACLE,
+  DEFAULT_FEE,
+  DEFAULT_KEEP_REGISTRY,
+  DEFAULT_TRUFFLATION_ORACLE_ID,
+} from "./constants";
+import {
   iParamsPerNetwork,
   eEthereumNetwork,
   eNetwork,
@@ -9,6 +16,7 @@ import {
   eAvalancheNetwork,
   eFantomNetwork,
   eOptimismNetwork,
+  ChainNetworkConfigType,
 } from "./types";
 import { HardhatNetworkForkingUserConfig, HardhatNetworkUserConfig, HttpNetworkUserConfig } from "hardhat/types";
 
@@ -84,6 +92,7 @@ export const getCommonNetworkConfig = (networkName: eNetwork, chainId?: number):
     url: NETWORKS_RPC_URL[networkName] || "",
     chainId,
     gasPrice: "auto",
+    saveDeployments: true,
     accounts: {
       mnemonic: MNEMONIC,
       path: MNEMONIC_PATH,
@@ -131,18 +140,22 @@ export const hardhatNetworkSettings: HardhatNetworkUserConfig = {
 
 export const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY || "";
 
-export const networkConfig = {
+export const networkConfig: ChainNetworkConfigType = {
   31337: {
     name: "hardhat",
-    subscriptionId: "588",
-    callbackGasLimit: 500000,
-    keepersUpdateInterval: "30",
+    chainLink: {
+      GET_uint256_JOB: DEFAULT_JOB_ID,
+      ORACLE: DEFAUlT_LINK_ORACLE,
+      KEEPER_UPDATE_INTERVAL: 3600,
+      TRUFFLATION_JOB_ID: DEFAULT_JOB_ID,
+      TRUFFLATION_ORACLE: DEFAULT_TRUFFLATION_ORACLE_ID,
+      FEE: DEFAULT_FEE,
+      REGISTER: DEFAULT_KEEP_REGISTRY,
+      TRUFFLATION_FEE: DEFAULT_FEE,
+    },
   },
   1: {
     name: "mainnet",
-    subscriptionId: "1884",
-    keepersUpdateInterval: "30",
-    callbackGasLimit: "500000",
     supportedToken: {
       DAI: "0x6b175474e89094c44da98b954eedeac495271d0f",
       USDC: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
@@ -169,19 +182,16 @@ export const networkConfig = {
   },
   11155111: {
     name: "sepolia",
-    subscriptionId: "1884",
-    keepersUpdateInterval: "30",
-    callbackGasLimit: "500000",
     supportedToken: {
-      // Tokens Address
-      WETH: "",
-      DAI: "",
-      USDC: "",
-      USDT: "",
-      WBTC: "",
-      SUSHI: "",
-      AAVE: "",
-      CRV: "",
+      WETH: "0xBbaace5262774cf7411bb846a815b3f38B8610ea",
+      DAI: "0x6e56Ce771bD3778372E4208299D73a845d369947",
+      USDC: "0xFF7e61BdA50A66A99e680f2482436f6484bBa5E9",
+      USDT: "0x858180d26549c90033778a16B87A8b1810449d3e",
+      WBTC: "0xCF55b24c09C98D02e513EC50BEcbC9D34e46f0fD",
+      LINK: "0xC5ac1642F0752CF5CeAcdBA4a69F62e7cEEAcf7b",
+      SUSHI: "0x5CC5D75806402CcAcE3354C022Df6889bb8f3eaA",
+      AAVE: "0xdFB3c623133B90c66A85cbA91EDeD155300811c7",
+      CRV: "0x26e89A7A7Fb58c8cc4Ac66F349D04065996bd426",
     },
     priceFeeds: {
       ETHUSD: "0x1a81afB8146aeFfCFc5E50e8479e826E7D55b910",
@@ -195,6 +205,24 @@ export const networkConfig = {
       "ETHAPR90-Day": "0x7422A64372f95F172962e2C0f371E0D9531DF276",
       "BTCIRBC1-Day": "0x7DE89d879f581d0D56c5A7192BC9bDe3b7a9518e",
       "BTCIRBC1-Week": "0x2583E47DF3F959B055F4Efa90C4927658669F499",
+    },
+    uniswap: {
+      WETH_ADDRESS: "0x9764Da7ED8efA36E639D223b4BB77018C97beeD8",
+      FACTORY_ADDRESS: "0x1ebccAB91B691CB2A284d03c79A0fA983a4915D9",
+      SWAP_ROUTER_ADDRESS: "0xC27EcC9dB910c18325277fd682f3082D95594d56",
+      NFT_DESCRIPTOR_ADDRESS: "0x0CF3a1B58D8ADa88AB1d29c2318c2a74204a83bE",
+      POSITION_DESCRIPTOR_ADDRESS: "0x187e6FE766baB1bc404Cbdc8f79F5B37718F760E",
+      POSITION_MANAGER_ADDRESS: "0x082049780E461721b80BE68A5d86206431ECd74F",
+    },
+    chainLink: {
+      GET_uint256_JOB: "ca98366cc7314957b8c012c72f05aeeb",
+      ORACLE: "0x6090149792dAAeE9D1D568c9f9a6F6B46AA29eFD",
+      KEEPER_UPDATE_INTERVAL: 3600,
+      TRUFFLATION_JOB_ID: DEFAULT_JOB_ID,
+      TRUFFLATION_ORACLE: DEFAULT_TRUFFLATION_ORACLE_ID,
+      TRUFFLATION_FEE: DEFAULT_FEE,
+      FEE: DEFAULT_FEE,
+      REGISTER: DEFAULT_KEEP_REGISTRY,
     },
   },
   80001: {

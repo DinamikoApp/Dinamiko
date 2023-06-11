@@ -13,6 +13,7 @@ import {
   eOptimismNetwork,
   ePolygonNetwork,
 } from "./helpers/types";
+import "hardhat-contract-sizer";
 
 import { ETHERSCAN_KEY, getCommonNetworkConfig, hardhatNetworkSettings } from "./helpers/helper-hardhat-config";
 

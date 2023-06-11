@@ -11,13 +11,9 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../oracles/interfaces/IDinamikoPriceOracle.sol";
 import "hardhat/console.sol";
+import "./base/interfaces/ISubscriptionActions.sol";
 
-contract TimeBase is ChainlinkClient, ConfirmedOwner, Pausable, AutomationCompatibleInterface, ITimeBased {
-  using Chainlink for Chainlink.Request;
-
-  address public oracleId;
-  string public jobId;
-  uint256 public fee;
+contract TimeBase is ConfirmedOwner, Pausable, AutomationCompatibleInterface, ITimeBased {
   KeeperRegistrarInterface public immutable i_registrar;
 
   TimeBasedSubscription[] public subscriptions;
@@ -26,27 +22,19 @@ contract TimeBase is ChainlinkClient, ConfirmedOwner, Pausable, AutomationCompat
   address public baseToken;
   uint256 public subscriptionIds;
   IDinamikoPriceOracle priceOracle;
+  ISubscriptionAction public subscriptionAction;
 
   constructor(
     address oracleAddress,
-    uint _fee,
-    string memory _jobId,
-    address _oracleId,
-    address _link,
     KeeperRegistrarInterface _registrar,
     uint updateInterval,
     address _baseToken
   ) ConfirmedOwner(msg.sender) {
-    setChainlinkToken(_link);
-    setChainlinkOracle(_oracleId);
-    jobId = _jobId;
-    i_registrar = _registrar;
-    fee = (_fee * LINK_DIVISIBILITY) / 10; // 0,5 * 10**18 (Varies by network and job)
-
     interval = updateInterval;
     lastTimeStamp = block.timestamp;
     baseToken = _baseToken;
     priceOracle = IDinamikoPriceOracle(oracleAddress);
+    i_registrar = KeeperRegistrarInterface(_registrar);
   }
 
   function createSubscription(
@@ -56,9 +44,10 @@ contract TimeBase is ChainlinkClient, ConfirmedOwner, Pausable, AutomationCompat
     address token1,
     address token2,
     address liquidityPool,
-    uint256 interval,
+    uint256 subscriptionInterval,
     uint256 assetPricePercent
   ) external override returns (uint256 subscriptionId) {
+    require(subscriptionType < 3 && subscriptionType > 0, "Subscription Type does not exist ");
     subscriptionId = subscriptionIds++;
     uint256 currentPrice = priceOracle.getAssetPrice(token1);
     subscriptions[subscriptionId] = TimeBasedSubscription(
@@ -69,7 +58,7 @@ contract TimeBase is ChainlinkClient, ConfirmedOwner, Pausable, AutomationCompat
       token2,
       liquidityPool,
       currentPrice,
-      interval,
+      subscriptionInterval,
       assetPricePercent
     );
   }
@@ -98,14 +87,6 @@ contract TimeBase is ChainlinkClient, ConfirmedOwner, Pausable, AutomationCompat
     }
   }
 
-  /**
-   * @notice Allow withdraw of Link tokens from the contract
-   */
-  function withdrawLink() public onlyOwner {
-    LinkTokenInterface link = LinkTokenInterface(chainlinkTokenAddress());
-    require(link.transfer(msg.sender, link.balanceOf(address(this))), "Unable to transfer");
-  }
-
   function pause() public override onlyOwner {
     _pause();
   }
@@ -114,6 +95,10 @@ contract TimeBase is ChainlinkClient, ConfirmedOwner, Pausable, AutomationCompat
     for (uint i = 0; i < subscriptions.length; i++) {
       console.log(subscriptions[i].subscriptionType);
     }
+  }
+
+  function setSubScriptionAction(address subAction) public onlyOwner returns (address) {
+    subscriptionAction = ISubscriptionAction(subAction);
   }
 
   function getSubscriptions() external view override returns (TimeBasedSubscription[] memory) {

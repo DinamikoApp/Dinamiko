@@ -37,6 +37,11 @@ export const MOCK_CHAINLINK_DATA_FEEDS_AGGREGATORS: { [key: string]: string } = 
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 export const ONE_ADDRESS = "0x0000000000000000000000000000000000000001";
 
+export const PRICE_ORACLE = "DinamikoPriceOracle";
+export const FEED_ORACLE = "DinamikoFeedOracle";
+export const INFLATION_ORACLE = "DinamikoInflationOracle";
+export const VOLUME_ORACLE = "DinamikoVolumeOracle";
+
 export const ONE_ETH = parseEther("1");
 export const TWO_ETH = parseEther("2");
 export const THREE_ETH = parseEther("3");
@@ -45,18 +50,20 @@ export const FOUR_ETH = parseEther("4");
 export const PERCENTAGE_FACTOR = "10000";
 export const HALF_PERCENTAGE = "5000";
 
-export const UPDATEINTERVAL = 60;
-export const FEE = 0.5 * 10 ** 18; //Vary depending to the network
-export const JOB_ID = "d220e5e687884462909a03021385b7ae"; //adjust with the correct value
-export const REGISTRAR = "0xE16Df59B887e3Caa439E0b29B42bA2e7976FD8b2"; //The address of the Chainlink Automation registry contract
+export const DEFAULT_UPDATE_INTERVAL = 3600;
+export const DEFAULT_FEE = 10; //Vary depending to the network
+export const DEFAULT_JOB_ID = "0x6432323065356536383738383434363239303961303330323133383562376165"; //adjust with the correct value
+export const DEFAULT_REGISTRAR = "0xE16Df59B887e3Caa439E0b29B42bA2e7976FD8b2"; //The address of the Chainlink Automation registry contract
 
-export const KEEP_REGISTRY = "0xE16Df59B887e3Caa439E0b29B42bA2e7976FD8b2"; //The address of the Chainlink Automation registry contract
-export const LINK_ORACLE = "0x6090149792dAAeE9D1D568c9f9a6F6B46AA29eFD"; //Chainlink oracle address
-export const MIN_WAIT_PERIOD_SECONDS = 10; //Testnet value - necessary updae with the correct value
+export const DEFAULT_KEEP_REGISTRY = "0xE16Df59B887e3Caa439E0b29B42bA2e7976FD8b2"; //The address of the Chainlink Automation registry contract
+export const DEFAUlT_LINK_ORACLE = "0x6090149792dAAeE9D1D568c9f9a6F6B46AA29eFD"; //Chainlink oracle address
+export const MIN_WAIT_PERIOD_SECONDS = 10; //Testnet value - necessary update with the correct value
+
+export const DEFAULT_TRUFFLATION_ORACLE_ID = "0x6888BdA6a975eCbACc3ba69CA2c80d7d7da5A344";
 
 //Uniswap parameters
-export const ROUTERADDRESS = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
-export const FACTORYADDRESS = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f";
+export const DEFAULT_ROUTER_ADDRESS = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
+export const DEFAULT_ROUTER_FACTORY_ADDRESS = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f";
 
 export const DEFAULT_NAMED_ACCOUNTS = {
   deployer: {

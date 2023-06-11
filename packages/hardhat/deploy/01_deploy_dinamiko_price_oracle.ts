@@ -16,11 +16,11 @@ import {
  */
 const deployDinamikoPriceOracleContract: DeployFunction = async function ({ deployments }: HardhatRuntimeEnvironment) {
   const { log } = deployments;
-  const networkName = getNetworkName();
+  const networkName = await getNetworkName();
   const supportedTokens = await getSupportedTokens(networkName);
   const supportedTokensPriceFeeds = await getChainlinkPriceOracles(networkName);
   const { assets, sources } = mapTokenAddressToPriceFeeds(supportedTokens, supportedTokensPriceFeeds, networkName);
-
+  
   log("Deploying Dinamiko Price Oracle...");
   await deployDinamikoPriceOracle(assets, sources);
   log("Done \n \n");

@@ -109,3 +109,41 @@ export interface PoolContract {
   liquidity(): Promise<number>;
   slot0(): Promise<any[]>; // replace "any" with the actual type
 }
+
+export interface ChainNetworkConfigType {
+  [key: string]: {
+    name: string;
+    supportedToken?: {
+      [token: string]: string;
+      USDT: string;
+    };
+    priceFeeds?: {
+      [feed: string]: string;
+    };
+    dataFeeds?: {
+      [feed: string]: string;
+    };
+    uniswap?: UniswapAddressNetworkConfigType;
+    chainLink?: ChainLinkNetworkConfigType;
+  };
+}
+
+export interface UniswapAddressNetworkConfigType {
+  WETH_ADDRESS: string;
+  FACTORY_ADDRESS: string;
+  SWAP_ROUTER_ADDRESS: string;
+  NFT_DESCRIPTOR_ADDRESS: string;
+  POSITION_DESCRIPTOR_ADDRESS: string;
+  POSITION_MANAGER_ADDRESS: string;
+}
+
+export interface ChainLinkNetworkConfigType {
+  GET_uint256_JOB: string;
+  ORACLE: string;
+  KEEPER_UPDATE_INTERVAL: number;
+  REGISTER: string;
+  TRUFFLATION_ORACLE: string;
+  TRUFFLATION_JOB_ID: string;
+  TRUFFLATION_FEE: number;
+  FEE: number;
+}

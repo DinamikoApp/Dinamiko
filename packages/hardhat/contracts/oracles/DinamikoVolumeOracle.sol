@@ -12,12 +12,12 @@ import "./interfaces/IDinamikoVolumeOracle.sol";
 contract DinamikoVolumeOracle is ChainlinkClient, ConfirmedOwner, IDinamikoVolumeOracle {
   using Chainlink for Chainlink.Request;
 
-  uint256 private volume;
-  bytes32 private jobId;
-  uint256 private fee;
-  string private symbol;
+  uint256 public volume;
+  string public jobId;
+  uint256 public fee;
+  string public symbol;
 
-  event JobIdUpdated(bytes32 newJobId);
+  event JobIdUpdated(string newJobId);
   event SymbolUpdated(string newSymbol);
   event FeeUpdated(uint256 newFee);
 
@@ -32,7 +32,7 @@ contract DinamikoVolumeOracle is ChainlinkClient, ConfirmedOwner, IDinamikoVolum
   constructor(
     address _linkAddress,
     address _linkOracleAddress,
-    bytes32 _jobId,
+    string memory _jobId,
     string memory _symbol
   ) ConfirmedOwner(msg.sender) {
     setChainlinkToken(_linkAddress);
@@ -46,7 +46,7 @@ contract DinamikoVolumeOracle is ChainlinkClient, ConfirmedOwner, IDinamikoVolum
    *  @notice  Create a Chainlink request to retrieve the 24 Hours  API response, find the target data, ==
    */
   function requestVolumeData() public override returns (bytes32 requestId) {
-    Chainlink.Request memory req = buildChainlinkRequest(jobId, address(this), this.fulfill.selector);
+    Chainlink.Request memory req = buildChainlinkRequest(bytes32(bytes(jobId)), address(this), this.fulfill.selector);
 
     // Set the URL to perform the GET request on
     string memory url = string(
@@ -88,7 +88,7 @@ contract DinamikoVolumeOracle is ChainlinkClient, ConfirmedOwner, IDinamikoVolum
   /**
    * Set the jobId
    */
-  function setJobId(bytes32 _jobId) public onlyOwner {
+  function setJobId(string memory _jobId) public onlyOwner {
     jobId = _jobId;
     emit JobIdUpdated(_jobId);
   }

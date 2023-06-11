@@ -8,7 +8,7 @@ import { getNetworkName, isForkedNetwork, isLocalDevelopmentNetwork } from "./ut
 // declare let hre: HardhatRuntimeEnvironment;
 
 export const getAToken = async (name: string, address: tEthereumAddress): Promise<Token> => {
-  const networkName = getNetworkName();
+  const networkName = await getNetworkName();
   const isForked = await isForkedNetwork();
   if (isLocalDevelopmentNetwork(networkName) && !isForked) {
     return getContract(`Token`, address);

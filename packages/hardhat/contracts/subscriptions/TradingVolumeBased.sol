@@ -11,47 +11,23 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../oracles/interfaces/IDinamikoVolumeOracle.sol";
 import "hardhat/console.sol";
+import "./base/interfaces/ISubscriptionActions.sol";
 
-contract TradingVolumeBased is
-  ChainlinkClient,
-  ConfirmedOwner,
-  Pausable,
-  AutomationCompatibleInterface,
-  ITradingVolumeBased
-{
-  using Chainlink for Chainlink.Request;
-
-  address public oracleId;
-  string public jobId;
-  uint256 public fee;
+contract TradingVolumeBased is ConfirmedOwner, Pausable, AutomationCompatibleInterface, ITradingVolumeBased {
   KeeperRegistrarInterface public immutable i_registrar;
 
   TradingVolumeBasedSubscription[] public subscriptions;
   uint public immutable interval;
   uint public lastTimeStamp;
-
   address public baseToken;
-
   uint256 public subscriptionIds;
+  ISubscriptionAction public subscriptionAction;
 
-  constructor(
-    uint _fee,
-    string memory _jobId,
-    address _oracleId,
-    address _link,
-    KeeperRegistrarInterface _registrar,
-    uint updateInterval,
-    address _baseToken
-  ) ConfirmedOwner(msg.sender) {
-    setChainlinkToken(_link);
-    setChainlinkOracle(_oracleId);
-    jobId = _jobId;
-    i_registrar = _registrar;
-    fee = (_fee * LINK_DIVISIBILITY) / 10; // 0,5 * 10**18 (Varies by network and job)
-
+  constructor(KeeperRegistrarInterface _registrar, uint updateInterval, address _baseToken) ConfirmedOwner(msg.sender) {
     interval = updateInterval;
     lastTimeStamp = block.timestamp;
     baseToken = _baseToken;
+    i_registrar = KeeperRegistrarInterface(_registrar);
   }
 
   /**
@@ -78,6 +54,7 @@ contract TradingVolumeBased is
     address volumeOracle,
     uint256 volumePercentChange
   ) external override returns (uint256 subscriptionId) {
+    require(subscriptionType < 3 && subscriptionType > 0, "Subscription Type does not exist ");
     subscriptionId = subscriptionIds++;
     IDinamikoVolumeOracle volumeOracleInstance = IDinamikoVolumeOracle(volumeOracle);
     uint256 currentVolume = volumeOracleInstance.getVolume();
@@ -107,12 +84,8 @@ contract TradingVolumeBased is
     }
   }
 
-  /**
-   * @notice Allow withdraw of Link tokens from the contract
-   */
-  function withdrawLink() public onlyOwner {
-    LinkTokenInterface link = LinkTokenInterface(chainlinkTokenAddress());
-    require(link.transfer(msg.sender, link.balanceOf(address(this))), "Unable to transfer");
+  function setSubScriptionAction(address subAction) public onlyOwner returns (address) {
+    subscriptionAction = ISubscriptionAction(subAction);
   }
 
   function pause() public override onlyOwner {

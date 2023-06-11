@@ -35,7 +35,6 @@ async function main() {
       name: "v3-core",
     },
   ];
-
   for (const key in config) {
     generateTypeChain(config[key]);
   }
