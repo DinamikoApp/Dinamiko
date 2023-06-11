@@ -3,7 +3,6 @@ import "@nomiclabs/hardhat-ethers";
 import { ethers } from "hardhat";
 import { expect } from "chai";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { FEE, JOB_ID } from "../helpers/constants";
 import { TradingVolumeBased } from "../typechain-types";
 
 describe("TradingVolumeBased Contract ", function () {
@@ -23,23 +22,11 @@ describe("TradingVolumeBased Contract ", function () {
       const accounts = await ethers.getSigners();
       owner = accounts[0];
 
-      const fee = FEE; //Vary depending to the network
-      const jobId = JOB_ID; //adjust with the correct value
-      const oracleId = "0x6090149792dAAeE9D1D568c9f9a6F6B46AA29eFD"; //The DinamikoPriceOracle deployment address
-      const link = "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707"; //Link token address
       const registrar = "0xE16Df59B887e3Caa439E0b29B42bA2e7976FD8b2"; ////The address of the Chainlink Automation registry contract
       const baseToken = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9"; //USDT token address
 
       const tvFactory = await ethers.getContractFactory("TradingVolumeBased", owner);
-      tv = (await tvFactory.deploy(
-        ethers.utils.parseEther(fee.toFixed(18)),
-        jobId,
-        oracleId,
-        link,
-        registrar,
-        60,
-        baseToken,
-      )) as TradingVolumeBased;
+      tv = (await tvFactory.deploy(registrar, 60, baseToken)) as TradingVolumeBased;
 
       await tv.deployed();
     });
@@ -47,7 +34,6 @@ describe("TradingVolumeBased Contract ", function () {
     it("Should set the correct values in the constructor", async () => {
       expect(tv).to.not.be.undefined;
       expect(await tv.owner()).to.equal(owner.address);
-      expect(await tv.jobId()).to.equal("d220e5e687884462909a03021385b7ae");
       expect(await tv.i_registrar()).to.equal("0xE16Df59B887e3Caa439E0b29B42bA2e7976FD8b2");
       expect(await tv.interval()).to.equal(60);
       expect(await tv.baseToken()).to.equal("0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9");

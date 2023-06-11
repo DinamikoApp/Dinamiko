@@ -3,8 +3,6 @@ import "@nomiclabs/hardhat-ethers";
 import { ethers } from "hardhat";
 import { expect } from "chai";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { JOB_ID } from "../helpers/constants";
-import { stringToBytes } from "../helpers/utilities/helpers";
 import { DinamikoVolumeOracle } from "../typechain-types";
 
 describe("DinamikoVolumeOracle Contract ", function () {
@@ -26,7 +24,7 @@ describe("DinamikoVolumeOracle Contract ", function () {
 
       const link = "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707"; //Link token address
       const linkOracle = "0x6090149792dAAeE9D1D568c9f9a6F6B46AA29eFD";
-      const jobId = stringToBytes(JOB_ID); //adjust with the correct value
+      const jobId = "d220e5e687884462909a03021385b7ae"; //adjust with the correct value
       const symbol = "ETH";
 
       const dvFactory = await ethers.getContractFactory("DinamikoVolumeOracle", owner);
