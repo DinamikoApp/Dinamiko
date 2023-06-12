@@ -1,0 +1,40 @@
+[NOTICE] Using tokens from configuration file
+[NOTICE] Using ChainLink keys from configuration file
+Deploying Dinamiko Volume Oracle...
+Token link address: 0xC5ac1642F0752CF5CeAcdBA4a69F62e7cEEAcf7b
+Job Id: ca98366cc7314957b8c012c72f05aeeb
+Symbol: WETH
+deploying "DinamikoVolumeOracle" (tx: 0x981a074b66ebc24bfef1193e647cc7215de435553894b478278e3a3533204951)...: deployed at 0x99F318306216b555e0ee29Cb7EB9fe8af8Ec365e with 2524287 gas
+Token link address: 0xC5ac1642F0752CF5CeAcdBA4a69F62e7cEEAcf7b
+Job Id: ca98366cc7314957b8c012c72f05aeeb
+Symbol: DAI
+deploying "DinamikoVolumeOracle" (tx: 0x91995e30c2614c410d0bb68f81cff401381c239357beb9ed7ff864f635bcaa18)...: deployed at 0xE6A7fE6c7f5Bc9A6E23CEaCb4649770fBF3fb163 with 2524275 gas
+Token link address: 0xC5ac1642F0752CF5CeAcdBA4a69F62e7cEEAcf7b
+Job Id: ca98366cc7314957b8c012c72f05aeeb
+Symbol: USDC
+deploying "DinamikoVolumeOracle" (tx: 0x59b5e422a165f4fb7b695c64aff79d3bfe0165cc78ad547f8bf3a6bb65b73e6b)...: deployed at 0xad8457b56C84D61B00F60fEa27847f379cf2a87b with 2524287 gas
+Token link address: 0xC5ac1642F0752CF5CeAcdBA4a69F62e7cEEAcf7b
+Job Id: ca98366cc7314957b8c012c72f05aeeb
+Symbol: USDT
+deploying "DinamikoVolumeOracle" (tx: 0xb36ecae094e5e1ff8c7cde5ca7449d9093fad86cc7823746850ea79359447a1a)...: deployed at 0x213E8E682e39ec264C5E586Ce75Bc1554B9C5883 with 2524287 gas
+Token link address: 0xC5ac1642F0752CF5CeAcdBA4a69F62e7cEEAcf7b
+Job Id: ca98366cc7314957b8c012c72f05aeeb
+Symbol: WBTC
+deploying "DinamikoVolumeOracle" (tx: 0xbc27772fcc736608bfdebe209ce8ab1ffabe4dba47ecad8d4c2c9c6eb7efaa9c)...: deployed at 0x25Ff58adDed61bE41Ef494C6DDe29037b2d73CB2 with 2524287 gas
+Token link address: 0xC5ac1642F0752CF5CeAcdBA4a69F62e7cEEAcf7b
+Job Id: ca98366cc7314957b8c012c72f05aeeb
+Symbol: LINK
+deploying "DinamikoVolumeOracle" (tx: 0x9fbc8b0d39998a9e2d54e5467a6f7c48421300fb924bf2f114d905643dda8de8)...: deployed at 0xaBC1E3808bCdc58Ba176925e0c5843663D4C9177 with 2524287 gas
+Token link address: 0xC5ac1642F0752CF5CeAcdBA4a69F62e7cEEAcf7b
+Job Id: ca98366cc7314957b8c012c72f05aeeb
+Symbol: SUSHI
+deploying "DinamikoVolumeOracle" (tx: 0x17e85c5448aed965aac2f09d1b8d54d57c32b14b60084fd5f7fe01432236942e)...: deployed at 0xcf10d780efC2a7633E03A2a1322fa449067C0C9f with 2524299 gas
+Token link address: 0xC5ac1642F0752CF5CeAcdBA4a69F62e7cEEAcf7b
+Job Id: ca98366cc7314957b8c012c72f05aeeb
+Symbol: AAVE
+deploying "DinamikoVolumeOracle" (tx: 0x7e35a09645b9a0642f900e51f86622d987ae7ddf26c9f844d61db602713ceab6)...: deployed at 0xCFdd479C67F0Ec1F7b7B3f20d34d99398410cf7a with 2524287 gas
+Token link address: 0xC5ac1642F0752CF5CeAcdBA4a69F62e7cEEAcf7b
+Job Id: ca98366cc7314957b8c012c72f05aeeb
+Symbol: CRV
+deploying "DinamikoVolumeOracle" (tx: 0x29a0b679a3c38d66c3f30751fdbe5762625d9cc7fe92618a361e402a0ef406ce)...: deployed at 0xF63F81B432c46cB5069AdDC838FcD7FeF593B765 with 2524275 gas
+deploying "DinamikoVolumeOracleUpdater" (tx: 0x197c7ab52a1a365f9bb8dc0b009811490192c8a18b5810a445811ade62d7f7be)...: deployed at 0x7eCd5d44BC241AEc595ECb80f418f3A54C37ACF0 with 1122820 gas

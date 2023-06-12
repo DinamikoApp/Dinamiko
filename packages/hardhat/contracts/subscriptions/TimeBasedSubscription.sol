@@ -13,7 +13,7 @@ import "../oracles/interfaces/IDinamikoPriceOracle.sol";
 import "hardhat/console.sol";
 import "./base/interfaces/ISubscriptionActions.sol";
 
-contract TimeBase is ConfirmedOwner, Pausable, AutomationCompatibleInterface, ITimeBased {
+contract TimeBasedSubscription is ConfirmedOwner, Pausable, AutomationCompatibleInterface, ITimeBased {
   KeeperRegistrarInterface public immutable i_registrar;
 
   TimeBasedSubscription[] public subscriptions;

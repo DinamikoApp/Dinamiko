@@ -12,4 +12,3 @@ export * from "./useScaffoldContractWrite";
 export * from "./useScaffoldEventSubscriber";
 export * from "./useScaffoldEventHistory";
 export * from "./useTransactor";
-export * from "./useMockTokenBalance";

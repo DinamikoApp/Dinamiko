@@ -12,7 +12,6 @@ import {
   InflationBased,
   DinamikoVolumeOracle,
   DinamikoVolumeOracleUpdater,
-  TimeBase,
   DataFeedBased,
   DinamikoInflationOracle,
   DinamikoInflationOracleUpdater,
@@ -21,6 +20,7 @@ import {
   TradingVolumeBasedFactory,
   InflationBasedFactory,
   PriceFeedBasedFactory,
+  TimeBasedSubscription,
 } from "../typechain-types";
 import { DEFAULT_REGISTRAR, ZERO_ADDRESS, getDeployIds, DEFAULT_UPDATE_INTERVAL } from "./constants";
 import { deployContract } from "./utilities/tx";
@@ -170,7 +170,12 @@ export const deployTimeBase = async (
   console.log(
     `Oracle address: ${priceOracleAddress} Keeper registry: ${REGISTRAR} Update time interval: ${interval.toString()} Base currency: ${baseCurrency} address`,
   );
-  return await deployContract<TimeBase>("TimeBase", [priceOracleAddress, REGISTRAR, interval, baseCurrency]);
+  return await deployContract<TimeBasedSubscription>("TimeBasedSubscription", [
+    priceOracleAddress,
+    REGISTRAR,
+    interval,
+    baseCurrency,
+  ]);
 };
 
 //TradingVolume

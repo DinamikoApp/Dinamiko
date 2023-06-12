@@ -2,7 +2,7 @@ import { Contract, ContractTransaction, ContractFactory } from "ethers";
 import { tEthereumAddress, PoolData } from "../types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { Libraries } from "hardhat-deploy/types";
-import crypto from "crypto";
+// import crypto from "crypto";
 import path from "path";
 import fs from "fs/promises";
 import { appendJsonToFile } from "./utils";
@@ -95,7 +95,7 @@ export const deployContract = async <ContractType extends Contract>(
   const { deployer: from } = await hre.getNamedAccounts();
 
   const artifact = await hre.deployments.deploy(
-    id || `${contract}-${crypto.randomUUID()}`, // Prevent collisions with principal deployment in tests environment
+    id || `${contract}`, // Prevent collisions with principal deployment in tests environment
     {
       contract,
       args,
