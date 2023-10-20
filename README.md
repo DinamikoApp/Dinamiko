@@ -1,4 +1,4 @@
-# 🤓 Dinamiko - Chainlink Spring 2023 Hackathon
+# 🤓 Dinamiko 
 
 💡 Discover a cutting-edge open-source solution for web3 decentralized applications (dapps) operating on the blockchain. This remarkable platform streamlines investment trading decisions by leveraging a combination of on-chain and off-chain events or data statuses through the remarkable capabilities of Chainlink.
 
